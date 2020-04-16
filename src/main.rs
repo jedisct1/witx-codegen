@@ -25,12 +25,101 @@ impl From<WitxError> for Error {
 }
 
 fn doit() -> Result<(), Error> {
-    let document = witx::load(&["/tmp/proposal_common.witx"])?;
+    let document = witx::load(&["/tmp/wasi_ephemeral_crypto.witx"])?;
     header();
     for type_ in document.typenames() {
         define_type(type_.as_ref());
     }
+    for module in document.modules() {
+        define_module(module.as_ref());
+    }
     Ok(())
+}
+
+fn define_module(module: &witx::Module) {
+    println!();
+    println!();
+    println!(
+        "// ----------------------[{}]----------------------",
+        module.name.as_str()
+    );
+    for func in module.funcs() {
+        define_func(module.name.as_str(), func.as_ref());
+    }
+}
+
+fn wasm_atom_type_to_as(atom_type: witx::AtomType) -> &'static str {
+    match atom_type {
+        witx::AtomType::I32 => "i32",
+        witx::AtomType::I64 => "i64",
+        witx::AtomType::F32 => "f32",
+        witx::AtomType::F64 => "f64",
+    }
+}
+
+fn define_func(module_name: &str, func: &witx::InterfaceFunc) {
+    let docs = &func.docs;
+    let name = func.name.as_str();
+    if docs.is_empty() {
+        println!("\n/** {} */", name);
+    } else {
+        println!("\n/**");
+        for docs_line in docs.lines() {
+            println!(" * {}", docs_line);
+        }
+        println!(" */");
+    }
+    let s_in: Vec<_> = func
+        .params
+        .iter()
+        .map(|param| param.name.as_str().to_string())
+        .collect();
+    let s_out: Vec<_> = func
+        .results
+        .iter()
+        .map(|param| param.name.as_str().to_string())
+        .collect();
+    println!("/**");
+    println!(" * in:  {}", s_in.join(", "));
+    println!(" * out: {}", s_out.join(", "));
+    println!(" */");
+    println!("// @ts-ignore: decorator");
+    println!("@external(\"{}\", \"{}\")", module_name, name);
+    print!("export declare function {}(", name);
+
+    //
+    if false {
+        for param in &func.params {
+            println!("- {}: ", param.name.as_str());
+            match &param.tref {
+                witx::TypeRef::Name(other_type) => {
+                    println!("    > {}", other_type.name.as_str());
+                }
+                witx::TypeRef::Value(type_) => match type_.as_ref() {
+                    witx::Type::Handle(_) => println!("    > handle"),
+                    _ => {}
+                },
+            }
+        }
+    }
+    //
+
+    let core_type = func.core_type();
+    let mut first = true;
+    for (i, core_type) in core_type.args.iter().enumerate() {
+        if !first {
+            print!(", ");
+        }
+        print!("a{}: {}", i, wasm_atom_type_to_as(core_type.repr()));
+        first = false;
+    }
+    match core_type.ret {
+        None => println!("): void;"),
+        Some(core_type) => {
+            let as_ret_type = wasm_atom_type_to_as(core_type.repr());
+            println!("): {};", as_ret_type);
+        }
+    }
 }
 
 fn header() {
@@ -189,6 +278,12 @@ fn define_type(type_: &witx::NamedType) {
                 println!("  /** union tag */");
                 println!("  tag: {};", tag.name.as_str());
                 println!();
+                println!("  // @ts-ignore: decorator");
+                println!("  @inline");
+                println!("  constructor(tag: {}) {{", tag.name.as_str());
+                println!("    this.tag = tag;");
+                println!("  }}");
+                println!();
                 for (i, variant) in variants.iter().enumerate() {
                     match variant.tref.as_ref() {
                         None => println!("  {}: void; // if tag={}", name, i),
@@ -216,13 +311,6 @@ fn define_type(type_: &witx::NamedType) {
                             _ => unimplemented!(),
                         },
                     }
-                    println!();
-                    println!("  // @ts-ignore: decorator");
-                    println!("  @inline");
-                    println!("  constructor(tag: {}) {{", tag.name.as_str());
-                    println!("    this.tag = tag;");
-                    println!("  }}");
-                    println!();
                     match variant.tref.as_ref() {
                         None => {
                             println!("  // @ts-ignore: decorator");
@@ -286,7 +374,10 @@ fn define_type(type_: &witx::NamedType) {
                 }
                 println!("}}");
             }
-            _ => {}
+            e => {
+                dbg!(e);
+                unimplemented!();
+            }
         },
     }
 }
