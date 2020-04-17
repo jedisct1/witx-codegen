@@ -57,6 +57,120 @@ fn wasm_atom_type_to_as(atom_type: witx::AtomType) -> &'static str {
     }
 }
 
+fn leaf_type(type_ref: &witx::TypeRef) -> &witx::Type {
+    match type_ref {
+        witx::TypeRef::Name(other_type) => {
+            let x = other_type.as_ref();
+            return leaf_type(&x.tref);
+        }
+        witx::TypeRef::Value(type_) => type_.as_ref(),
+    }
+}
+
+fn params_to_as(params: &[witx::InterfaceFuncParam]) -> Vec<(String, String)> {
+    let mut as_params = vec![];
+    for param in params {
+        let leaf_type = leaf_type(&param.tref);
+        let second_part = match leaf_type {
+            witx::Type::Array(_) => Some(("size", "untyped_ptr")),
+            witx::Type::Builtin(witx::BuiltinType::String) => Some(("size", "usize")),
+            witx::Type::Builtin(_) => None,
+            witx::Type::Enum(_) => None,
+            witx::Type::Flags(_) => None,
+            witx::Type::Handle(_) => None,
+            witx::Type::Int(_) => None,
+            witx::Type::Pointer(_) | witx::Type::ConstPointer(_) => None,
+            witx::Type::Struct(_) => None,
+            witx::Type::Union(_) => Some(("member", "union_member")),
+        };
+        let first_part = match &param.tref {
+            witx::TypeRef::Name(other_type) => other_type.name.as_str().to_string(),
+            witx::TypeRef::Value(type_) => match type_.as_ref() {
+                witx::Type::Array(_) => "untyped_ptr".to_string(),
+                witx::Type::Builtin(builtin) => match builtin {
+                    witx::BuiltinType::U8 => "u8",
+                    witx::BuiltinType::U16 => "u16",
+                    witx::BuiltinType::U32 => "u32",
+                    witx::BuiltinType::U64 => "u64",
+                    witx::BuiltinType::S8 => "i8",
+                    witx::BuiltinType::S16 => "i16",
+                    witx::BuiltinType::S32 => "i32",
+                    witx::BuiltinType::S64 => "i64",
+                    witx::BuiltinType::Char8 => "char",
+                    witx::BuiltinType::USize => "usize",
+                    witx::BuiltinType::F32 => "f32",
+                    witx::BuiltinType::F64 => "f64",
+                    witx::BuiltinType::String => "wasi_string",
+                }
+                .to_string(),
+                witx::Type::Pointer(type_ref) | witx::Type::ConstPointer(type_ref) => {
+                    match type_ref {
+                        witx::TypeRef::Name(other_type) => {
+                            format!("ptr<{}>", other_type.as_ref().name.as_str())
+                        }
+                        witx::TypeRef::Value(type_) => match type_.as_ref() {
+                            witx::Type::Builtin(witx::BuiltinType::String) => {
+                                "ptr<wasi_string>".to_string()
+                            }
+                            witx::Type::Builtin(builtin_type) => {
+                                let as_builtin = match builtin_type {
+                                    witx::BuiltinType::U8 => "u8",
+                                    witx::BuiltinType::U16 => "u16",
+                                    witx::BuiltinType::U32 => "u32",
+                                    witx::BuiltinType::U64 => "u64",
+                                    witx::BuiltinType::S8 => "i8",
+                                    witx::BuiltinType::S16 => "i16",
+                                    witx::BuiltinType::S32 => "i32",
+                                    witx::BuiltinType::S64 => "i64",
+                                    witx::BuiltinType::Char8 => "char",
+                                    witx::BuiltinType::USize => "usize",
+                                    witx::BuiltinType::F32 => "f32",
+                                    witx::BuiltinType::F64 => "f64",
+                                    witx::BuiltinType::String => "wasi_string",
+                                };
+                                format!("ptr<{}>", as_builtin)
+                            }
+                            _ => "untyped_ptr".to_string(),
+                        },
+                    }
+                }
+                witx::Type::Enum(enum_data_type) => match enum_data_type.repr {
+                    witx::IntRepr::U8 => "u8",
+                    witx::IntRepr::U16 => "u16",
+                    witx::IntRepr::U32 => "u32",
+                    witx::IntRepr::U64 => "u64",
+                }
+                .to_string(),
+                witx::Type::Flags(flags) => match flags.repr {
+                    witx::IntRepr::U8 => "u8",
+                    witx::IntRepr::U16 => "u16",
+                    witx::IntRepr::U32 => "u32",
+                    witx::IntRepr::U64 => "u64",
+                }
+                .to_string(),
+                witx::Type::Handle(_) => "handle".to_string(),
+                witx::Type::Int(int) => match int.repr {
+                    witx::IntRepr::U8 => "u8",
+                    witx::IntRepr::U16 => "u16",
+                    witx::IntRepr::U32 => "u32",
+                    witx::IntRepr::U64 => "u64",
+                }
+                .to_string(),
+                witx::Type::Struct(_) => "untyped_ptr".to_string(),
+                witx::Type::Union(u) => u.tag.as_ref().name.as_str().to_string(),
+            },
+        };
+        as_params.push((param.name.as_str().to_string(), first_part));
+        if let Some(second_part) = second_part {
+            as_params.push((
+                format!("{}_{}", param.name.as_str(), second_part.0),
+                second_part.1.to_string(),
+            ))
+        }
+    }
+    as_params
+}
+
 fn define_func(module_name: &str, func: &witx::InterfaceFunc) {
     let docs = &func.docs;
     let name = func.name.as_str();
@@ -85,47 +199,46 @@ fn define_func(module_name: &str, func: &witx::InterfaceFunc) {
     println!(" */");
     println!("// @ts-ignore: decorator");
     println!("@external(\"{}\", \"{}\")", module_name, name);
-    print!("export declare function {}(", name);
+    println!("export declare function {}(", name);
 
     //
-    if false {
-        for param in &func.params {
-            println!("- {}: ", param.name.as_str());
-            match &param.tref {
-                witx::TypeRef::Name(other_type) => {
-                    println!("    > {}", other_type.name.as_str());
-                }
-                witx::TypeRef::Value(type_) => match type_.as_ref() {
-                    witx::Type::Handle(_) => println!("    > handle"),
-                    _ => {}
-                },
-            }
-        }
+    let params = &func.params;
+    let as_params = params_to_as(params);
+    let results = &func.results;
+    let mut as_results = params_to_as(results);
+    let return_value = as_results.pop();
+    let as_params: Vec<_> = as_params
+        .iter()
+        .map(|(v, t)| format!("{}: {}", v, t))
+        .collect();
+    let as_results: Vec<_> = as_results
+        .iter()
+        .map(|(v, t)| format!("{}_ptr: ptr<{}>", v, t))
+        .collect();
+    if as_results.is_empty() {
+        println!("    {}", as_params.join(", "));
+    } else {
+        println!("    {},", as_params.join(", "));
     }
-    //
-
-    let core_type = func.core_type();
-    let mut first = true;
-    for (i, core_type) in core_type.args.iter().enumerate() {
-        if !first {
-            print!(", ");
-        }
-        print!("a{}: {}", i, wasm_atom_type_to_as(core_type.repr()));
-        first = false;
+    let return_as_type_and_comment = match return_value {
+        None => ("void".to_string(), "".to_string()),
+        Some(x) => (x.1, format!(" /* {} */", x.0)),
+    };
+    if !as_results.is_empty() {
+        println!("    {}", as_results.join(", "));
     }
-    match core_type.ret {
-        None => println!("): void;"),
-        Some(core_type) => {
-            let as_ret_type = wasm_atom_type_to_as(core_type.repr());
-            println!("): {};", as_ret_type);
-        }
-    }
+    println!(
+        "): {}{};",
+        return_as_type_and_comment.0, return_as_type_and_comment.1
+    );
 }
 
 fn header() {
     println!("type handle = i32;");
     println!("type char = u8;");
     println!("type ptr<T> = usize; // all pointers are usize'd");
+    println!("type untyped_ptr = usize; // all pointers are usize'd");
+    println!("type union_member = usize; // all pointers are usize'd");
     println!("type struct<T> = T;  // structs are references already in AS)");
     println!("type wasi_string = ptr<char>;");
     println!("");
