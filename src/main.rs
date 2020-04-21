@@ -194,7 +194,7 @@ impl<W: Write> Generator<W> {
                                 "export const {}: {} = {};",
                                 variant.name.as_str().to_uppercase(),
                                 name,
-                                i
+                                1u64 << i
                             ))?;
                     }
                     w0.write_line("}")?
