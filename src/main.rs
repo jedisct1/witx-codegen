@@ -197,6 +197,7 @@ fn define_func(module_name: &str, func: &witx::InterfaceFunc) {
     println!(" * in:  {}", s_in.join(", "));
     println!(" * out: {}", s_out.join(", "));
     println!(" */");
+
     println!("// @ts-ignore: decorator");
     println!("@external(\"{}\", \"{}\")", module_name, name);
     println!("export declare function {}(", name);
@@ -205,15 +206,20 @@ fn define_func(module_name: &str, func: &witx::InterfaceFunc) {
     let params = &func.params;
     let as_params = params_to_as(params);
     let results = &func.results;
-    let mut as_results = params_to_as(results);
-    let return_value = as_results.pop();
+    let as_results = params_to_as(results);
+    let return_value = as_results.get(0);
+    let as_results = if as_results.is_empty() {
+        &[]
+    } else {
+        &as_results[1..]
+    };
     let as_params: Vec<_> = as_params
         .iter()
         .map(|(v, t)| format!("{}: {}", v, t))
         .collect();
     let as_results: Vec<_> = as_results
         .iter()
-        .map(|(v, t)| format!("{}_ptr: ptr<{}>", v, t))
+        .map(|(v, t)| format!("{}_ptr: mut_ptr<{}>", v, t))
         .collect();
     if as_results.is_empty() {
         println!("    {}", as_params.join(", "));
@@ -222,7 +228,7 @@ fn define_func(module_name: &str, func: &witx::InterfaceFunc) {
     }
     let return_as_type_and_comment = match return_value {
         None => ("void".to_string(), "".to_string()),
-        Some(x) => (x.1, format!(" /* {} */", x.0)),
+        Some(x) => (x.1.clone(), format!(" /* {} */", x.0)),
     };
     if !as_results.is_empty() {
         println!("    {}", as_results.join(", "));
@@ -237,6 +243,7 @@ fn header() {
     println!("type handle = i32;");
     println!("type char = u8;");
     println!("type ptr<T> = usize; // all pointers are usize'd");
+    println!("type mut_ptr<T> = usize; // all pointers are usize'd");
     println!("type untyped_ptr = usize; // all pointers are usize'd");
     println!("type union_member = usize; // all pointers are usize'd");
     println!("type struct<T> = T;  // structs are references already in AS)");
