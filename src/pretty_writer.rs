@@ -8,6 +8,7 @@ pub struct PrettyWriter<W: Write> {
     writer: Rc<RefCell<W>>,
     indent: u32,
     indent_bytes: &'static str,
+    continuation_bytes: &'static str,
 }
 
 impl<W: Write> Clone for PrettyWriter<W> {
@@ -16,6 +17,7 @@ impl<W: Write> Clone for PrettyWriter<W> {
             writer: self.writer.clone(),
             indent: self.indent,
             indent_bytes: self.indent_bytes,
+            continuation_bytes: "    ",
         }
     }
 }
@@ -27,6 +29,7 @@ impl<W: Write> PrettyWriter<W> {
             writer: Rc::new(RefCell::new(writer)),
             indent,
             indent_bytes,
+            continuation_bytes: "    ",
         }
     }
 
@@ -98,8 +101,8 @@ impl<W: Write> PrettyWriter<W> {
     /// Continuation
     pub fn continuation(&mut self) -> Result<&mut Self, Error> {
         self.indent()?;
-        let indent_bytes = &self.indent_bytes.clone();
-        Self::_write_all(&mut self.writer.borrow_mut(), indent_bytes)?;
+        let continuation_bytes = &self.continuation_bytes.clone();
+        Self::_write_all(&mut self.writer.borrow_mut(), continuation_bytes)?;
         Ok(self)
     }
 

@@ -2,6 +2,7 @@ mod pretty_writer;
 
 use pretty_writer::PrettyWriter;
 use std::io::Write;
+use std::path::Path;
 use std::{self, fmt};
 use witx::WitxError;
 
@@ -41,13 +42,13 @@ struct Generator<W: Write> {
 
 impl<W: Write> Generator<W> {
     fn new(writer: W) -> Self {
-        let w = PrettyWriter::new(writer, "  ");
+        let w = PrettyWriter::new(writer, "    ");
         let generator = Generator { w };
         generator
     }
 
-    fn generate(&mut self) -> Result<(), Error> {
-        let document = witx::load(&["/tmp/wasi_ephemeral_crypto.witx"])?;
+    fn generate<P: AsRef<Path>>(&mut self, path: P) -> Result<(), Error> {
+        let document = witx::load(&[path])?;
         self.header()?;
         for type_ in document.typenames() {
             self.define_type(type_.as_ref())?;
@@ -61,7 +62,6 @@ impl<W: Write> Generator<W> {
     fn header(&mut self) -> Result<(), Error> {
         let w0 = &mut self.w;
         w0.write_line("type handle = i32;")?
-            .write_line("type handle = i32;")?
             .write_line("type char = u8;")?
             .write_line("type ptr<T> = usize; // all pointers are usize'd")?
             .write_line("type mut_ptr<T> = usize; // all pointers are usize'd")?
@@ -357,9 +357,9 @@ impl<W: Write> Generator<W> {
                             }
                             _ => unimplemented!(),
                         }
-                        println!();
+                        w.eob()?;
                     }
-                    println!("}}");
+                    w.write_line("}")?;
                 }
                 e => {
                     dbg!(e);
@@ -434,10 +434,14 @@ impl<W: Write> Generator<W> {
             .iter()
             .map(|(v, t)| format!("{}_ptr: mut_ptr<{}>", v, t))
             .collect();
-        if as_results.is_empty() {
-            println!("    {}", as_params.join(", "));
-        } else {
-            println!("    {},", as_params.join(", "));
+        if !as_params.is_empty() {
+            if !as_results.is_empty() {
+                w0.continuation()?
+                    .write_line(format!("{},", as_params.join(", ")))?;
+            } else {
+                w0.continuation()?
+                    .write_line(format!("{}", as_params.join(", ")))?;
+            }
         }
         let return_as_type_and_comment = match return_value {
             None => ("void".to_string(), "".to_string()),
@@ -580,5 +584,5 @@ fn params_to_as(params: &[witx::InterfaceFuncParam]) -> Vec<(String, String)> {
 
 fn main() {
     let mut generator = Generator::new(std::io::stdout());
-    generator.generate().unwrap();
+    generator.generate("/tmp/xqd.witx").unwrap();
 }
