@@ -17,10 +17,12 @@ impl<W: Write> Clone for PrettyWriter<W> {
             writer: self.writer.clone(),
             indent: self.indent,
             indent_bytes: self.indent_bytes,
-            continuation_bytes: "    ",
+            continuation_bytes: DEFAULT_CONTINUATION_BYTES,
         }
     }
 }
+
+const DEFAULT_CONTINUATION_BYTES: &str = "    ";
 
 impl<W: Write> PrettyWriter<W> {
     /// Create a new `PrettyWriter` with `indent` initial units of indentation
@@ -29,7 +31,7 @@ impl<W: Write> PrettyWriter<W> {
             writer: Rc::new(RefCell::new(writer)),
             indent,
             indent_bytes,
-            continuation_bytes: "    ",
+            continuation_bytes: DEFAULT_CONTINUATION_BYTES,
         }
     }
 
@@ -45,6 +47,7 @@ impl<W: Write> PrettyWriter<W> {
             writer: self.writer.clone(),
             indent: 0,
             indent_bytes: self.indent_bytes.clone(),
+            continuation_bytes: DEFAULT_CONTINUATION_BYTES,
         }
     }
 
@@ -54,6 +57,7 @@ impl<W: Write> PrettyWriter<W> {
             writer: self.writer.clone(),
             indent: self.indent + 1,
             indent_bytes: self.indent_bytes.clone(),
+            continuation_bytes: DEFAULT_CONTINUATION_BYTES,
         }
     }
 
