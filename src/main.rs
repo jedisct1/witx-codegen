@@ -43,8 +43,7 @@ struct Generator<W: Write> {
 impl<W: Write> Generator<W> {
     fn new(writer: W) -> Self {
         let w = PrettyWriter::new(writer, "    ");
-        let generator = Generator { w };
-        generator
+        Generator { w }
     }
 
     fn generate<P: AsRef<Path>>(&mut self, path: P) -> Result<(), Error> {
@@ -89,17 +88,19 @@ impl<W: Write> Generator<W> {
     ) -> Result<(), Error> {
         let actual_as_type = ASType::from(enum_data_type.repr);
         w.write_line(format!("export namespace {} {{", as_type))?;
-        let mut w = w.new_block();
-        for (i, variant) in enum_data_type.variants.iter().enumerate() {
-            Self::write_docs(&mut w, &variant.docs)?;
-            w.write_line("// @ts-ignore: decorator")?
-                .write_line("@inline")?
-                .write_line(format!(
-                    "export const {}: {} = {};",
-                    variant.name.as_str().to_uppercase(),
-                    as_type,
-                    i
-                ))?;
+        {
+            let mut w = w.new_block();
+            for (i, variant) in enum_data_type.variants.iter().enumerate() {
+                Self::write_docs(&mut w, &variant.docs)?;
+                w.write_line("// @ts-ignore: decorator")?
+                    .write_line("@inline")?
+                    .write_line(format!(
+                        "export const {}: {} = {};",
+                        variant.name.as_str().to_uppercase(),
+                        as_type,
+                        i
+                    ))?;
+            }
         }
         w.write_line("}")?
             .write_line(format!("export type {} = {};", as_type, actual_as_type))?
@@ -119,17 +120,19 @@ impl<W: Write> Generator<W> {
     ) -> Result<(), Error> {
         let actual_as_type = ASType::from(int);
         w.write_line(format!("export namespace {} {{", as_type))?;
-        let mut w = w.new_block();
-        for (i, variant) in int.consts.iter().enumerate() {
-            Self::write_docs(&mut w, &variant.docs)?;
-            w.write_line("// @ts-ignore: decorator")?
-                .write_line("@inline")?
-                .write_line(format!(
-                    "export const {}: {} = {};",
-                    variant.name.as_str().to_uppercase(),
-                    as_type,
-                    i
-                ))?;
+        {
+            let mut w = w.new_block();
+            for (i, variant) in int.consts.iter().enumerate() {
+                Self::write_docs(&mut w, &variant.docs)?;
+                w.write_line("// @ts-ignore: decorator")?
+                    .write_line("@inline")?
+                    .write_line(format!(
+                        "export const {}: {} = {};",
+                        variant.name.as_str().to_uppercase(),
+                        as_type,
+                        i
+                    ))?;
+            }
         }
         w.write_line("}")?
             .write_line(format!("export type {} = {};", as_type, actual_as_type))?
@@ -144,17 +147,19 @@ impl<W: Write> Generator<W> {
     ) -> Result<(), Error> {
         let actual_as_type = ASType::from(flags);
         w.write_line(format!("export namespace {} {{", as_type))?;
-        let mut w = w.new_block();
-        for (i, variant) in flags.flags.iter().enumerate() {
-            Self::write_docs(&mut w, &variant.docs)?;
-            w.write_line("// @ts-ignore: decorator")?
-                .write_line("@inline")?
-                .write_line(format!(
-                    "export const {}: {} = {};",
-                    variant.name.as_str().to_uppercase(),
-                    as_type,
-                    1u64 << i
-                ))?;
+        {
+            let mut w = w.new_block();
+            for (i, variant) in flags.flags.iter().enumerate() {
+                Self::write_docs(&mut w, &variant.docs)?;
+                w.write_line("// @ts-ignore: decorator")?
+                    .write_line("@inline")?
+                    .write_line(format!(
+                        "export const {}: {} = {};",
+                        variant.name.as_str().to_uppercase(),
+                        as_type,
+                        1u64 << i
+                    ))?;
+            }
         }
         w.write_line("}")?
             .write_line(format!("export type {} = {};", as_type, actual_as_type))?
@@ -286,19 +291,21 @@ impl<W: Write> Generator<W> {
         w.write_line("// @ts-ignore: decorator")?
             .write_line("@unmanaged")?
             .write_line(format!("export class {} {{", as_type))?;
-        let mut w = w.new_block();
-        w.write_line(format!("tag: {};", as_tag))?
-            .eob()?
-            .write_line("// @ts-ignore: decorator")?
-            .write_line("@inline")?
-            .write_line(format!("constructor(tag: {}) {{", as_tag))?;
         {
-            w.new_block().write_line("this.tag = tag;")?;
-        }
-        w.write_line("}")?;
-        for (i, variant) in variants.iter().enumerate() {
-            w.eob()?;
-            Self::define_union_variant(&mut w, as_type, i, variant)?;
+            let mut w = w.new_block();
+            w.write_line(format!("tag: {};", as_tag))?
+                .eob()?
+                .write_line("// @ts-ignore: decorator")?
+                .write_line("@inline")?
+                .write_line(format!("constructor(tag: {}) {{", as_tag))?;
+            {
+                w.new_block().write_line("this.tag = tag;")?;
+            }
+            w.write_line("}")?;
+            for (i, variant) in variants.iter().enumerate() {
+                w.eob()?;
+                Self::define_union_variant(&mut w, as_type, i, variant)?;
+            }
         }
         w.write_line("}")?;
 
@@ -417,10 +424,11 @@ impl<W: Write> Generator<W> {
         if !as_params.is_empty() {
             if !as_results.is_empty() {
                 w0.continuation()?
-                    .write_line(format!("{},", as_params.join(", ")))?;
+                    .write(as_params.join(", "))?
+                    .write(",")?
+                    .eol()?;
             } else {
-                w0.continuation()?
-                    .write_line(format!("{}", as_params.join(", ")))?;
+                w0.continuation()?.write_line(as_params.join(", "))?;
             }
         }
         let return_as_type_and_comment = match return_value {
@@ -428,8 +436,7 @@ impl<W: Write> Generator<W> {
             Some(x) => (x.1.clone(), format!(" /* {} */", x.0)),
         };
         if !as_results.is_empty() {
-            w0.continuation()?
-                .write_line(format!("{}", as_results.join(", ")))?;
+            w0.continuation()?.write_line(as_results.join(", "))?;
         }
         w0.write_line(format!(
             "): {}{};",
@@ -650,7 +657,7 @@ fn leaf_type(type_ref: &witx::TypeRef) -> &witx::Type {
     match type_ref {
         witx::TypeRef::Name(other_type) => {
             let x = other_type.as_ref();
-            return leaf_type(&x.tref);
+            leaf_type(&x.tref)
         }
         witx::TypeRef::Value(type_) => type_.as_ref(),
     }

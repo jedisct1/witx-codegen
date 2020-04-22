@@ -46,7 +46,7 @@ impl<W: Write> PrettyWriter<W> {
         PrettyWriter {
             writer: self.writer.clone(),
             indent: 0,
-            indent_bytes: self.indent_bytes.clone(),
+            indent_bytes: self.indent_bytes,
             continuation_bytes: DEFAULT_CONTINUATION_BYTES,
         }
     }
@@ -56,7 +56,7 @@ impl<W: Write> PrettyWriter<W> {
         PrettyWriter {
             writer: self.writer.clone(),
             indent: self.indent + 1,
-            indent_bytes: self.indent_bytes.clone(),
+            indent_bytes: self.indent_bytes,
             continuation_bytes: DEFAULT_CONTINUATION_BYTES,
         }
     }
@@ -74,7 +74,7 @@ impl<W: Write> PrettyWriter<W> {
 
     /// Output an indentation string
     pub fn indent(&mut self) -> Result<&mut Self, Error> {
-        let indent_bytes = &self.indent_bytes.clone();
+        let indent_bytes = &self.indent_bytes;
         {
             let mut writer = self.writer.borrow_mut();
             for _ in 0..self.indent {
@@ -105,7 +105,7 @@ impl<W: Write> PrettyWriter<W> {
     /// Continuation
     pub fn continuation(&mut self) -> Result<&mut Self, Error> {
         self.indent()?;
-        let continuation_bytes = &self.continuation_bytes.clone();
+        let continuation_bytes = &self.continuation_bytes;
         Self::_write_all(&mut self.writer.borrow_mut(), continuation_bytes)?;
         Ok(self)
     }
