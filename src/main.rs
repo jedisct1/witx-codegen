@@ -364,15 +364,15 @@ impl<W: Write> Generator<W> {
     }
 
     fn define_module(&mut self, module: &witx::Module) -> Result<(), Error> {
-        let w0 = &mut self.w.clone();
-        w0.eob()?.write_line(format!(
+        let w = &mut self.w.clone();
+        w.eob()?.write_line(format!(
             "// ----------------------[{}]----------------------",
             module.name.as_str()
         ))?;
         for func in module.funcs() {
             self.define_func(module.name.as_str(), func.as_ref())?;
+            w.eob()?;
         }
-        w0.eob()?;
         Ok(())
     }
 
