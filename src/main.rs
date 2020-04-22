@@ -219,7 +219,7 @@ impl<W: Write> Generator<W> {
                                     .write_line("@inline")?
                                     .write_line(format!("is_{}(): bool {{", variant_name))?
                                     .indent()?
-                                    .write_line(format!("return this.tag = {};", i))?
+                                    .write_line(format!("return this.tag === {};", i))?
                                     .write_line("}")?;
                             }
                             Some(witx::TypeRef::Name(variant_type)) => {
