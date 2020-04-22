@@ -73,6 +73,267 @@ impl<W: Write> Generator<W> {
         Ok(())
     }
 
+    fn define_as_alias<T: Write>(
+        w: &mut PrettyWriter<T>,
+        as_type: &ASType,
+        other_type: &ASType,
+    ) -> Result<(), Error> {
+        w.write_line(format!("export type {} = {};", as_type, other_type))?;
+        Ok(())
+    }
+
+    fn define_as_enum<T: Write>(
+        w: &mut PrettyWriter<T>,
+        as_type: &ASType,
+        enum_data_type: &witx::EnumDatatype,
+    ) -> Result<(), Error> {
+        let actual_as_type = ASType::from(enum_data_type.repr);
+        w.write_line(format!("export namespace {} {{", as_type))?;
+        let mut w = w.new_block();
+        for (i, variant) in enum_data_type.variants.iter().enumerate() {
+            Self::write_docs(&mut w, &variant.docs)?;
+            w.write_line("// @ts-ignore: decorator")?
+                .write_line("@inline")?
+                .write_line(format!(
+                    "export const {}: {} = {};",
+                    variant.name.as_str().to_uppercase(),
+                    as_type,
+                    i
+                ))?;
+        }
+        w.write_line("}")?
+            .write_line(format!("export type {} = {};", as_type, actual_as_type))?
+            .eob()?;
+        Ok(())
+    }
+
+    fn define_as_handle<T: Write>(w: &mut PrettyWriter<T>, as_type: &ASType) -> Result<(), Error> {
+        w.write_line(format!("export type {} = {};", as_type, ASType::Handle))?;
+        Ok(())
+    }
+
+    fn define_as_int<T: Write>(
+        w: &mut PrettyWriter<T>,
+        as_type: &ASType,
+        int: &witx::IntDatatype,
+    ) -> Result<(), Error> {
+        let actual_as_type = ASType::from(int);
+        w.write_line(format!("export namespace {} {{", as_type))?;
+        let mut w = w.new_block();
+        for (i, variant) in int.consts.iter().enumerate() {
+            Self::write_docs(&mut w, &variant.docs)?;
+            w.write_line("// @ts-ignore: decorator")?
+                .write_line("@inline")?
+                .write_line(format!(
+                    "export const {}: {} = {};",
+                    variant.name.as_str().to_uppercase(),
+                    as_type,
+                    i
+                ))?;
+        }
+        w.write_line("}")?
+            .write_line(format!("export type {} = {};", as_type, actual_as_type))?
+            .eob()?;
+        Ok(())
+    }
+
+    fn define_as_flags<T: Write>(
+        w: &mut PrettyWriter<T>,
+        as_type: &ASType,
+        flags: &witx::FlagsDatatype,
+    ) -> Result<(), Error> {
+        let actual_as_type = ASType::from(flags);
+        w.write_line(format!("export namespace {} {{", as_type))?;
+        let mut w = w.new_block();
+        for (i, variant) in flags.flags.iter().enumerate() {
+            Self::write_docs(&mut w, &variant.docs)?;
+            w.write_line("// @ts-ignore: decorator")?
+                .write_line("@inline")?
+                .write_line(format!(
+                    "export const {}: {} = {};",
+                    variant.name.as_str().to_uppercase(),
+                    as_type,
+                    1u64 << i
+                ))?;
+        }
+        w.write_line("}")?
+            .write_line(format!("export type {} = {};", as_type, actual_as_type))?
+            .eob()?;
+        Ok(())
+    }
+
+    fn define_union_variant_accessors<T: Write>(
+        w: &mut PrettyWriter<T>,
+        as_type: &ASType,
+        i: usize,
+        variant: &witx::UnionVariant,
+    ) -> Result<(), Error> {
+        let variant_name = variant.name.as_str();
+        match variant.tref.as_ref() {
+            None => {
+                w.write_line("// @ts-ignore: decorator")?
+                    .write_line("@inline")?
+                    .write_line(format!("new_{}(): {} {{", variant_name, as_type))?
+                    .indent()?
+                    .write_line(format!("return new {}({});", as_type, i))?
+                    .write_line("}")?
+                    .eob()?
+                    .write_line("// @ts-ignore: decorator")?
+                    .write_line("@inline")?
+                    .write_line(format!("set_{}(): void {{", variant_name))?
+                    .indent()?
+                    .write_line(format!("this.tag = {};", i))?
+                    .write_line("}")?
+                    .eob()?
+                    .write_line("// @ts-ignore: decorator")?
+                    .write_line("@inline")?
+                    .write_line(format!("is_{}(): bool {{", variant_name))?
+                    .indent()?
+                    .write_line(format!("return this.tag === {};", i))?
+                    .write_line("}")?;
+            }
+            Some(witx::TypeRef::Name(variant_type)) => {
+                let as_variant_type = ASType::from(variant_type.as_ref());
+                w.write_line("// @ts-ignore: decorator")?
+                    .write_line("@inline")?
+                    .write_line(format!(
+                        "new_{}(val: {}): {} {{",
+                        variant_name, as_variant_type, as_type
+                    ))?;
+                {
+                    w.new_block()
+                        .write_line(format!("let u = new {}({});", as_type, i))?
+                        .write_line(format!("u.{} = val;", variant_name))?
+                        .write_line("return u;")?;
+                }
+                w.write_line("}")?.eob()?;
+
+                w.write_line("// @ts-ignore: decorator")?
+                    .write_line("@inline")?
+                    .write_line(format!(
+                        "set_{}(val: {}): void {{",
+                        variant_name, as_variant_type
+                    ))?;
+                {
+                    w.new_block()
+                        .write_line(format!("this.tag = {};", i))?
+                        .write_line(format!("this.{} = val;", variant_name))?;
+                }
+                w.write_line("}")?.eob()?;
+
+                w.write_line("// @ts-ignore: decorator")?
+                    .write_line("@inline")?
+                    .write_line(format!(
+                        "get_{}(): {} | null {{",
+                        variant_name, as_variant_type
+                    ))?;
+
+                {
+                    let mut w = w.new_block();
+                    w.write_line(format!("if (this.tag !== {}) {{", i))?;
+                    {
+                        w.new_block().write_line("return null;")?;
+                    }
+                    w.write_line("}")?
+                        .write_line(format!("return this.{};", variant_name))?;
+                }
+                w.write_line("}")?;
+            }
+            _ => unimplemented!(),
+        }
+        Ok(())
+    }
+
+    fn define_union_variant<T: Write>(
+        w: &mut PrettyWriter<T>,
+        as_type: &ASType,
+        i: usize,
+        variant: &witx::UnionVariant,
+    ) -> Result<(), Error> {
+        let variant_name = variant.name.as_str();
+        match variant.tref.as_ref() {
+            None => {
+                w.write_line(format!("{}: void; // if tag={}", variant_name, i))?;
+            }
+            Some(witx::TypeRef::Name(another_type)) => {
+                w.write_line(format!(
+                    "{}: {}; // if tag={}",
+                    variant_name,
+                    ASType::from(another_type.as_ref()),
+                    i
+                ))?;
+            }
+            Some(witx::TypeRef::Value(witx_type)) => match witx_type.as_ref() {
+                witx::Type::Enum(enum_data_type) => {
+                    let as_type = ASType::from(enum_data_type);
+                    w.write_line(format!("{}: {}; // if tag={}", variant_name, as_type, i))?;
+                }
+                _ => unimplemented!(),
+            },
+        }
+        w.eob()?;
+        Self::define_union_variant_accessors(w, as_type, i, variant)?;
+        Ok(())
+    }
+
+    fn define_as_union<T: Write>(
+        w: &mut PrettyWriter<T>,
+        as_type: &ASType,
+        union: &witx::UnionDatatype,
+    ) -> Result<(), Error> {
+        let as_tag = ASType::from(union.tag.as_ref());
+        let variants = &union.variants;
+        w.write_line("// @ts-ignore: decorator")?
+            .write_line("@unmanaged")?
+            .write_line(format!("export class {} {{", as_type))?;
+        let mut w = w.new_block();
+        w.write_line(format!("tag: {};", as_tag))?
+            .eob()?
+            .write_line("// @ts-ignore: decorator")?
+            .write_line("@inline")?
+            .write_line(format!("constructor(tag: {}) {{", as_tag))?;
+        {
+            w.new_block().write_line("this.tag = tag;")?;
+        }
+        w.write_line("}")?;
+        for (i, variant) in variants.iter().enumerate() {
+            w.eob()?;
+            Self::define_union_variant(&mut w, as_type, i, variant)?;
+        }
+        w.write_line("}")?;
+
+        Ok(())
+    }
+
+    fn define_as_builtin<T: Write>(
+        w: &mut PrettyWriter<T>,
+        as_type: &ASType,
+        actual_as_type: &ASType,
+    ) -> Result<(), Error> {
+        w.write_line(format!("export type {} = {};", as_type, actual_as_type))?;
+        Ok(())
+    }
+
+    fn define_as_witx_type<T: Write>(
+        w: &mut PrettyWriter<T>,
+        as_type: &ASType,
+        witx_type: &witx::Type,
+    ) -> Result<(), Error> {
+        match witx_type {
+            witx::Type::Enum(enum_data_type) => Self::define_as_enum(w, as_type, enum_data_type)?,
+            witx::Type::Handle(_handle) => Self::define_as_handle(w, as_type)?,
+            witx::Type::Int(int) => Self::define_as_int(w, as_type, int)?,
+            witx::Type::Flags(flags) => Self::define_as_flags(w, as_type, flags)?,
+            witx::Type::Builtin(builtin) => Self::define_as_builtin(w, as_type, &builtin.into())?,
+            witx::Type::Union(union) => Self::define_as_union(w, as_type, union)?,
+            e => {
+                dbg!(e);
+                unimplemented!();
+            }
+        };
+        Ok(())
+    }
+
     fn define_type(&mut self, type_: &witx::NamedType) -> Result<(), Error> {
         let w0 = &mut self.w;
         let as_type = ASType::Alias(type_.name.as_str().to_string());
@@ -80,206 +341,16 @@ impl<W: Write> Generator<W> {
         if docs.is_empty() {
             w0.write_line(format!("/** {} */", as_type))?;
         } else {
-            write_docs(w0, &type_.docs)?;
+            Self::write_docs(w0, &type_.docs)?;
         }
         let tref = &type_.tref;
         match tref {
-            witx::TypeRef::Name(another_type) => {
-                w0.write_line(format!(
-                    "export type {} = {};",
-                    as_type,
-                    ASType::Alias(another_type.name.as_str().to_string())
-                ))?;
+            witx::TypeRef::Name(other_type) => {
+                Self::define_as_alias(w0, &as_type, &other_type.as_ref().into())?
             }
-            witx::TypeRef::Value(type_def) => match type_def.as_ref() {
-                witx::Type::Enum(enum_data_type) => {
-                    let actual_as_type = ASType::from(enum_data_type.repr);
-                    w0.write_line(format!("export namespace {} {{", as_type))?;
-                    let mut w = w0.new_block();
-                    for (i, variant) in enum_data_type.variants.iter().enumerate() {
-                        write_docs(&mut w, &variant.docs)?;
-                        w.write_line("// @ts-ignore: decorator")?
-                            .write_line("@inline")?
-                            .write_line(format!(
-                                "export const {}: {} = {};",
-                                variant.name.as_str().to_uppercase(),
-                                as_type,
-                                i
-                            ))?;
-                    }
-                    w0.write_line("}")?
-                        .write_line(format!("export type {} = {};", as_type, actual_as_type))?
-                        .eob()?;
-                }
-                witx::Type::Handle(_handle) => {
-                    w0.write_line(format!("export type {} = {};", as_type, ASType::Handle))?;
-                }
-                witx::Type::Int(int) => {
-                    let actual_as_type = ASType::from(int);
-                    w0.write_line(format!("export namespace {} {{", as_type))?;
-                    let mut w = w0.new_block();
-                    for (i, variant) in int.consts.iter().enumerate() {
-                        write_docs(&mut w, &variant.docs)?;
-                        w.write_line("// @ts-ignore: decorator")?
-                            .write_line("@inline")?
-                            .write_line(format!(
-                                "export const {}: {} = {};",
-                                variant.name.as_str().to_uppercase(),
-                                as_type,
-                                i
-                            ))?;
-                    }
-                    w0.write_line("}")?
-                        .write_line(format!("export type {} = {};", as_type, actual_as_type))?
-                        .eob()?;
-                }
-                witx::Type::Flags(flags) => {
-                    let actual_as_type = ASType::from(flags);
-                    w0.write_line(format!("export namespace {} {{", as_type))?;
-                    let mut w = w0.new_block();
-                    for (i, variant) in flags.flags.iter().enumerate() {
-                        write_docs(&mut w, &variant.docs)?;
-                        w.write_line("// @ts-ignore: decorator")?
-                            .write_line("@inline")?
-                            .write_line(format!(
-                                "export const {}: {} = {};",
-                                variant.name.as_str().to_uppercase(),
-                                as_type,
-                                1u64 << i
-                            ))?;
-                    }
-                    w0.write_line("}")?
-                        .write_line(format!("export type {} = {};", as_type, actual_as_type))?
-                        .eob()?;
-                }
-                witx::Type::Builtin(builtin) => {
-                    let actual_as_type = ASType::from(builtin);
-                    w0.write_line(format!("export type {} = {};", as_type, actual_as_type))?;
-                }
-                witx::Type::Union(union) => {
-                    let as_tag = ASType::from(union.tag.as_ref());
-                    let variants = &union.variants;
-                    w0.write_line("// @ts-ignore: decorator")?
-                        .write_line("@unmanaged")?
-                        .write_line(format!("export class {} {{", as_type))?;
-                    let mut w = w0.new_block();
-                    w.write_line(format!("tag: {};", as_tag))?
-                        .eob()?
-                        .write_line("// @ts-ignore: decorator")?
-                        .write_line("@inline")?
-                        .write_line(format!("constructor(tag: {}) {{", as_tag))?;
-                    {
-                        w.new_block().write_line("this.tag = tag;")?;
-                    }
-                    w.write_line("}")?;
-                    w.eob()?;
-                    for (i, variant) in variants.iter().enumerate() {
-                        let variant_name = variant.name.as_str();
-                        match variant.tref.as_ref() {
-                            None => {
-                                w.write_line(format!("{}: void; // if tag={}", variant_name, i))?;
-                            }
-                            Some(witx::TypeRef::Name(another_type)) => {
-                                w.write_line(format!(
-                                    "{}: {}; // if tag={}",
-                                    variant_name,
-                                    ASType::from(another_type.as_ref()),
-                                    i
-                                ))?;
-                            }
-                            Some(witx::TypeRef::Value(_type_ref)) => match type_def.as_ref() {
-                                witx::Type::Enum(enum_data_type) => {
-                                    let as_type = ASType::from(enum_data_type);
-                                    w.write_line(format!(
-                                        "{}: {}; // if tag={}",
-                                        variant_name, as_type, i
-                                    ))?;
-                                }
-                                _ => unimplemented!(),
-                            },
-                        }
-                        w.eob()?;
-                        match variant.tref.as_ref() {
-                            None => {
-                                w.write_line("// @ts-ignore: decorator")?
-                                    .write_line("@inline")?
-                                    .write_line(format!("new_{}(): {} {{", variant_name, as_type))?
-                                    .indent()?
-                                    .write_line(format!("return new {}({});", as_type, i))?
-                                    .write_line("}")?
-                                    .eob()?
-                                    .write_line("// @ts-ignore: decorator")?
-                                    .write_line("@inline")?
-                                    .write_line(format!("set_{}(): void {{", variant_name))?
-                                    .indent()?
-                                    .write_line(format!("this.tag = {};", i))?
-                                    .write_line("}")?
-                                    .eob()?
-                                    .write_line("// @ts-ignore: decorator")?
-                                    .write_line("@inline")?
-                                    .write_line(format!("is_{}(): bool {{", variant_name))?
-                                    .indent()?
-                                    .write_line(format!("return this.tag === {};", i))?
-                                    .write_line("}")?;
-                            }
-                            Some(witx::TypeRef::Name(variant_type)) => {
-                                let as_variant_type = ASType::from(variant_type.as_ref());
-                                w.write_line("// @ts-ignore: decorator")?
-                                    .write_line("@inline")?
-                                    .write_line(format!(
-                                        "new_{}(val: {}): {} {{",
-                                        variant_name, as_variant_type, as_type
-                                    ))?;
-                                {
-                                    w.new_block()
-                                        .write_line(format!("let u = new {}({});", as_type, i))?
-                                        .write_line(format!("u.{} = val;", variant_name))?
-                                        .write_line("return u;")?;
-                                }
-                                w.write_line("}")?.eob()?;
-
-                                w.write_line("// @ts-ignore: decorator")?
-                                    .write_line("@inline")?
-                                    .write_line(format!(
-                                        "set_{}(val: {}): void {{",
-                                        variant_name, as_variant_type
-                                    ))?;
-                                {
-                                    w.new_block()
-                                        .write_line(format!("this.tag = {};", i))?
-                                        .write_line(format!("this.{} = val;", variant_name))?;
-                                }
-                                w.write_line("}")?.eob()?;
-
-                                w.write_line("// @ts-ignore: decorator")?
-                                    .write_line("@inline")?
-                                    .write_line(format!(
-                                        "get_{}(): {} | null {{",
-                                        variant_name, as_variant_type
-                                    ))?;
-
-                                {
-                                    let mut w = w.new_block();
-                                    w.write_line(format!("if (this.tag !== {}) {{", i))?;
-                                    {
-                                        w.new_block().write_line("return null;")?;
-                                    }
-                                    w.write_line("}")?
-                                        .write_line(format!("return this.{};", variant_name))?;
-                                }
-                                w.write_line("}")?;
-                            }
-                            _ => unimplemented!(),
-                        }
-                        w.eob()?;
-                    }
-                    w0.write_line("}")?;
-                }
-                e => {
-                    dbg!(e);
-                    unimplemented!();
-                }
-            },
+            witx::TypeRef::Value(witx_type) => {
+                Self::define_as_witx_type(w0, &as_type, &witx_type.as_ref())?
+            }
         };
         w0.eob()?;
         Ok(())
@@ -305,7 +376,7 @@ impl<W: Write> Generator<W> {
         if docs.is_empty() {
             w0.write_line(format!("\n/** {} */", name))?;
         } else {
-            write_docs(w0, docs)?;
+            Self::write_docs(w0, docs)?;
         }
         let s_in: Vec<_> = func
             .params
@@ -326,9 +397,9 @@ impl<W: Write> Generator<W> {
             .write_line(format!("export declare function {}(", name))?;
 
         let params = &func.params;
-        let as_params = params_to_as(params);
+        let as_params = Self::params_to_as(params);
         let results = &func.results;
-        let as_results = params_to_as(results);
+        let as_results = Self::params_to_as(results);
         let return_value = as_results.get(0);
         let as_results = if as_results.is_empty() {
             &[]
@@ -366,18 +437,76 @@ impl<W: Write> Generator<W> {
         ))?;
         Ok(())
     }
-}
 
-fn write_docs<T: Write>(w: &mut PrettyWriter<T>, docs: &str) -> Result<(), Error> {
-    if docs.is_empty() {
-        return Ok(());
+    fn write_docs<T: Write>(w: &mut PrettyWriter<T>, docs: &str) -> Result<(), Error> {
+        if docs.is_empty() {
+            return Ok(());
+        }
+        w.write_line("/**")?;
+        for docs_line in docs.lines() {
+            w.write_line(format!(" * {}", docs_line))?;
+        }
+        w.write_line(" */")?;
+        Ok(())
     }
-    w.write_line("/**")?;
-    for docs_line in docs.lines() {
-        w.write_line(format!(" * {}", docs_line))?;
+
+    fn params_to_as(params: &[witx::InterfaceFuncParam]) -> Vec<(String, ASType)> {
+        let mut as_params = vec![];
+        for param in params {
+            let leaf_type = leaf_type(&param.tref);
+            let second_part = match leaf_type {
+                witx::Type::Array(_) => Some(("size", ASType::UntypedPtr)),
+                witx::Type::Builtin(witx::BuiltinType::String) => Some(("size", ASType::Usize)),
+                witx::Type::Builtin(_) => None,
+                witx::Type::Enum(_) => None,
+                witx::Type::Flags(_) => None,
+                witx::Type::Handle(_) => None,
+                witx::Type::Int(_) => None,
+                witx::Type::Pointer(_) | witx::Type::ConstPointer(_) => None,
+                witx::Type::Struct(_) => None,
+                witx::Type::Union(_) => Some(("member", ASType::UnionMember)),
+            };
+            let first_part = match &param.tref {
+                witx::TypeRef::Name(other_type) => {
+                    ASType::Alias(other_type.name.as_str().to_string())
+                }
+                witx::TypeRef::Value(type_) => match type_.as_ref() {
+                    witx::Type::Array(_) => ASType::UntypedPtr,
+                    witx::Type::Builtin(builtin) => ASType::from(builtin),
+                    witx::Type::Pointer(type_ref) | witx::Type::ConstPointer(type_ref) => {
+                        match type_ref {
+                            witx::TypeRef::Name(other_type) => ASType::Ptr(Box::new(
+                                ASType::Alias(other_type.as_ref().name.as_str().to_string()),
+                            )),
+                            witx::TypeRef::Value(type_) => match type_.as_ref() {
+                                witx::Type::Builtin(witx::BuiltinType::String) => {
+                                    ASType::Ptr(Box::new(ASType::WasiString))
+                                }
+                                witx::Type::Builtin(builtin_type) => {
+                                    ASType::Ptr(Box::new(ASType::from(builtin_type)))
+                                }
+                                _ => ASType::UntypedPtr,
+                            },
+                        }
+                    }
+                    witx::Type::Enum(enum_data_type) => ASType::from(enum_data_type),
+                    witx::Type::Flags(flags) => ASType::from(flags),
+                    witx::Type::Handle(_) => ASType::Handle,
+                    witx::Type::Int(int) => ASType::from(int),
+                    witx::Type::Struct(_) => ASType::Struct(param.name.as_str().to_string()),
+                    witx::Type::Union(u) => ASType::from(u),
+                },
+            };
+            as_params.push((param.name.as_str().to_string(), first_part));
+            if let Some(second_part) = second_part {
+                as_params.push((
+                    format!("{}_{}", param.name.as_str(), second_part.0),
+                    second_part.1,
+                ))
+            }
+        }
+        as_params
     }
-    w.write_line(" */")?;
-    Ok(())
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -525,62 +654,6 @@ fn leaf_type(type_ref: &witx::TypeRef) -> &witx::Type {
         }
         witx::TypeRef::Value(type_) => type_.as_ref(),
     }
-}
-
-fn params_to_as(params: &[witx::InterfaceFuncParam]) -> Vec<(String, ASType)> {
-    let mut as_params = vec![];
-    for param in params {
-        let leaf_type = leaf_type(&param.tref);
-        let second_part = match leaf_type {
-            witx::Type::Array(_) => Some(("size", ASType::UntypedPtr)),
-            witx::Type::Builtin(witx::BuiltinType::String) => Some(("size", ASType::Usize)),
-            witx::Type::Builtin(_) => None,
-            witx::Type::Enum(_) => None,
-            witx::Type::Flags(_) => None,
-            witx::Type::Handle(_) => None,
-            witx::Type::Int(_) => None,
-            witx::Type::Pointer(_) | witx::Type::ConstPointer(_) => None,
-            witx::Type::Struct(_) => None,
-            witx::Type::Union(_) => Some(("member", ASType::UnionMember)),
-        };
-        let first_part = match &param.tref {
-            witx::TypeRef::Name(other_type) => ASType::Alias(other_type.name.as_str().to_string()),
-            witx::TypeRef::Value(type_) => match type_.as_ref() {
-                witx::Type::Array(_) => ASType::UntypedPtr,
-                witx::Type::Builtin(builtin) => ASType::from(builtin),
-                witx::Type::Pointer(type_ref) | witx::Type::ConstPointer(type_ref) => {
-                    match type_ref {
-                        witx::TypeRef::Name(other_type) => ASType::Ptr(Box::new(ASType::Alias(
-                            other_type.as_ref().name.as_str().to_string(),
-                        ))),
-                        witx::TypeRef::Value(type_) => match type_.as_ref() {
-                            witx::Type::Builtin(witx::BuiltinType::String) => {
-                                ASType::Ptr(Box::new(ASType::WasiString))
-                            }
-                            witx::Type::Builtin(builtin_type) => {
-                                ASType::Ptr(Box::new(ASType::from(builtin_type)))
-                            }
-                            _ => ASType::UntypedPtr,
-                        },
-                    }
-                }
-                witx::Type::Enum(enum_data_type) => ASType::from(enum_data_type),
-                witx::Type::Flags(flags) => ASType::from(flags),
-                witx::Type::Handle(_) => ASType::Handle,
-                witx::Type::Int(int) => ASType::from(int),
-                witx::Type::Struct(_) => ASType::Struct(param.name.as_str().to_string()),
-                witx::Type::Union(u) => ASType::from(u),
-            },
-        };
-        as_params.push((param.name.as_str().to_string(), first_part));
-        if let Some(second_part) = second_part {
-            as_params.push((
-                format!("{}_{}", param.name.as_str(), second_part.0),
-                second_part.1,
-            ))
-        }
-    }
-    as_params
 }
 
 fn main() {
