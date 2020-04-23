@@ -1,3 +1,4 @@
+use crate::error::*;
 use std::fmt;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -20,9 +21,12 @@ pub enum ASType {
     MutPtr(Box<ASType>),
     UntypedPtr,
     UnionMember,
-    Struct(String),
-    WasiString,
+    Struct,
+    WasiStringPtr,
     Handle,
+    WasiString,
+    Union(Box<ASType>),
+    Array(Box<ASType>),
 }
 
 impl fmt::Display for ASType {
@@ -46,10 +50,29 @@ impl fmt::Display for ASType {
             ASType::MutPtr(other_type) => write!(f, "mut_ptr<{}>", other_type),
             ASType::UntypedPtr => write!(f, "untyped_ptr"),
             ASType::UnionMember => write!(f, "union_member"),
-            ASType::Struct(name) => write!(f, "untyped_ptr /* {} struct */", name),
-            ASType::WasiString => write!(f, "wasi_string"),
+            ASType::Struct => write!(f, "untyped_ptr"),
+            ASType::WasiStringPtr => write!(f, "wasi_string"),
             ASType::Handle => write!(f, "handle"),
+            ASType::WasiString | ASType::Union(_) | ASType::Array(_) => unreachable!(),
         }
+    }
+}
+
+impl ASType {
+    pub fn decompose(&self) -> ((ASType, &'static str), Option<(ASType, &'static str)>) {
+        let first = match self {
+            ASType::WasiString => (ASType::WasiStringPtr, "_ptr"),
+            ASType::Union(tag_type) => (tag_type.as_ref().clone(), "_tag"),
+            ASType::Array(element_type) => (ASType::Ptr(element_type.clone()), "_ptr"),
+            t @ _ => (t.clone(), ""),
+        };
+        let second = match self {
+            ASType::WasiString => Some((ASType::Usize, "_len")),
+            ASType::Union(_tag_type) => Some((ASType::UnionMember, "_member")),
+            ASType::Array(_element_type) => Some((ASType::Usize, "_count")),
+            _ => None,
+        };
+        (first, second)
     }
 }
 
@@ -120,19 +143,25 @@ impl From<&witx::UnionDatatype> for ASType {
     }
 }
 
+impl From<&witx::TypeRef> for ASType {
+    fn from(witx: &witx::TypeRef) -> Self {
+        witx.type_().as_ref().into()
+    }
+}
+
 impl From<&witx::Type> for ASType {
     fn from(witx: &witx::Type) -> Self {
         match witx {
             witx::Type::Builtin(x) => x.into(),
-            witx::Type::ConstPointer(_x) => ASType::UntypedPtr,
-            witx::Type::Pointer(_x) => ASType::UntypedPtr,
+            witx::Type::ConstPointer(x) => ASType::Ptr(Box::new(x.into())),
+            witx::Type::Pointer(x) => ASType::MutPtr(Box::new(x.into())),
             witx::Type::Enum(x) => x.into(),
             witx::Type::Flags(x) => x.into(),
             witx::Type::Handle(x) => x.into(),
             witx::Type::Int(x) => x.into(),
-            witx::Type::Struct(_) => unimplemented!(),
-            witx::Type::Union(_) => unimplemented!(),
-            witx::Type::Array(_) => unimplemented!(),
+            witx::Type::Struct(_) => ASType::Struct,
+            witx::Type::Union(x) => ASType::Union(Box::new(x.tag.as_ref().into())),
+            witx::Type::Array(x) => ASType::Array(Box::new(x.into())),
         }
     }
 }

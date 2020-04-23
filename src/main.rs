@@ -35,11 +35,11 @@ impl<W: Write> Generator<W> {
         let w0 = &mut self.w;
         w0.write_line("type handle = i32;")?
             .write_line("type char = u8;")?
-            .write_line("type ptr<T> = usize; // all pointers are usize'd")?
-            .write_line("type mut_ptr<T> = usize; // all pointers are usize'd")?
-            .write_line("type untyped_ptr = usize; // all pointers are usize'd")?
-            .write_line("type union_member = usize; // all pointers are usize'd")?
-            .write_line("type struct<T> = T;  // structs are references already in AS)")?
+            .write_line("type ptr<T> = usize;")?
+            .write_line("type mut_ptr<T> = usize;")?
+            .write_line("type untyped_ptr = usize;")?
+            .write_line("type union_member = usize;")?
+            .write_line("type struct = usize;")?
             .write_line("type wasi_string = ptr<char>;")?
             .eob()?;
         Ok(())
@@ -72,7 +72,8 @@ impl<W: Write> Generator<W> {
                         variant.name.as_str().to_uppercase(),
                         as_type,
                         i
-                    ))?;
+                    ))?
+                    .eob()?;
             }
         }
         w.write_line("}")?
@@ -434,55 +435,11 @@ impl<W: Write> Generator<W> {
         let mut as_params = vec![];
         for param in params {
             let leaf_type = Self::leaf_type(&param.tref);
-            let second_part = match leaf_type {
-                witx::Type::Array(_) => Some(("size", ASType::UntypedPtr)),
-                witx::Type::Builtin(witx::BuiltinType::String) => Some(("size", ASType::Usize)),
-                witx::Type::Builtin(_) => None,
-                witx::Type::Enum(_) => None,
-                witx::Type::Flags(_) => None,
-                witx::Type::Handle(_) => None,
-                witx::Type::Int(_) => None,
-                witx::Type::Pointer(_) | witx::Type::ConstPointer(_) => None,
-                witx::Type::Struct(_) => None,
-                witx::Type::Union(_) => Some(("member", ASType::UnionMember)),
-            };
-            let first_part = match &param.tref {
-                witx::TypeRef::Name(other_type) => {
-                    ASType::Alias(other_type.name.as_str().to_string())
-                }
-                witx::TypeRef::Value(type_) => match type_.as_ref() {
-                    witx::Type::Array(_) => ASType::UntypedPtr,
-                    witx::Type::Builtin(builtin) => ASType::from(builtin),
-                    witx::Type::Pointer(type_ref) | witx::Type::ConstPointer(type_ref) => {
-                        match type_ref {
-                            witx::TypeRef::Name(other_type) => ASType::Ptr(Box::new(
-                                ASType::Alias(other_type.as_ref().name.as_str().to_string()),
-                            )),
-                            witx::TypeRef::Value(type_) => match type_.as_ref() {
-                                witx::Type::Builtin(witx::BuiltinType::String) => {
-                                    ASType::Ptr(Box::new(ASType::WasiString))
-                                }
-                                witx::Type::Builtin(builtin_type) => {
-                                    ASType::Ptr(Box::new(ASType::from(builtin_type)))
-                                }
-                                _ => ASType::UntypedPtr,
-                            },
-                        }
-                    }
-                    witx::Type::Enum(enum_data_type) => ASType::from(enum_data_type),
-                    witx::Type::Flags(flags) => ASType::from(flags),
-                    witx::Type::Handle(_) => ASType::Handle,
-                    witx::Type::Int(int) => ASType::from(int),
-                    witx::Type::Struct(_) => ASType::Struct(param.name.as_str().to_string()),
-                    witx::Type::Union(u) => ASType::from(u),
-                },
-            };
-            as_params.push((param.name.as_str().to_string(), first_part));
-            if let Some(second_part) = second_part {
-                as_params.push((
-                    format!("{}_{}", param.name.as_str(), second_part.0),
-                    second_part.1,
-                ))
+            let as_leaf_type = ASType::from(leaf_type);
+            let (first, second) = as_leaf_type.decompose();
+            as_params.push((format!("{}{}", param.name.as_str(), first.1), first.0));
+            if let Some(second) = second {
+                as_params.push((format!("{}{}", param.name.as_str(), second.1), second.0))
             }
         }
         as_params
