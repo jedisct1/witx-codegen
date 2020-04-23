@@ -1,40 +1,13 @@
+mod astype;
+mod error;
 mod pretty_writer;
 
+use crate::astype::*;
+use crate::error::*;
 use pretty_writer::PrettyWriter;
+use std;
 use std::io::Write;
 use std::path::Path;
-use std::{self, fmt};
-use witx::WitxError;
-
-#[derive(Debug)]
-pub enum Error {
-    Witx(WitxError),
-    Io(std::io::Error),
-}
-
-impl From<std::io::Error> for Error {
-    fn from(e: std::io::Error) -> Self {
-        Error::Io(e)
-    }
-}
-
-impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{:?}", &self)
-    }
-}
-
-impl std::error::Error for Error {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        None
-    }
-}
-
-impl From<WitxError> for Error {
-    fn from(e: WitxError) -> Self {
-        Self::Witx(e)
-    }
-}
 
 struct Generator<W: Write> {
     w: PrettyWriter<W>,
@@ -460,7 +433,7 @@ impl<W: Write> Generator<W> {
     fn params_to_as(params: &[witx::InterfaceFuncParam]) -> Vec<(String, ASType)> {
         let mut as_params = vec![];
         for param in params {
-            let leaf_type = leaf_type(&param.tref);
+            let leaf_type = Self::leaf_type(&param.tref);
             let second_part = match leaf_type {
                 witx::Type::Array(_) => Some(("size", ASType::UntypedPtr)),
                 witx::Type::Builtin(witx::BuiltinType::String) => Some(("size", ASType::Usize)),
@@ -514,152 +487,15 @@ impl<W: Write> Generator<W> {
         }
         as_params
     }
-}
 
-#[derive(Clone, Debug, Eq, PartialEq)]
-enum ASType {
-    Void,
-    U8,
-    U16,
-    U32,
-    U64,
-    I8,
-    I16,
-    I32,
-    I64,
-    Char,
-    Usize,
-    F32,
-    F64,
-    Alias(String),
-    Ptr(Box<ASType>),
-    MutPtr(Box<ASType>),
-    UntypedPtr,
-    UnionMember,
-    Struct(String),
-    WasiString,
-    Handle,
-}
-
-impl fmt::Display for ASType {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            ASType::Void => write!(f, "void"),
-            ASType::U8 => write!(f, "u8"),
-            ASType::U16 => write!(f, "u16"),
-            ASType::U32 => write!(f, "u32"),
-            ASType::U64 => write!(f, "u64"),
-            ASType::I8 => write!(f, "i8"),
-            ASType::I16 => write!(f, "i16"),
-            ASType::I32 => write!(f, "i32"),
-            ASType::I64 => write!(f, "i64"),
-            ASType::Char => write!(f, "char"),
-            ASType::Usize => write!(f, "usize"),
-            ASType::F32 => write!(f, "f32"),
-            ASType::F64 => write!(f, "f64"),
-            ASType::Alias(to) => write!(f, "{}", to),
-            ASType::Ptr(other_type) => write!(f, "ptr<{}>", other_type),
-            ASType::MutPtr(other_type) => write!(f, "mut_ptr<{}>", other_type),
-            ASType::UntypedPtr => write!(f, "untyped_ptr"),
-            ASType::UnionMember => write!(f, "union_member"),
-            ASType::Struct(name) => write!(f, "untyped_ptr /* {} struct */", name),
-            ASType::WasiString => write!(f, "wasi_string"),
-            ASType::Handle => write!(f, "handle"),
+    fn leaf_type(type_ref: &witx::TypeRef) -> &witx::Type {
+        match type_ref {
+            witx::TypeRef::Name(other_type) => {
+                let x = other_type.as_ref();
+                Self::leaf_type(&x.tref)
+            }
+            witx::TypeRef::Value(type_) => type_.as_ref(),
         }
-    }
-}
-
-impl From<witx::IntRepr> for ASType {
-    fn from(witx: witx::IntRepr) -> Self {
-        match witx {
-            witx::IntRepr::U8 => ASType::U8,
-            witx::IntRepr::U16 => ASType::U16,
-            witx::IntRepr::U32 => ASType::U32,
-            witx::IntRepr::U64 => ASType::U64,
-        }
-    }
-}
-
-impl From<&witx::BuiltinType> for ASType {
-    fn from(witx: &witx::BuiltinType) -> Self {
-        match witx {
-            witx::BuiltinType::U8 => ASType::U8,
-            witx::BuiltinType::U16 => ASType::U16,
-            witx::BuiltinType::U32 => ASType::U32,
-            witx::BuiltinType::U64 => ASType::U64,
-            witx::BuiltinType::S8 => ASType::I8,
-            witx::BuiltinType::S16 => ASType::I16,
-            witx::BuiltinType::S32 => ASType::I32,
-            witx::BuiltinType::S64 => ASType::I64,
-            witx::BuiltinType::String => ASType::WasiString,
-            witx::BuiltinType::USize => ASType::Usize,
-            witx::BuiltinType::F32 => ASType::F32,
-            witx::BuiltinType::F64 => ASType::F64,
-            witx::BuiltinType::Char8 => ASType::Char,
-        }
-    }
-}
-
-impl From<&witx::EnumDatatype> for ASType {
-    fn from(witx: &witx::EnumDatatype) -> Self {
-        witx.repr.into()
-    }
-}
-
-impl From<&witx::FlagsDatatype> for ASType {
-    fn from(witx: &witx::FlagsDatatype) -> Self {
-        witx.repr.into()
-    }
-}
-
-impl From<&witx::IntDatatype> for ASType {
-    fn from(witx: &witx::IntDatatype) -> Self {
-        witx.repr.into()
-    }
-}
-
-impl From<&witx::HandleDatatype> for ASType {
-    fn from(_witx: &witx::HandleDatatype) -> Self {
-        ASType::Handle
-    }
-}
-
-impl From<&witx::NamedType> for ASType {
-    fn from(witx: &witx::NamedType) -> Self {
-        ASType::Alias(witx.name.as_str().to_string())
-    }
-}
-
-impl From<&witx::UnionDatatype> for ASType {
-    fn from(witx: &witx::UnionDatatype) -> Self {
-        witx.tag.as_ref().into()
-    }
-}
-
-impl From<&witx::Type> for ASType {
-    fn from(witx: &witx::Type) -> Self {
-        match witx {
-            witx::Type::Builtin(x) => x.into(),
-            witx::Type::ConstPointer(_x) => ASType::UntypedPtr,
-            witx::Type::Pointer(_x) => ASType::UntypedPtr,
-            witx::Type::Enum(x) => x.into(),
-            witx::Type::Flags(x) => x.into(),
-            witx::Type::Handle(x) => x.into(),
-            witx::Type::Int(x) => x.into(),
-            witx::Type::Struct(_) => unimplemented!(),
-            witx::Type::Union(_) => unimplemented!(),
-            witx::Type::Array(_) => unimplemented!(),
-        }
-    }
-}
-
-fn leaf_type(type_ref: &witx::TypeRef) -> &witx::Type {
-    match type_ref {
-        witx::TypeRef::Name(other_type) => {
-            let x = other_type.as_ref();
-            leaf_type(&x.tref)
-        }
-        witx::TypeRef::Value(type_) => type_.as_ref(),
     }
 }
 
