@@ -1,4 +1,3 @@
-use crate::error::*;
 use std::fmt;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
