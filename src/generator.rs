@@ -290,6 +290,26 @@ impl<W: Write> Generator<W> {
         Ok(())
     }
 
+    fn define_as_struct<T: Write>(
+        w: &mut PrettyWriter<T>,
+        as_type: &ASType,
+        witx_struct: &witx::StructDatatype,
+    ) -> Result<(), Error> {
+        let variants = &witx_struct.members;
+        w.write_line(format!("class {} {{", as_type))?;
+        {
+            let mut w = w.new_block();
+            for variant in variants {
+                let variant_name = variant.name.as_str();
+                let variant_type = ASType::from(variant.tref.type_().as_ref());
+                Self::write_docs(&mut w, &variant.docs)?;
+                w.write_line(format!("{}: {};", variant_name, variant_type))?;
+            }
+        }
+        w.write_line("}")?;
+        Ok(())
+    }
+
     fn define_as_witx_type<T: Write>(
         w: &mut PrettyWriter<T>,
         as_type: &ASType,
@@ -302,6 +322,7 @@ impl<W: Write> Generator<W> {
             witx::Type::Flags(flags) => Self::define_as_flags(w, as_type, flags)?,
             witx::Type::Builtin(builtin) => Self::define_as_builtin(w, as_type, &builtin.into())?,
             witx::Type::Union(union) => Self::define_as_union(w, as_type, union)?,
+            witx::Type::Struct(witx_struct) => Self::define_as_struct(w, as_type, witx_struct)?,
             e => {
                 dbg!(e);
                 unimplemented!();
