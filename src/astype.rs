@@ -19,7 +19,7 @@ pub enum ASType {
     Ptr(Box<ASType>),
     MutPtr(Box<ASType>),
     UnionMember,
-    Struct,
+    Struct(Option<String>),
     WasiStringPtr,
     Handle,
     WasiString,
@@ -47,7 +47,8 @@ impl fmt::Display for ASType {
             ASType::Ptr(other_type) => write!(f, "ptr<{}>", other_type),
             ASType::MutPtr(other_type) => write!(f, "mut_ptr<{}>", other_type),
             ASType::UnionMember => write!(f, "union_member"),
-            ASType::Struct => write!(f, "struct"),
+            ASType::Struct(None) => write!(f, "untyped_struct"),
+            ASType::Struct(Some(name)) => write!(f, "struct<{}>", name),
             ASType::WasiStringPtr => write!(f, "wasi_string"),
             ASType::Handle => write!(f, "handle"),
             ASType::WasiString => write!(f, "WasiString"),
@@ -72,6 +73,13 @@ impl ASType {
             _ => None,
         };
         (first, second)
+    }
+
+    pub fn name(self, name: String) -> Self {
+        match self {
+            ASType::Struct(_) => ASType::Struct(Some(name)),
+            x @ _ => x,
+        }
     }
 }
 
@@ -158,7 +166,7 @@ impl From<&witx::Type> for ASType {
             witx::Type::Flags(x) => x.into(),
             witx::Type::Handle(x) => x.into(),
             witx::Type::Int(x) => x.into(),
-            witx::Type::Struct(_) => ASType::Struct,
+            witx::Type::Struct(_) => ASType::Struct(None),
             witx::Type::Union(x) => ASType::Union(Box::new(x.tag.as_ref().into())),
             witx::Type::Array(x) => ASType::Array(Box::new(x.into())),
         }

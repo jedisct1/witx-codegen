@@ -35,7 +35,8 @@ impl<W: Write> Generator<W> {
             .write_line("type mut_ptr<T> = usize;")?
             .write_line("type untyped_ptr = usize;")?
             .write_line("type union_member = usize;")?
-            .write_line("type struct = usize;")?
+            .write_line("type untyped_struct = usize;")?
+            .write_line("type struct<T> = usize;")?
             .write_line("type wasi_string = ptr<char>;")?
             .eob()?;
         Ok(())
@@ -296,7 +297,9 @@ impl<W: Write> Generator<W> {
         witx_struct: &witx::StructDatatype,
     ) -> Result<(), Error> {
         let variants = &witx_struct.members;
-        w.write_line(format!("class {} {{", as_type))?;
+        w.write_line("// @ts-ignore: decorator")?
+            .write_line("@unmanaged")?
+            .write_line(format!("class {} {{", as_type))?;
         {
             let mut w = w.new_block();
             for variant in variants {
@@ -451,7 +454,7 @@ impl<W: Write> Generator<W> {
         let mut as_params = vec![];
         for param in params {
             let leaf_type = Self::leaf_type(&param.tref);
-            let as_leaf_type = ASType::from(leaf_type);
+            let as_leaf_type = ASType::from(leaf_type).name(param.tref.type_name());
             let (first, second) = as_leaf_type.decompose();
             as_params.push((format!("{}{}", param.name.as_str(), first.1), first.0));
             if let Some(second) = second {
