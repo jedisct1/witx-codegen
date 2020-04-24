@@ -1,7 +1,7 @@
 ![AS-WITX](logo.png)
 ==========
 
-# AS-WITX: a WITX code generator for AssemblyScript.
+# AS-WITX: A WITX code generator for AssemblyScript.
 
 This is a work in progress.
 

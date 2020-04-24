@@ -47,10 +47,12 @@ impl fmt::Display for ASType {
             ASType::Ptr(other_type) => write!(f, "ptr<{}>", other_type),
             ASType::MutPtr(other_type) => write!(f, "mut_ptr<{}>", other_type),
             ASType::UnionMember => write!(f, "union_member"),
-            ASType::Struct => write!(f, "untyped_ptr"),
+            ASType::Struct => write!(f, "struct"),
             ASType::WasiStringPtr => write!(f, "wasi_string"),
             ASType::Handle => write!(f, "handle"),
-            ASType::WasiString | ASType::Union(_) | ASType::Array(_) => unreachable!(),
+            ASType::WasiString => write!(f, "WasiString"),
+            ASType::Union(_) => write!(f, "WasiUnion"),
+            ASType::Array(_) => write!(f, "WasiArray"),
         }
     }
 }

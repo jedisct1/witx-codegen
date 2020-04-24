@@ -167,8 +167,8 @@ impl<W: Write> Generator<W> {
                     .write_line(format!("return this.tag === {};", i))?
                     .write_line("}")?;
             }
-            Some(witx::TypeRef::Name(variant_type)) => {
-                let as_variant_type = ASType::from(variant_type.as_ref());
+            Some(variant_type) => {
+                let as_variant_type = ASType::from(variant_type);
                 w.write_line("// @ts-ignore: decorator")?
                     .write_line("@inline")?
                     .write_line(format!(
@@ -214,7 +214,6 @@ impl<W: Write> Generator<W> {
                 }
                 w.write_line("}")?;
             }
-            _ => unimplemented!(),
         }
         Ok(())
     }
@@ -230,21 +229,21 @@ impl<W: Write> Generator<W> {
             None => {
                 w.write_line(format!("{}: void; // if tag={}", variant_name, i))?;
             }
-            Some(witx::TypeRef::Name(another_type)) => {
+            Some(witx::TypeRef::Name(variant_type)) => {
                 w.write_line(format!(
                     "{}: {}; // if tag={}",
                     variant_name,
-                    ASType::from(another_type.as_ref()),
+                    ASType::from(variant_type.as_ref()),
                     i
                 ))?;
             }
-            Some(witx::TypeRef::Value(witx_type)) => match witx_type.as_ref() {
-                witx::Type::Enum(enum_data_type) => {
-                    let as_type = ASType::from(enum_data_type);
-                    w.write_line(format!("{}: {}; // if tag={}", variant_name, as_type, i))?;
-                }
-                _ => unimplemented!(),
-            },
+            Some(witx::TypeRef::Value(witx_type)) => {
+                let as_variant_type = ASType::from(witx_type.as_ref());
+                w.write_line(format!(
+                    "{}: {}; // if tag={}",
+                    variant_name, as_variant_type, i
+                ))?;
+            }
         }
         w.eob()?;
         Self::define_union_variant_accessors(w, as_type, i, variant)?;
