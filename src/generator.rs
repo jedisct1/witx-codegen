@@ -198,7 +198,8 @@ impl<W: Write> Generator<W> {
                     .write_line(format!("is_{}(): bool {{", variant_name))?
                     .indent()?
                     .write_line(format!("return this.tag === {};", i))?
-                    .write_line("}")?;
+                    .write_line("}")?
+                    .eob()?;
 
                 w.write_line("// @ts-ignore: decorator")?
                     .write_line("@inline")?
