@@ -62,15 +62,13 @@ impl<W: Write> Generator<W> {
             let mut w = w.new_block();
             for (i, variant) in enum_data_type.variants.iter().enumerate() {
                 Self::write_docs(&mut w, &variant.docs)?;
-                w.write_line("// @ts-ignore: decorator")?
-                    .write_line("@inline")?
-                    .write_line(format!(
-                        "export const {}: {} = {};",
-                        variant.name.as_str().to_uppercase(),
-                        as_type,
-                        i
-                    ))?
-                    .eob()?;
+                w.write_line(format!(
+                    "export const {}: {} = {};",
+                    variant.name.as_str().to_uppercase(),
+                    as_type,
+                    i
+                ))?
+                .eob()?;
             }
         }
         w.write_line("}")?
@@ -95,14 +93,12 @@ impl<W: Write> Generator<W> {
             let mut w = w.new_block();
             for (i, variant) in int.consts.iter().enumerate() {
                 Self::write_docs(&mut w, &variant.docs)?;
-                w.write_line("// @ts-ignore: decorator")?
-                    .write_line("@inline")?
-                    .write_line(format!(
-                        "export const {}: {} = {};",
-                        variant.name.as_str().to_uppercase(),
-                        as_type,
-                        i
-                    ))?;
+                w.write_line(format!(
+                    "export const {}: {} = {};",
+                    variant.name.as_str().to_uppercase(),
+                    as_type,
+                    i
+                ))?;
             }
         }
         w.write_line("}")?
@@ -122,14 +118,12 @@ impl<W: Write> Generator<W> {
             let mut w = w.new_block();
             for (i, variant) in flags.flags.iter().enumerate() {
                 Self::write_docs(&mut w, &variant.docs)?;
-                w.write_line("// @ts-ignore: decorator")?
-                    .write_line("@inline")?
-                    .write_line(format!(
-                        "export const {}: {} = {};",
-                        variant.name.as_str().to_uppercase(),
-                        as_type,
-                        1u64 << i
-                    ))?;
+                w.write_line(format!(
+                    "export const {}: {} = {};",
+                    variant.name.as_str().to_uppercase(),
+                    as_type,
+                    1u64 << i
+                ))?;
             }
         }
         w.write_line("}")?
@@ -153,15 +147,17 @@ impl<W: Write> Generator<W> {
                     .indent()?
                     .write_line(format!("return new {}({});", as_type, i))?
                     .write_line("}")?
-                    .eob()?
-                    .write_line("// @ts-ignore: decorator")?
+                    .eob()?;
+
+                w.write_line("// @ts-ignore: decorator")?
                     .write_line("@inline")?
                     .write_line(format!("set_{}(): void {{", variant_name))?
                     .indent()?
                     .write_line(format!("this.tag = {};", i))?
                     .write_line("}")?
-                    .eob()?
-                    .write_line("// @ts-ignore: decorator")?
+                    .eob()?;
+
+                w.write_line("// @ts-ignore: decorator")?
                     .write_line("@inline")?
                     .write_line(format!("is_{}(): bool {{", variant_name))?
                     .indent()?
@@ -199,19 +195,17 @@ impl<W: Write> Generator<W> {
 
                 w.write_line("// @ts-ignore: decorator")?
                     .write_line("@inline")?
-                    .write_line(format!(
-                        "get_{}(): {} | null {{",
-                        variant_name, as_variant_type
-                    ))?;
+                    .write_line(format!("is_{}(): bool {{", variant_name))?
+                    .indent()?
+                    .write_line(format!("return this.tag === {};", i))?
+                    .write_line("}")?;
 
+                w.write_line("// @ts-ignore: decorator")?
+                    .write_line("@inline")?
+                    .write_line(format!("get_{}(): {} {{", variant_name, as_variant_type))?;
                 {
                     let mut w = w.new_block();
-                    w.write_line(format!("if (this.tag !== {}) {{", i))?;
-                    {
-                        w.new_block().write_line("return null;")?;
-                    }
-                    w.write_line("}")?
-                        .write_line(format!("return this.{};", variant_name))?;
+                    w.write_line(format!("return this.{};", variant_name))?;
                 }
                 w.write_line("}")?;
             }
@@ -228,21 +222,14 @@ impl<W: Write> Generator<W> {
         let variant_name = variant.name.as_str();
         match variant.tref.as_ref() {
             None => {
-                w.write_line(format!("{}: void; // if tag={}", variant_name, i))?;
+                w.write_line(format!("// {}: void if tag={}", variant_name, i))?;
             }
-            Some(witx::TypeRef::Name(variant_type)) => {
+            Some(variant_type) => {
                 w.write_line(format!(
                     "{}: {}; // if tag={}",
                     variant_name,
-                    ASType::from(variant_type.as_ref()),
+                    ASType::from(variant_type),
                     i
-                ))?;
-            }
-            Some(witx::TypeRef::Value(witx_type)) => {
-                let as_variant_type = ASType::from(witx_type.as_ref());
-                w.write_line(format!(
-                    "{}: {}; // if tag={}",
-                    variant_name, as_variant_type, i
                 ))?;
             }
         }
