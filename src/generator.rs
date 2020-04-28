@@ -141,47 +141,37 @@ impl<W: Write> Generator<W> {
         let variant_name = variant.name.as_str();
         match variant.tref.as_ref() {
             None => {
-                w.write_line("// @ts-ignore: decorator")?
-                    .write_line("@inline")?
-                    .write_line(format!("new_{}(): {} {{", variant_name, as_type))?
+                w.write_line(format!("new_{}(): {} {{", variant_name, as_type))?
                     .indent()?
                     .write_line(format!("return {}.new({});", as_type, i))?
                     .write_line("}")?
                     .eob()?;
 
-                w.write_line("// @ts-ignore: decorator")?
-                    .write_line("@inline")?
-                    .write_line(format!("set_{}(): void {{", variant_name))?
+                w.write_line(format!("set_{}(): void {{", variant_name))?
                     .indent()?
                     .write_line(format!("this.tag = {};", i))?
                     .write_line("}")?
                     .eob()?;
 
-                w.write_line("// @ts-ignore: decorator")?
-                    .write_line("@inline")?
-                    .write_line(format!("is_{}(): bool {{", variant_name))?
+                w.write_line(format!("is_{}(): bool {{", variant_name))?
                     .indent()?
                     .write_line(format!("return this.tag === {};", i))?
                     .write_line("}")?;
             }
             Some(variant_type) => {
                 let as_variant_type = ASType::from(variant_type);
-                w.write_line("// @ts-ignore: decorator")?
-                    .write_line("@inline")?
-                    .write_line(format!(
-                        "new_{}(val: {}): {} {{",
-                        variant_name, as_variant_type, as_type
-                    ))?;
+                w.write_line(format!(
+                    "new_{}(val: {}): {} {{",
+                    variant_name, as_variant_type, as_type
+                ))?;
                 w.new_block()
                     .write_line(format!("return {}.new({}, val);", as_type, i))?;
                 w.write_line("}")?.eob()?;
 
-                w.write_line("// @ts-ignore: decorator")?
-                    .write_line("@inline")?
-                    .write_line(format!(
-                        "set_{}(val: {}): void {{",
-                        variant_name, as_variant_type
-                    ))?;
+                w.write_line(format!(
+                    "set_{}(val: {}): void {{",
+                    variant_name, as_variant_type
+                ))?;
                 {
                     w.new_block()
                         .write_line(format!("this.tag = {};", i))?
@@ -189,16 +179,12 @@ impl<W: Write> Generator<W> {
                 }
                 w.write_line("}")?.eob()?;
 
-                w.write_line("// @ts-ignore: decorator")?
-                    .write_line("@inline")?
-                    .write_line(format!("is_{}(): bool {{", variant_name))?
+                w.write_line(format!("is_{}(): bool {{", variant_name))?
                     .indent()?
                     .write_line(format!("return this.tag === {};", i))?
                     .write_line("}")?
                     .eob()?;
 
-                w.write_line("// @ts-ignore: decorator")?
-                    .write_line("@inline")?;
                 if as_variant_type.is_nullable() {
                     w.write_line(format!(
                         "get_{}(): {} | null {{",
@@ -261,9 +247,7 @@ impl<W: Write> Generator<W> {
                 .write_line("private xmem: u64[]")?
                 .eob()?;
 
-            w.write_line("// @ts-ignore: decorator")?
-                .write_line("@inline")?
-                .write_line(format!("constructor(tag: {}) {{", as_tag))?;
+            w.write_line(format!("constructor(tag: {}) {{", as_tag))?;
             {
                 let mut w = w.new_block();
                 w.write_line("this.tag = tag;")?
@@ -271,12 +255,10 @@ impl<W: Write> Generator<W> {
             }
             w.write_line("}")?.eob()?;
 
-            w.write_line("// @ts-ignore: decorator")?
-                .write_line("@inline")?
-                .write_line(format!(
-                    "static new<T>(tag: u8, val: T = 0): {} {{",
-                    as_type
-                ))?;
+            w.write_line(format!(
+                "static new<T>(tag: u8, val: T = 0): {} {{",
+                as_type
+            ))?;
             {
                 let mut w = w.new_block();
                 w.write_line(format!("let tu = new {}(tag);", as_type))?
@@ -285,9 +267,7 @@ impl<W: Write> Generator<W> {
             }
             w.write_line("}")?.eob()?;
 
-            w.write_line("// @ts-ignore: decorator")?
-                .write_line("@inline")?
-                .write_line("get<T>(): T {")?;
+            w.write_line("get<T>(): T {")?;
             {
                 let mut w = w.new_block();
                 w.write_line("let mem = changetype<ArrayBufferView>(this.xmem).dataStart;")?
@@ -299,9 +279,7 @@ impl<W: Write> Generator<W> {
             }
             w.write_line("}")?.eob()?;
 
-            w.write_line("// @ts-ignore: decorator")?
-                .write_line("@inline")?
-                .write_line("set<T>(val: T = 0): void {")?;
+            w.write_line("set<T>(val: T = 0): void {")?;
             {
                 let mut w = w.new_block();
                 w.write_line("let mem = changetype<ArrayBufferView>(this.xmem).dataStart;")?
@@ -316,9 +294,7 @@ impl<W: Write> Generator<W> {
             }
             w.write_line("}")?;
 
-            w.write_line("// @ts-ignore: decorator")?
-                .write_line("@inline")?
-                .write_line("val<T>(): T {")?;
+            w.write_line("val<T>(): T {")?;
             {
                 let mut w = w.new_block();
                 w.write_line("return this.xmem as T;")?;
