@@ -202,10 +202,20 @@ impl<W: Write> Generator<W> {
                     .eob()?;
 
                 w.write_line("// @ts-ignore: decorator")?
-                    .write_line("@inline")?
-                    .write_line(format!("get_{}(): {} {{", variant_name, as_variant_type))?;
+                    .write_line("@inline")?;
+                if as_variant_type.is_nullable() {
+                    w.write_line(format!(
+                        "get_{}(): {} | null {{",
+                        variant_name, as_variant_type
+                    ))?;
+                } else {
+                    w.write_line(format!("get_{}(): {} {{", variant_name, as_variant_type))?;
+                }
                 {
                     let mut w = w.new_block();
+                    if as_variant_type.is_nullable() {
+                        w.write_line(format!("if (this.tag !== {}) {{ return null; }}", i))?;
+                    }
                     w.write_line(format!("return this.{};", variant_name))?;
                 }
                 w.write_line("}")?;
