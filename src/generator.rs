@@ -229,11 +229,11 @@ impl<W: Write> Generator<W> {
         let variant_name = variant.name.as_str();
         match variant.tref.as_ref() {
             None => {
-                w.write_line(format!("// {}: void if tag={}", variant_name, i))?;
+                w.write_line(format!("// --- {}: void if tag={}", variant_name, i))?;
             }
             Some(variant_type) => {
                 w.write_line(format!(
-                    "// {}: {} if tag={}",
+                    "// --- {}: {} if tag={}",
                     variant_name,
                     ASType::from(variant_type),
                     i
@@ -271,10 +271,12 @@ impl<W: Write> Generator<W> {
             }
             w.write_line("}")?.eob()?;
 
-            w.write_line(format!(
-                "static new<T>(tag: u8, val: T = 0): {} {{",
-                as_type
-            ))?;
+            w.write_line("// @ts-ignore: decorator")?
+                .write_line("@inline")?
+                .write_line(format!(
+                    "static new<T>(tag: u8, val: T = 0): {} {{",
+                    as_type
+                ))?;
             {
                 let mut w = w.new_block();
                 w.write_line(format!("let tu = new {}(tag);", as_type))?
@@ -283,7 +285,9 @@ impl<W: Write> Generator<W> {
             }
             w.write_line("}")?.eob()?;
 
-            w.write_line("get<T>(): T {")?;
+            w.write_line("// @ts-ignore: decorator")?
+                .write_line("@inline")?
+                .write_line("get<T>(): T {")?;
             {
                 let mut w = w.new_block();
                 w.write_line("let mem128 = changetype<ArrayBufferView>(this.xmem128).dataStart;")?
@@ -295,7 +299,9 @@ impl<W: Write> Generator<W> {
             }
             w.write_line("}")?.eob()?;
 
-            w.write_line("set<T>(val: T = 0): void {")?;
+            w.write_line("// @ts-ignore: decorator")?
+                .write_line("@inline")?
+                .write_line("set<T>(val: T = 0): void {")?;
             {
                 let mut w = w.new_block();
                 w.write_line("let mem128 = changetype<ArrayBufferView>(this.xmem128).dataStart;")?
