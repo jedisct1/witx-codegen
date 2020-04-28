@@ -258,7 +258,7 @@ impl<W: Write> Generator<W> {
         {
             let mut w = w.new_block();
             w.write_line(format!("tag: {};", as_tag))?
-                .write_line("private xmem128: u64[]")?
+                .write_line("private xmem: u64[]")?
                 .eob()?;
 
             w.write_line("// @ts-ignore: decorator")?
@@ -267,7 +267,7 @@ impl<W: Write> Generator<W> {
             {
                 let mut w = w.new_block();
                 w.write_line("this.tag = tag;")?
-                    .write_line("this.xmem128 = [0, 0];")?;
+                    .write_line("this.xmem = [0, 0];")?;
             }
             w.write_line("}")?.eob()?;
 
@@ -290,11 +290,11 @@ impl<W: Write> Generator<W> {
                 .write_line("get<T>(): T {")?;
             {
                 let mut w = w.new_block();
-                w.write_line("let mem128 = changetype<ArrayBufferView>(this.xmem128).dataStart;")?
+                w.write_line("let mem = changetype<ArrayBufferView>(this.xmem).dataStart;")?
                     .write_line("if (isReference<T>()) {")?;
-                w.new_block().write_line("return changetype<T>(mem128);")?;
+                w.new_block().write_line("return changetype<T>(mem);")?;
                 w.write_line("} else {")?;
-                w.new_block().write_line("return load<T>(mem128);")?;
+                w.new_block().write_line("return load<T>(mem);")?;
                 w.write_line("}")?;
             }
             w.write_line("}")?.eob()?;
@@ -304,14 +304,24 @@ impl<W: Write> Generator<W> {
                 .write_line("set<T>(val: T = 0): void {")?;
             {
                 let mut w = w.new_block();
-                w.write_line("let mem128 = changetype<ArrayBufferView>(this.xmem128).dataStart;")?
+                w.write_line("let mem = changetype<ArrayBufferView>(this.xmem).dataStart;")?
+                    .write_line("memory.fill(mem, 0, 16);")?
                     .write_line("if (isReference<T>()) {")?;
                 w.new_block().write_line(
-                    "(val !== null) && memory.copy(mem128, changetype<usize>(val), offsetof<T>());",
+                    "(val !== null) && memory.copy(mem, changetype<usize>(val), offsetof<T>());",
                 )?;
                 w.write_line("} else {")?;
-                w.new_block().write_line("store<T>(mem128, val)")?;
+                w.new_block().write_line("store<T>(mem, val)")?;
                 w.write_line("}")?;
+            }
+            w.write_line("}")?;
+
+            w.write_line("// @ts-ignore: decorator")?
+                .write_line("@inline")?
+                .write_line("val<T>(): T {")?;
+            {
+                let mut w = w.new_block();
+                w.write_line("return this.xmem as T;")?;
             }
             w.write_line("}")?;
 
