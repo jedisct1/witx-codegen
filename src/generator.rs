@@ -145,7 +145,7 @@ impl<W: Write> Generator<W> {
                     .write_line("@inline")?
                     .write_line(format!("new_{}(): {} {{", variant_name, as_type))?
                     .indent()?
-                    .write_line(format!("return new {}({});", as_type, i))?
+                    .write_line(format!("return {}.new({});", as_type, i))?
                     .write_line("}")?
                     .eob()?;
 
@@ -172,12 +172,8 @@ impl<W: Write> Generator<W> {
                         "new_{}(val: {}): {} {{",
                         variant_name, as_variant_type, as_type
                     ))?;
-                {
-                    w.new_block()
-                        .write_line(format!("let u = new {}({});", as_type, i))?
-                        .write_line(format!("u.{} = val;", variant_name))?
-                        .write_line("return u;")?;
-                }
+                w.new_block()
+                    .write_line(format!("return {}.new({}, val);", as_type, i))?;
                 w.write_line("}")?.eob()?;
 
                 w.write_line("// @ts-ignore: decorator")?
@@ -189,7 +185,7 @@ impl<W: Write> Generator<W> {
                 {
                     w.new_block()
                         .write_line(format!("this.tag = {};", i))?
-                        .write_line(format!("this.{} = val;", variant_name))?;
+                        .write_line("this.set(val);")?;
                 }
                 w.write_line("}")?.eob()?;
 
@@ -216,7 +212,7 @@ impl<W: Write> Generator<W> {
                     if as_variant_type.is_nullable() {
                         w.write_line(format!("if (this.tag !== {}) {{ return null; }}", i))?;
                     }
-                    w.write_line(format!("return this.{};", variant_name))?;
+                    w.write_line(format!("return this.get<{}>();", as_variant_type))?;
                 }
                 w.write_line("}")?;
             }
@@ -237,7 +233,7 @@ impl<W: Write> Generator<W> {
             }
             Some(variant_type) => {
                 w.write_line(format!(
-                    "{}: {}; // if tag={}",
+                    "// {}: {} if tag={}",
                     variant_name,
                     ASType::from(variant_type),
                     i
@@ -262,14 +258,57 @@ impl<W: Write> Generator<W> {
         {
             let mut w = w.new_block();
             w.write_line(format!("tag: {};", as_tag))?
-                .eob()?
-                .write_line("// @ts-ignore: decorator")?
+                .write_line("private xmem128: u64[]")?
+                .eob()?;
+
+            w.write_line("// @ts-ignore: decorator")?
                 .write_line("@inline")?
                 .write_line(format!("constructor(tag: {}) {{", as_tag))?;
             {
-                w.new_block().write_line("this.tag = tag;")?;
+                let mut w = w.new_block();
+                w.write_line("this.tag = tag;")?
+                    .write_line("this.xmem128 = [0, 0];")?;
+            }
+            w.write_line("}")?.eob()?;
+
+            w.write_line(format!(
+                "static new<T>(tag: u8, val: T = 0): {} {{",
+                as_type
+            ))?;
+            {
+                let mut w = w.new_block();
+                w.write_line(format!("let tu = new {}(tag);", as_type))?
+                    .write_line("tu.set(val);")?
+                    .write_line("return tu;")?;
+            }
+            w.write_line("}")?.eob()?;
+
+            w.write_line("get<T>(): T {")?;
+            {
+                let mut w = w.new_block();
+                w.write_line("let mem128 = changetype<ArrayBufferView>(this.xmem128).dataStart;")?
+                    .write_line("if (isReference<T>()) {")?;
+                w.new_block().write_line("return changetype<T>(mem128);")?;
+                w.write_line("} else {")?;
+                w.new_block().write_line("return load<T>(mem128);")?;
+                w.write_line("}")?;
+            }
+            w.write_line("}")?.eob()?;
+
+            w.write_line("set<T>(val: T = 0): void {")?;
+            {
+                let mut w = w.new_block();
+                w.write_line("let mem128 = changetype<ArrayBufferView>(this.xmem128).dataStart;")?
+                    .write_line("if (isReference<T>()) {")?;
+                w.new_block().write_line(
+                    "(val !== null) && memory.copy(mem128, changetype<usize>(val), offsetof<T>());",
+                )?;
+                w.write_line("} else {")?;
+                w.new_block().write_line("store<T>(mem128, val)")?;
+                w.write_line("}")?;
             }
             w.write_line("}")?;
+
             for (i, variant) in variants.iter().enumerate() {
                 w.eob()?;
                 Self::define_union_variant(&mut w, as_type, i, variant)?;
