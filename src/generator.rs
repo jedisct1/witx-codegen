@@ -4,6 +4,7 @@ use crate::pretty_writer::PrettyWriter;
 use std;
 use std::io::Write;
 use std::path::Path;
+use std::rc::Rc;
 
 pub struct Generator<W: Write> {
     w: PrettyWriter<W>,
@@ -45,7 +46,7 @@ type wasi_string_ptr = ptr<char>;
             "
 @unmanaged
 class WasiString {
-    ptr: wasi_string;
+    ptr: wasi_string_ptr;
     len: usize;
 
     constructor(str: string) {
@@ -67,7 +68,8 @@ class WasiUnion<T> {
     val: union_member;
 }
 ",
-        )?;
+        )?
+        .eob()?;
         Ok(())
     }
 
@@ -511,8 +513,8 @@ class WasiUnion<T> {
     fn params_to_as(params: &[witx::InterfaceFuncParam]) -> Vec<(String, ASType)> {
         let mut as_params = vec![];
         for param in params {
-            let leaf_type = Self::leaf_type(&param.tref);
-            let as_leaf_type = ASType::from(leaf_type).name(param.tref.type_name());
+            let leaf_type = Self::aliased_leaf_type(&param.tref);
+            let as_leaf_type = ASType::from(leaf_type.as_ref()).name(param.tref.type_name());
             let (first, second) = as_leaf_type.decompose();
             as_params.push((format!("{}{}", param.name.as_str(), first.1), first.0));
             if let Some(second) = second {
@@ -522,13 +524,22 @@ class WasiUnion<T> {
         as_params
     }
 
-    fn leaf_type(type_ref: &witx::TypeRef) -> &witx::Type {
+    fn leaf_type(type_ref: &witx::TypeRef) -> Rc<witx::Type> {
         match type_ref {
             witx::TypeRef::Name(other_type) => {
                 let x = other_type.as_ref();
                 Self::leaf_type(&x.tref)
             }
-            witx::TypeRef::Value(type_) => type_.as_ref(),
+            witx::TypeRef::Value(type_) => Rc::clone(type_),
+        }
+    }
+
+    fn aliased_leaf_type(type_ref: &witx::TypeRef) -> Rc<witx::Type> {
+        let leaf_type = Self::leaf_type(type_ref);
+        match leaf_type.as_ref() {
+            witx::Type::Array(_) => leaf_type,
+            witx::Type::Builtin(witx::BuiltinType::String) => leaf_type,
+            _ => type_ref.type_(),
         }
     }
 }
