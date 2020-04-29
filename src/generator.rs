@@ -29,16 +29,38 @@ impl<W: Write> Generator<W> {
 
     fn header(&mut self) -> Result<(), Error> {
         let w0 = &mut self.w;
-        w0.write_line("type handle = i32;")?
-            .write_line("type char = u8;")?
-            .write_line("type ptr<T> = usize;")?
-            .write_line("type mut_ptr<T> = usize;")?
-            .write_line("type untyped_ptr = usize;")?
-            .write_line("type union_member = usize;")?
-            .write_line("type untyped_struct = usize;")?
-            .write_line("type struct<T> = usize;")?
-            .write_line("type wasi_string = ptr<char>;")?
-            .eob()?;
+        w0.write_lines(
+            "
+type handle = i32;
+type char = u8;
+type ptr<T> = usize;
+type mut_ptr<T> = usize;
+type untyped_ptr = usize;
+type struct<T> = usize;
+type wasi_string_ptr = ptr<char>;
+",
+        )?;
+        w0.write_lines(
+            "
+@unmanaged
+class WasiString {
+    ptr: wasi_string;
+    len: usize;
+
+    constructor(str: string) {
+        let wasi_string = String.UTF8.encode(str, false);
+        this.ptr = changetype<ArrayBufferView>(wasi_string).dataStart;
+        this.len = wasi_string.byteLength;
+    }
+
+    toString(): string {
+        let tmp = new ArrayBuffer(this.len as u32);
+        memory.copy(changetype<usize>(tmp), this.ptr, this.len);
+        return String.UTF8.decode(tmp);
+    }
+}
+",
+        )?;
         Ok(())
     }
 
@@ -399,6 +421,16 @@ impl<W: Write> Generator<W> {
     }
 
     fn define_func(&mut self, module_name: &str, func: &witx::InterfaceFunc) -> Result<(), Error> {
+        if true {
+            println!("---> {}", func.name.as_str());
+            let core_types = func.core_type();
+            println!(
+                "params: {:#?}",
+                core_types.args.iter().map(|x| x.repr()).collect::<Vec<_>>()
+            );
+            println!("results: {:#?}", core_types.ret.map(|x| x.repr()));
+        }
+
         let w0 = &mut self.w;
         let docs = &func.docs;
         let name = func.name.as_str();

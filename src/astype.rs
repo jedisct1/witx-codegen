@@ -49,7 +49,7 @@ impl fmt::Display for ASType {
             ASType::UnionMember => write!(f, "union_member"),
             ASType::Struct(None) => write!(f, "untyped_struct"),
             ASType::Struct(Some(name)) => write!(f, "struct<{}>", name),
-            ASType::WasiStringPtr => write!(f, "wasi_string"),
+            ASType::WasiStringPtr => write!(f, "wasi_string_ptr"),
             ASType::Handle => write!(f, "handle"),
             ASType::WasiString => write!(f, "WasiString"),
             ASType::Union(_) => write!(f, "WasiUnion"),

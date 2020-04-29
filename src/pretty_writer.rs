@@ -122,4 +122,15 @@ impl<W: Write> PrettyWriter<W> {
         let buf = buf.as_ref();
         self.indent()?.write(buf)?.eol()
     }
+
+    /// Write multiple indented lines
+    pub fn write_lines<T: AsRef<[u8]>>(&mut self, buf: T) -> Result<&mut Self, Error> {
+        let buf = buf.as_ref();
+        for line in buf.lines() {
+            if let Ok(line) = line {
+                self.write_line(line)?;
+            }
+        }
+        Ok(self)
+    }
 }
