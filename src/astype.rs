@@ -18,7 +18,6 @@ pub enum ASType {
     Alias(String),
     Ptr(Box<ASType>),
     MutPtr(Box<ASType>),
-    UnionMember,
     Struct(Option<String>),
     WasiStringPtr,
     Handle,
@@ -46,13 +45,12 @@ impl fmt::Display for ASType {
             ASType::Alias(to) => write!(f, "{}", to),
             ASType::Ptr(other_type) => write!(f, "ptr<{}>", other_type),
             ASType::MutPtr(other_type) => write!(f, "mut_ptr<{}>", other_type),
-            ASType::UnionMember => write!(f, "union_member"),
             ASType::Struct(None) => write!(f, "untyped_struct"),
             ASType::Struct(Some(name)) => write!(f, "struct<{}>", name),
             ASType::WasiStringPtr => write!(f, "wasi_string_ptr"),
             ASType::Handle => write!(f, "handle"),
             ASType::WasiString => write!(f, "WasiString"),
-            ASType::Union(_) => write!(f, "WasiUnion"),
+            ASType::Union(tag_type) => write!(f, "WasiUnion<{}>", tag_type),
             ASType::Array(_) => write!(f, "WasiArray"),
         }
     }
@@ -76,13 +74,11 @@ impl ASType {
     pub fn decompose(&self) -> ((ASType, &'static str), Option<(ASType, &'static str)>) {
         let first = match self {
             ASType::WasiString => (ASType::WasiStringPtr, "_ptr"),
-            ASType::Union(tag_type) => (tag_type.as_ref().clone(), "_tag"),
             ASType::Array(element_type) => (ASType::Ptr(element_type.clone()), "_ptr"),
             t @ _ => (t.clone(), ""),
         };
         let second = match self {
             ASType::WasiString => Some((ASType::Usize, "_len")),
-            ASType::Union(_tag_type) => Some((ASType::UnionMember, "_member")),
             ASType::Array(_element_type) => Some((ASType::Usize, "_count")),
             _ => None,
         };

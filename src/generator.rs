@@ -36,6 +36,7 @@ type char = u8;
 type ptr<T> = usize;
 type mut_ptr<T> = usize;
 type untyped_ptr = usize;
+type union_member = usize;
 type struct<T> = usize;
 type wasi_string_ptr = ptr<char>;
 ",
@@ -58,6 +59,12 @@ class WasiString {
         memory.copy(changetype<usize>(tmp), this.ptr, this.len);
         return String.UTF8.decode(tmp);
     }
+}
+
+@unmanaged
+class WasiUnion<T> {
+    tag: T;
+    val: union_member;
 }
 ",
         )?;
@@ -314,7 +321,7 @@ class WasiString {
                 w.new_block().write_line("store<T>(mem, val)")?;
                 w.write_line("}")?;
             }
-            w.write_line("}")?;
+            w.write_line("}")?.eob()?;
 
             w.write_line("val<T>(): T {")?;
             {
@@ -421,16 +428,6 @@ class WasiString {
     }
 
     fn define_func(&mut self, module_name: &str, func: &witx::InterfaceFunc) -> Result<(), Error> {
-        if true {
-            println!("---> {}", func.name.as_str());
-            let core_types = func.core_type();
-            println!(
-                "params: {:#?}",
-                core_types.args.iter().map(|x| x.repr()).collect::<Vec<_>>()
-            );
-            println!("results: {:#?}", core_types.ret.map(|x| x.repr()));
-        }
-
         let w0 = &mut self.w;
         let docs = &func.docs;
         let name = func.name.as_str();
