@@ -287,7 +287,7 @@ export class WasiUnion<T> {
             }
             w.write_line("}")?.eob()?;
 
-            w.write_line(format!(
+            w.write_line("// @ts-ignore: default")?.write_line(format!(
                 "static new<T>(tag: u8, val: T = 0): {} {{",
                 as_type
             ))?;
@@ -312,7 +312,8 @@ export class WasiUnion<T> {
             }
             w.write_line("}")?.eob()?;
 
-            w.write_line("set<T>(val: T = 0): void {")?;
+            w.write_line("// @ts-ignore: default")?
+                .write_line("set<T>(val: T = 0): void {")?;
             {
                 let mut w = w.new_block();
                 w.write_line("// @ts-ignore: cast")?
@@ -331,7 +332,8 @@ export class WasiUnion<T> {
             w.write_line("val<T>(): T {")?;
             {
                 let mut w = w.new_block();
-                w.write_line("return this.xmem as T;")?;
+                w.write_line("// @ts-ignore: cast")?
+                    .write_line("return this.xmem as T;")?;
             }
             w.write_line("}")?;
 
