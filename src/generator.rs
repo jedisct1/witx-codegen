@@ -173,7 +173,7 @@ export class WasiUnion<T> {
         let variant_name = variant.name.as_str();
         match variant.tref.as_ref() {
             None => {
-                w.write_line(format!("static new_{}(): {} {{", variant_name, as_type))?
+                w.write_line(format!("static {}(): {} {{", variant_name, as_type))?
                     .indent()?
                     .write_line(format!("return {}.new({});", as_type, i))?
                     .write_line("}")?
@@ -193,7 +193,7 @@ export class WasiUnion<T> {
             Some(variant_type) => {
                 let as_variant_type = ASType::from(variant_type);
                 w.write_line(format!(
-                    "static new_{}(val: {}): {} {{",
+                    "static {}(val: {}): {} {{",
                     variant_name, as_variant_type, as_type
                 ))?;
                 w.new_block()
