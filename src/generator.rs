@@ -7,12 +7,13 @@ use std::path::Path;
 
 pub struct Generator<W: Write> {
     w: PrettyWriter<W>,
+    module_name: Option<String>,
 }
 
 impl<W: Write> Generator<W> {
-    pub fn new(writer: W) -> Self {
+    pub fn new(writer: W, module_name: Option<String>) -> Self {
         let w = PrettyWriter::new(writer, "    ");
-        Generator { w }
+        Generator { w, module_name }
     }
 
     pub fn generate<P: AsRef<Path>>(&mut self, path: P) -> Result<(), Error> {
@@ -31,20 +32,20 @@ impl<W: Write> Generator<W> {
         let w0 = &mut self.w;
         w0.write_lines(
             "
-type handle = i32;
-type char = u8;
-type ptr<T> = usize;
-type mut_ptr<T> = usize;
-type untyped_ptr = usize;
-type union_member = usize;
-type struct<T> = usize;
-type wasi_string_ptr = ptr<char>;
+export type handle = i32;
+export type char = u8;
+export type ptr<T> = usize;
+export type mut_ptr<T> = usize;
+export type untyped_ptr = usize;
+export type union_member = usize;
+export type struct<T> = usize;
+export type wasi_string_ptr = ptr<char>;
 ",
         )?;
         w0.write_lines(
             "
 @unmanaged
-class WasiString {
+export class WasiString {
     ptr: wasi_string_ptr;
     len: usize;
 
@@ -62,7 +63,7 @@ class WasiString {
 }
 
 @unmanaged
-class WasiUnion<T> {
+export class WasiUnion<T> {
     tag: T;
     val: union_member;
 }
@@ -191,7 +192,7 @@ class WasiUnion<T> {
             Some(variant_type) => {
                 let as_variant_type = ASType::from(variant_type);
                 w.write_line(format!(
-                    "static new_{}(val: {}): {} {{",
+                    "staticnew_{}(val: {}): {} {{",
                     variant_name, as_variant_type, as_type
                 ))?;
                 w.new_block()
@@ -429,6 +430,10 @@ class WasiUnion<T> {
     }
 
     fn define_func(&mut self, module_name: &str, func: &witx::InterfaceFunc) -> Result<(), Error> {
+        let module_name = match self.module_name.as_ref() {
+            None => module_name,
+            Some(module_name) => module_name.as_str(),
+        };
         let w0 = &mut self.w;
         let docs = &func.docs;
         let name = func.name.as_str();

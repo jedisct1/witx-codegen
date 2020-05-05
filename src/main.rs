@@ -15,6 +15,13 @@ use std::io::Write;
 fn main() {
     let matches = app_from_crate!()
         .arg(
+            Arg::with_name("module_name")
+                .short("-m")
+                .long("--module-name")
+                .value_name("module_name")
+                .help("Set the module name to use instead of reading it from the witx file"),
+        )
+        .arg(
             Arg::with_name("output_file")
                 .short("-o")
                 .long("--output")
@@ -35,6 +42,7 @@ fn main() {
         Some(file) => Box::new(File::create(file).unwrap()),
     };
     let witx_file = matches.value_of("witx_file").unwrap();
-    let mut generator = Generator::new(writer);
+    let module_name = matches.value_of("module_name").map(|x| x.to_string());
+    let mut generator = Generator::new(writer, module_name);
     generator.generate(witx_file).unwrap();
 }
