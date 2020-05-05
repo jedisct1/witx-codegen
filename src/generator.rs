@@ -52,7 +52,7 @@ export class WasiString {
     constructor(str: string) {
         let wasi_string = String.UTF8.encode(str, false);
         // @ts-ignore: cast
-        this.ptr = changetype<ArrayBufferView>(wasi_string).dataStart;
+        this.ptr = changetype<wasi_string_ptr>(wasi_string);
         this.len = wasi_string.byteLength;
     }
 
