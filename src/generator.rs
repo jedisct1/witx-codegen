@@ -51,6 +51,7 @@ export class WasiString {
 
     constructor(str: string) {
         let wasi_string = String.UTF8.encode(str, false);
+        // @ts-ignore: cast
         this.ptr = changetype<ArrayBufferView>(wasi_string).dataStart;
         this.len = wasi_string.byteLength;
     }
@@ -192,7 +193,7 @@ export class WasiUnion<T> {
             Some(variant_type) => {
                 let as_variant_type = ASType::from(variant_type);
                 w.write_line(format!(
-                    "staticnew_{}(val: {}): {} {{",
+                    "static new_{}(val: {}): {} {{",
                     variant_name, as_variant_type, as_type
                 ))?;
                 w.new_block()
@@ -301,7 +302,8 @@ export class WasiUnion<T> {
             w.write_line("get<T>(): T {")?;
             {
                 let mut w = w.new_block();
-                w.write_line("let mem = changetype<ArrayBufferView>(this.xmem).dataStart;")?
+                w.write_line("// @ts-ignore: cast")?
+                    .write_line("let mem = changetype<ArrayBufferView>(this.xmem).dataStart;")?
                     .write_line("if (isReference<T>()) {")?;
                 w.new_block().write_line("return changetype<T>(mem);")?;
                 w.write_line("} else {")?;
@@ -313,7 +315,8 @@ export class WasiUnion<T> {
             w.write_line("set<T>(val: T = 0): void {")?;
             {
                 let mut w = w.new_block();
-                w.write_line("let mem = changetype<ArrayBufferView>(this.xmem).dataStart;")?
+                w.write_line("// @ts-ignore: cast")?
+                    .write_line("let mem = changetype<ArrayBufferView>(this.xmem).dataStart;")?
                     .write_line("memory.fill(mem, 0, 16);")?
                     .write_line("if (isReference<T>()) {")?;
                 w.new_block().write_line(
