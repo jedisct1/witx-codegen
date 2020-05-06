@@ -22,7 +22,7 @@ pub enum ASType {
     WasiStringPtr,
     Handle,
     WasiString,
-    Union(Box<ASType>),
+    Union(Option<String>),
     Array(Box<ASType>),
 }
 
@@ -50,7 +50,8 @@ impl fmt::Display for ASType {
             ASType::WasiStringPtr => write!(f, "wasi_string_ptr"),
             ASType::Handle => write!(f, "handle"),
             ASType::WasiString => write!(f, "WasiString"),
-            ASType::Union(_) => write!(f, "usize /* union */"),
+            ASType::Union(None) => write!(f, "usize /* union */"),
+            ASType::Union(Some(name)) => write!(f, "union<{}>", name),
             ASType::Array(_) => write!(f, "usize /* array */"),
         }
     }
@@ -162,7 +163,12 @@ impl From<&witx::UnionDatatype> for ASType {
 
 impl From<&witx::TypeRef> for ASType {
     fn from(witx: &witx::TypeRef) -> Self {
-        witx.type_().as_ref().into()
+        let type_name = witx.type_name();
+        match witx.type_().as_ref() {
+            witx::Type::Builtin(x) => ASType::from(x).name(type_name),
+            x @ witx::Type::Array(_) => ASType::from(x).name(type_name),
+            _ => ASType::Alias(type_name),
+        }
     }
 }
 
@@ -177,7 +183,7 @@ impl From<&witx::Type> for ASType {
             witx::Type::Handle(x) => x.into(),
             witx::Type::Int(x) => x.into(),
             witx::Type::Struct(_) => ASType::Struct(None),
-            witx::Type::Union(x) => ASType::Union(Box::new(x.tag.as_ref().into())),
+            witx::Type::Union(_) => ASType::Union(None),
             witx::Type::Array(x) => ASType::Array(Box::new(x.into())),
         }
     }

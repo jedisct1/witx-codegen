@@ -37,6 +37,7 @@ export type ptr<T> = usize;
 export type mut_ptr<T> = usize;
 export type untyped_ptr = usize;
 export type struct<T> = usize;
+export type union<T> = usize;
 export type wasi_string_ptr = ptr<char>;
 ",
         )?;
@@ -365,7 +366,7 @@ export class WasiString {
             let mut w = w.new_block();
             for variant in variants {
                 let variant_name = variant.name.as_str();
-                let variant_type = ASType::from(variant.tref.type_().as_ref());
+                let variant_type = ASType::from(&variant.tref);
                 Self::write_docs(&mut w, &variant.docs)?;
                 w.write_line(format!("{}: {};", variant_name, variant_type))?;
             }
