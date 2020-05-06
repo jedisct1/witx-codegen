@@ -45,13 +45,13 @@ impl fmt::Display for ASType {
             ASType::Alias(to) => write!(f, "{}", to),
             ASType::Ptr(other_type) => write!(f, "ptr<{}>", other_type),
             ASType::MutPtr(other_type) => write!(f, "mut_ptr<{}>", other_type),
-            ASType::Struct(None) => write!(f, "untyped_struct"),
+            ASType::Struct(None) => write!(f, "usize /* struct */"),
             ASType::Struct(Some(name)) => write!(f, "struct<{}>", name),
             ASType::WasiStringPtr => write!(f, "wasi_string_ptr"),
             ASType::Handle => write!(f, "handle"),
             ASType::WasiString => write!(f, "WasiString"),
-            ASType::Union(tag_type) => write!(f, "WasiUnion<{}>", tag_type),
-            ASType::Array(_) => write!(f, "WasiArray"),
+            ASType::Union(_) => write!(f, "usize /* union */"),
+            ASType::Array(_) => write!(f, "usize /* array */"),
         }
     }
 }

@@ -36,7 +36,6 @@ export type char = u8;
 export type ptr<T> = usize;
 export type mut_ptr<T> = usize;
 export type untyped_ptr = usize;
-export type union_member = usize;
 export type struct<T> = usize;
 export type wasi_string_ptr = ptr<char>;
 ",
@@ -60,12 +59,6 @@ export class WasiString {
         memory.copy(changetype<usize>(tmp), this.ptr, this.len);
         return String.UTF8.decode(tmp);
     }
-}
-
-@unmanaged
-export class WasiUnion<T> {
-    tag: T;
-    val: union_member;
 }
 ",
         )?
