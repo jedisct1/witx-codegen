@@ -270,20 +270,27 @@ export class WasiUnion<T> {
     ) -> Result<(), Error> {
         let as_tag = ASType::from(union.tag.as_ref());
         let variants = &union.variants;
+        let val_offset = union.union_layout().contents_offset;
+        let val_size = union.union_layout().contents_size;
         w.write_line("// @ts-ignore: decorator")?
             .write_line("@unmanaged")?
             .write_line(format!("export class {} {{", as_type))?;
         {
             let mut w = w.new_block();
             w.write_line(format!("tag: {};", as_tag))?
-                .write_line("private xmem: u64[]")?
+                .write_line("private pad0: u64")?
+                .write_line("private pad1: u64")?
+                .write_line("private pad2: u64")?
+                .write_line("private pad3: u64")?
                 .eob()?;
 
             w.write_line(format!("constructor(tag: {}) {{", as_tag))?;
             {
                 let mut w = w.new_block();
-                w.write_line("this.tag = tag;")?
-                    .write_line("this.xmem = [0, 0];")?;
+                w.write_line("this.tag = tag;")?.write_line(format!(
+                    "memory.fill(changetype<usize>(this) + {}, 0, {});",
+                    val_offset, val_size
+                ))?;
             }
             w.write_line("}")?.eob()?;
 
@@ -303,11 +310,14 @@ export class WasiUnion<T> {
             {
                 let mut w = w.new_block();
                 w.write_line("// @ts-ignore: cast")?
-                    .write_line("let mem = changetype<ArrayBufferView>(this.xmem).dataStart;")?
+                    .write_line(format!(
+                        "let valBuf = changetype<usize>(this) + {};",
+                        val_offset
+                    ))?
                     .write_line("if (isReference<T>()) {")?;
-                w.new_block().write_line("return changetype<T>(mem);")?;
+                w.new_block().write_line("return changetype<T>(valBuf);")?;
                 w.write_line("} else {")?;
-                w.new_block().write_line("return load<T>(mem);")?;
+                w.new_block().write_line("return load<T>(valBuf);")?;
                 w.write_line("}")?;
             }
             w.write_line("}")?.eob()?;
@@ -317,23 +327,18 @@ export class WasiUnion<T> {
             {
                 let mut w = w.new_block();
                 w.write_line("// @ts-ignore: cast")?
-                    .write_line("let mem = changetype<ArrayBufferView>(this.xmem).dataStart;")?
-                    .write_line("memory.fill(mem, 0, 16);")?
+                    .write_line(format!(
+                        "let valBuf = changetype<usize>(this) + {};",
+                        val_offset
+                    ))?
+                    .write_line(format!("memory.fill(valBuf, 0, {});", val_size))?
                     .write_line("if (isReference<T>()) {")?;
                 w.new_block().write_line(
-                    "(val !== null) && memory.copy(mem, changetype<usize>(val), offsetof<T>());",
+                    "(val !== null) && memory.copy(valBuf, changetype<usize>(val), offsetof<T>());",
                 )?;
                 w.write_line("} else {")?;
-                w.new_block().write_line("store<T>(mem, val)")?;
+                w.new_block().write_line("store<T>(valBuf, val)")?;
                 w.write_line("}")?;
-            }
-            w.write_line("}")?.eob()?;
-
-            w.write_line("val<T>(): T {")?;
-            {
-                let mut w = w.new_block();
-                w.write_line("// @ts-ignore: cast")?
-                    .write_line("return this.xmem as T;")?;
             }
             w.write_line("}")?;
 
