@@ -166,7 +166,9 @@ impl From<&witx::TypeRef> for ASType {
         let type_name = witx.type_name();
         match witx.type_().as_ref() {
             witx::Type::Builtin(x) => ASType::from(x).name(type_name),
-            x @ witx::Type::Array(_) => ASType::from(x).name(type_name),
+            x @ witx::Type::Array(_)
+            | x @ witx::Type::Pointer(_)
+            | x @ witx::Type::ConstPointer(_) => ASType::from(x).name(type_name),
             _ => ASType::Alias(type_name),
         }
     }

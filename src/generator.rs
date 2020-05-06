@@ -61,6 +61,18 @@ export class WasiString {
         return String.UTF8.decode(tmp);
     }
 }
+
+@unmanaged
+export class WasiArray<T> {
+    ptr: ptr<T>;
+    len: usize;
+
+    constructor(array: ArrayBufferView) {
+        // @ts-ignore: cast
+        this.ptr = array.dataStart;
+        this.len = array.byteLength;
+    }
+}
 ",
         )?
         .eob()?;
@@ -271,8 +283,18 @@ export class WasiString {
         {
             let mut w = w.new_block();
             w.write_line(format!("tag: {};", as_tag))?;
-            for i in 0..(val_offset + val_size + 7) / 8 {
-                w.write_line(format!("private pad{}: u64;", i))?;
+            let pad_len = val_offset + val_size;
+            for i in 0..pad_len / 8 {
+                w.write_line(format!("private __pad64_{}: u64;", i))?;
+            }
+            for i in 0..(pad_len & 7) / 4 {
+                w.write_line(format!("private __pad32_{}: u32;", i))?;
+            }
+            for i in 0..(pad_len & 3) / 2 {
+                w.write_line(format!("private __pad16_{}: u16;", i))?;
+            }
+            for i in 0..(pad_len & 1) {
+                w.write_line(format!("private __pad8_{}: u8;", i))?;
             }
             w.eob()?;
 
@@ -375,6 +397,18 @@ export class WasiString {
         Ok(())
     }
 
+    fn define_as_array<T: Write>(
+        w: &mut PrettyWriter<T>,
+        as_type: &ASType,
+        actual_as_type: &ASType,
+    ) -> Result<(), Error> {
+        w.write_line(format!(
+            "export type {} = WasiArray<{}>;",
+            as_type, actual_as_type
+        ))?;
+        Ok(())
+    }
+
     fn define_as_witx_type<T: Write>(
         w: &mut PrettyWriter<T>,
         as_type: &ASType,
@@ -388,9 +422,9 @@ export class WasiString {
             witx::Type::Builtin(builtin) => Self::define_as_builtin(w, as_type, &builtin.into())?,
             witx::Type::Union(union) => Self::define_as_union(w, as_type, union)?,
             witx::Type::Struct(witx_struct) => Self::define_as_struct(w, as_type, witx_struct)?,
-            e => {
-                dbg!(e);
-                unimplemented!();
+            witx::Type::Array(array) => Self::define_as_array(w, as_type, &ASType::from(array))?,
+            witx::Type::ConstPointer(_) | witx::Type::Pointer(_) => {
+                panic!("Typedef's pointers are not implemented")
             }
         };
         Ok(())
