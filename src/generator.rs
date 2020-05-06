@@ -277,12 +277,11 @@ export class WasiUnion<T> {
             .write_line(format!("export class {} {{", as_type))?;
         {
             let mut w = w.new_block();
-            w.write_line(format!("tag: {};", as_tag))?
-                .write_line("private pad0: u64")?
-                .write_line("private pad1: u64")?
-                .write_line("private pad2: u64")?
-                .write_line("private pad3: u64")?
-                .eob()?;
+            w.write_line(format!("tag: {};", as_tag))?;
+            for i in 0..(val_offset + val_size + 7) / 8 {
+                w.write_line(format!("private pad{}: u64;", i))?;
+            }
+            w.eob()?;
 
             w.write_line(format!("constructor(tag: {}) {{", as_tag))?;
             {
