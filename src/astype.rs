@@ -75,7 +75,7 @@ impl ASType {
         let first = match self {
             ASType::WasiString => (ASType::WasiStringPtr, "_ptr"),
             ASType::Array(element_type) => (ASType::Ptr(element_type.clone()), "_ptr"),
-            t @ _ => (t.clone(), ""),
+            t => (t.clone(), ""),
         };
         let second = match self {
             ASType::WasiString => Some((ASType::Usize, "_len")),
@@ -88,7 +88,7 @@ impl ASType {
     pub fn name(self, name: String) -> Self {
         match self {
             ASType::Struct(_) => ASType::Struct(Some(name)),
-            x @ _ => x,
+            x => x,
         }
     }
 }

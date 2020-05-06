@@ -1,7 +1,6 @@
 use crate::astype::*;
 use crate::error::*;
 use crate::pretty_writer::PrettyWriter;
-use std;
 use std::io::Write;
 use std::path::Path;
 
