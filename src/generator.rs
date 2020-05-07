@@ -46,18 +46,18 @@ export type wasi_string_ptr = ptr<char>;
 @unmanaged
 export class WasiString {
     ptr: wasi_string_ptr;
-    len: usize;
+    length: usize;
 
     constructor(str: string) {
-        let wasi_string = String.UTF8.encode(str, false);
+        let wasiString = String.UTF8.encode(str, false);
         // @ts-ignore: cast
-        this.ptr = changetype<wasi_string_ptr>(wasi_string);
-        this.len = wasi_string.byteLength;
+        this.ptr = changetype<wasi_string_ptr>(wasiString);
+        this.length = wasiString.byteLength;
     }
 
     toString(): string {
-        let tmp = new ArrayBuffer(this.len as u32);
-        memory.copy(changetype<usize>(tmp), this.ptr, this.len);
+        let tmp = new ArrayBuffer(this.length as u32);
+        memory.copy(changetype<usize>(tmp), this.ptr, this.length);
         return String.UTF8.decode(tmp);
     }
 }
@@ -65,12 +65,12 @@ export class WasiString {
 @unmanaged
 export class WasiArray<T> {
     ptr: ptr<T>;
-    len: usize;
+    length: usize;
 
     constructor(array: ArrayBufferView) {
         // @ts-ignore: cast
         this.ptr = array.dataStart;
-        this.len = array.byteLength;
+        this.length = array.byteLength;
     }
 }
 ",
