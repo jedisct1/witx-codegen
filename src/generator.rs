@@ -75,7 +75,7 @@ impl<W: Write> Generator<W> {
             let mut w = w.new_block();
             for (i, variant) in int.consts.iter().enumerate() {
                 Self::write_docs(&mut w, &variant.docs)?;
-                w.write_line(format!("- {} = {};", variant.name.as_str(), i))?;
+                w.write_line(format!("- {} = {}", variant.name.as_str(), i))?;
             }
         }
         Ok(())
@@ -87,21 +87,14 @@ impl<W: Write> Generator<W> {
         flags: &witx::FlagsDatatype,
     ) -> Result<(), Error> {
         let actual_as_type = ASType::from(flags);
-        w.write_line(format!("export namespace {} {{", as_type))?;
+        w.write_line(format!("{}: flags({})", as_type, actual_as_type))?;
         {
             let mut w = w.new_block();
             for (i, variant) in flags.flags.iter().enumerate() {
                 Self::write_docs(&mut w, &variant.docs)?;
-                w.write_line(format!(
-                    "export const {}: {} = {};",
-                    variant.name.as_str(),
-                    as_type,
-                    1u64 << i
-                ))?;
+                w.write_line(format!("- {} = 1 << {}", variant.name.as_str(), i))?;
             }
         }
-        w.write_line("}")?
-            .write_line(format!("export type {} = {};", as_type, actual_as_type))?;
         Ok(())
     }
 
@@ -166,19 +159,16 @@ impl<W: Write> Generator<W> {
         witx_struct: &witx::StructDatatype,
     ) -> Result<(), Error> {
         let variants = &witx_struct.members;
-        w.write_line("// @ts-ignore: decorator")?
-            .write_line("@unmanaged")?
-            .write_line(format!("class {} {{", as_type))?;
+        w.write_line(format!("{}: struct", as_type))?;
         {
             let mut w = w.new_block();
             for variant in variants {
                 let variant_name = variant.name.as_str();
                 let variant_type = ASType::from(&variant.tref);
                 Self::write_docs(&mut w, &variant.docs)?;
-                w.write_line(format!("{}: {};", variant_name, variant_type))?;
+                w.write_line(format!("- {}: {}", variant_name, variant_type))?;
             }
         }
-        w.write_line("}")?;
         Ok(())
     }
 
@@ -187,10 +177,7 @@ impl<W: Write> Generator<W> {
         as_type: &ASType,
         actual_as_type: &ASType,
     ) -> Result<(), Error> {
-        w.write_line(format!(
-            "export type {} = WasiArray<{}>;",
-            as_type, actual_as_type
-        ))?;
+        w.write_line(format!("{}: WasiArray<{}>;", as_type, actual_as_type))?;
         Ok(())
     }
 
@@ -219,9 +206,7 @@ impl<W: Write> Generator<W> {
         let w0 = &mut self.w;
         let as_type = ASType::Alias(type_.name.as_str().to_string());
         let docs = &type_.docs;
-        if docs.is_empty() {
-            w0.write_line(format!("/** {} */", as_type))?;
-        } else {
+        if !docs.is_empty() {
             Self::write_docs(w0, &type_.docs)?;
         }
         let tref = &type_.tref;
@@ -241,7 +226,7 @@ impl<W: Write> Generator<W> {
         let w = &mut self.w.clone();
         w.eob()?
             .write_line(format!(
-                "----------------------[{}]----------------------",
+                "----------------------[Module: {}]----------------------",
                 module.name.as_str()
             ))?
             .eob()?;
@@ -260,9 +245,7 @@ impl<W: Write> Generator<W> {
         let w0 = &mut self.w;
         let docs = &func.docs;
         let name = func.name.as_str();
-        if docs.is_empty() {
-            w0.write_line(format!("\n/** {} */", name))?;
-        } else {
+        if !docs.is_empty() {
             Self::write_docs(w0, docs)?;
         }
 
@@ -280,7 +263,10 @@ impl<W: Write> Generator<W> {
             None => (ASType::Void, "".to_string()),
             Some(x) => (x.1.clone(), format!(" /* {} */", x.0)),
         };
-        w0.write_line(format!("func {}(): {}", name, return_as_type_and_comment.0))?;
+        w0.write_line(format!(
+            "function {}(): {}",
+            name, return_as_type_and_comment.0
+        ))?;
         let mut w0 = w0.new_block();
 
         let as_params: Vec<_> = as_params
