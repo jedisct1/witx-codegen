@@ -58,20 +58,6 @@ impl fmt::Display for ASType {
 }
 
 impl ASType {
-    pub fn is_nullable(&self) -> bool {
-        match self {
-            ASType::Ptr(_)
-            | ASType::MutPtr(_)
-            | ASType::Struct(None)
-            | ASType::Struct(Some(_))
-            | ASType::WasiStringPtr
-            | ASType::WasiString
-            | ASType::Union(_)
-            | ASType::Array(_) => true,
-            _ => false,
-        }
-    }
-
     pub fn decompose(&self) -> ((ASType, &'static str), Option<(ASType, &'static str)>) {
         let first = match self {
             ASType::WasiString => (ASType::WasiStringPtr, "_ptr"),

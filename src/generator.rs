@@ -1,5 +1,6 @@
 use crate::astype::*;
 use crate::error::*;
+use crate::html::*;
 use crate::pretty_writer::PrettyWriter;
 use std::io::Write;
 use std::path::Path;
@@ -17,7 +18,6 @@ impl<W: Write> Generator<W> {
 
     pub fn generate<P: AsRef<Path>>(&mut self, path: P) -> Result<(), Error> {
         let document = witx::load(&[path])?;
-        self.header()?;
         for type_ in document.typenames() {
             self.define_type(type_.as_ref())?;
         }
@@ -27,18 +27,16 @@ impl<W: Write> Generator<W> {
         Ok(())
     }
 
-    fn header(&mut self) -> Result<(), Error> {
-        let w0 = &mut self.w;
-        w0.write_lines("API overview")?.eob()?;
-        Ok(())
-    }
-
     fn define_as_alias<T: Write>(
         w: &mut PrettyWriter<T>,
         as_type: &ASType,
         other_type: &ASType,
     ) -> Result<(), Error> {
-        w.write_line(format!("{}: alias({})", as_type, other_type))?;
+        w.write_line(format!(
+            "{}: alias({})",
+            render_type(as_type),
+            render_type(other_type)
+        ))?;
         Ok(())
     }
 
@@ -48,19 +46,27 @@ impl<W: Write> Generator<W> {
         enum_data_type: &witx::EnumDatatype,
     ) -> Result<(), Error> {
         let actual_as_type = ASType::from(enum_data_type.repr);
-        w.write_line(format!("{}: enum({})", as_type, actual_as_type))?;
+        w.write_line(format!(
+            "{}: enum({})",
+            render_type(as_type),
+            render_type(actual_as_type)
+        ))?;
         {
             let mut w = w.new_block();
             for (i, variant) in enum_data_type.variants.iter().enumerate() {
                 Self::write_docs(&mut w, &variant.docs)?;
-                w.write_line(format!("- {} = {}", variant.name.as_str(), i))?;
+                w.write_line(format!(
+                    "- {} = {}",
+                    render_variant(variant.name.as_str()),
+                    i
+                ))?;
             }
         }
         Ok(())
     }
 
     fn define_as_handle<T: Write>(w: &mut PrettyWriter<T>, as_type: &ASType) -> Result<(), Error> {
-        w.write_line(format!("{}: handle", as_type))?;
+        w.write_line(format!("{}: handle", render_type(as_type)))?;
         Ok(())
     }
 
@@ -70,12 +76,20 @@ impl<W: Write> Generator<W> {
         int: &witx::IntDatatype,
     ) -> Result<(), Error> {
         let actual_as_type = ASType::from(int);
-        w.write_line(format!("{}: int({})", as_type, actual_as_type))?;
+        w.write_line(format!(
+            "{}: int({})",
+            render_type(as_type),
+            render_type(actual_as_type)
+        ))?;
         {
             let mut w = w.new_block();
             for (i, variant) in int.consts.iter().enumerate() {
                 Self::write_docs(&mut w, &variant.docs)?;
-                w.write_line(format!("- {} = {}", variant.name.as_str(), i))?;
+                w.write_line(format!(
+                    "- {} = {}",
+                    render_variant(variant.name.as_str()),
+                    i
+                ))?;
             }
         }
         Ok(())
@@ -87,12 +101,20 @@ impl<W: Write> Generator<W> {
         flags: &witx::FlagsDatatype,
     ) -> Result<(), Error> {
         let actual_as_type = ASType::from(flags);
-        w.write_line(format!("{}: flags({})", as_type, actual_as_type))?;
+        w.write_line(format!(
+            "{}: flags({})",
+            render_type(as_type),
+            render_type(actual_as_type)
+        ))?;
         {
             let mut w = w.new_block();
             for (i, variant) in flags.flags.iter().enumerate() {
                 Self::write_docs(&mut w, &variant.docs)?;
-                w.write_line(format!("- {} = 1 << {}", variant.name.as_str(), i))?;
+                w.write_line(format!(
+                    "- {} = 1 << {}",
+                    render_variant(variant.name.as_str()),
+                    i
+                ))?;
             }
         }
         Ok(())
@@ -100,20 +122,24 @@ impl<W: Write> Generator<W> {
 
     fn define_union_variant<T: Write>(
         w: &mut PrettyWriter<T>,
-        as_type: &ASType,
+        _as_type: &ASType,
         i: usize,
         variant: &witx::UnionVariant,
     ) -> Result<(), Error> {
         let variant_name = variant.name.as_str();
         match variant.tref.as_ref() {
             None => {
-                w.write_line(format!("- {}: void (if tag={})", variant_name, i))?;
+                w.write_line(format!(
+                    "- {}: void (if tag={})",
+                    render_variant(variant_name),
+                    i
+                ))?;
             }
             Some(variant_type) => {
                 w.write_line(format!(
                     "- {}: {} (if tag={})",
-                    variant_name,
-                    ASType::from(variant_type),
+                    render_variant(variant_name),
+                    render_type(ASType::from(variant_type)),
                     i
                 ))?;
             }
@@ -133,7 +159,9 @@ impl<W: Write> Generator<W> {
         let pad_len = val_offset + val_size;
         w.write_line(format!(
             "union {} (tag: {}, padding: {} bytes)",
-            as_type, as_tag, pad_len
+            render_type(as_type),
+            render_tag(as_tag),
+            pad_len
         ))?;
         {
             let mut w = w.new_block();
@@ -149,7 +177,11 @@ impl<W: Write> Generator<W> {
         as_type: &ASType,
         actual_as_type: &ASType,
     ) -> Result<(), Error> {
-        w.write_line(format!("alias {} = {}", as_type, actual_as_type))?;
+        w.write_line(format!(
+            "alias {} = {}",
+            render_type(as_type),
+            render_type(actual_as_type)
+        ))?;
         Ok(())
     }
 
@@ -166,7 +198,11 @@ impl<W: Write> Generator<W> {
                 let variant_name = variant.name.as_str();
                 let variant_type = ASType::from(&variant.tref);
                 Self::write_docs(&mut w, &variant.docs)?;
-                w.write_line(format!("- {}: {}", variant_name, variant_type))?;
+                w.write_line(format!(
+                    "- {}: {}",
+                    render_variant(variant_name),
+                    render_type(variant_type)
+                ))?;
             }
         }
         Ok(())
@@ -177,7 +213,11 @@ impl<W: Write> Generator<W> {
         as_type: &ASType,
         actual_as_type: &ASType,
     ) -> Result<(), Error> {
-        w.write_line(format!("{}: WasiArray<{}>;", as_type, actual_as_type))?;
+        w.write_line(format!(
+            "{}: WasiArray<{}>;",
+            render_type(as_type),
+            render_type(actual_as_type)
+        ))?;
         Ok(())
     }
 
@@ -238,7 +278,7 @@ impl<W: Write> Generator<W> {
     }
 
     fn define_func(&mut self, module_name: &str, func: &witx::InterfaceFunc) -> Result<(), Error> {
-        let module_name = match self.module_name.as_ref() {
+        let _module_name = match self.module_name.as_ref() {
             None => module_name,
             Some(module_name) => module_name.as_str(),
         };
@@ -263,41 +303,57 @@ impl<W: Write> Generator<W> {
             None => (ASType::Void, "".to_string()),
             Some(x) => (x.1.clone(), format!(" /* {} */", x.0)),
         };
-        w0.write_line(format!(
+        let output_header = format!(
             "function {}(): {}",
-            name, return_as_type_and_comment.0
-        ))?;
+            render_function_name(name),
+            render_type(return_as_type_and_comment.0)
+        );
         let mut w0 = w0.new_block();
 
         let as_params: Vec<_> = as_params
             .iter()
-            .map(|(v, t)| format!("- {}: {}", v, t))
+            .map(|(v, t)| format!("{}: {}", render_param(v), render_type(t)))
             .collect();
         let as_results: Vec<_> = as_results
             .iter()
-            .map(|(v, t)| format!("- {}: {}", v, ASType::MutPtr(Box::new(t.clone()))))
+            .map(|(v, t)| {
+                format!(
+                    "{}: {}",
+                    render_output(v),
+                    render_type(ASType::MutPtr(Box::new(t.clone())))
+                )
+            })
             .collect();
+        let mut output_function_params = "".to_string();
+        let mut output_function_results = "".to_string();
         if !as_params.is_empty() {
-            w0.write_line("- Input:")?;
-            w0.new_block().write_lines(as_params.join("\n"))?;
+            output_function_params = render_function_params(&as_params);
         }
         if !as_results.is_empty() {
-            w0.write_line("- Output:")?;
-            w0.new_block().write_lines(as_results.join("\n"))?;
+            output_function_results = render_function_results(&as_results);
         }
+        let output = render_function(
+            output_header,
+            output_function_params,
+            output_function_results,
+        );
+        w0.write_line(output)?;
+
         Ok(())
     }
 
     fn write_docs<T: Write>(w: &mut PrettyWriter<T>, docs: &str) -> Result<(), Error> {
-        return Ok(());
-        if docs.is_empty() {
-            return Ok(());
+        if false {
+            if docs.is_empty() {
+                return Ok(());
+            }
+            let _ = w;
+            w.write_line("/**")?;
+            for docs_line in docs.lines() {
+                w.write_line(format!(" * {}", docs_line))?;
+            }
+            w.write_line(" */")?;
         }
-        w.write_line("/**")?;
-        for docs_line in docs.lines() {
-            w.write_line(format!(" * {}", docs_line))?;
-        }
-        w.write_line(" */")?;
         Ok(())
     }
 

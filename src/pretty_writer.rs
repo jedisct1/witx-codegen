@@ -103,6 +103,7 @@ impl<W: Write> PrettyWriter<W> {
     }
 
     /// Continuation
+    #[allow(dead_code)]
     pub fn continuation(&mut self) -> Result<&mut Self, Error> {
         self.indent()?;
         let continuation_bytes = &self.continuation_bytes;

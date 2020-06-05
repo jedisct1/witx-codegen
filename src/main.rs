@@ -1,10 +1,13 @@
 mod astype;
 mod error;
 mod generator;
+mod html;
 mod pretty_writer;
 
 #[macro_use]
 extern crate clap;
+#[macro_use]
+extern crate horrorshow;
 
 use crate::error::*;
 use crate::generator::*;
