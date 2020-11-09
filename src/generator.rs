@@ -37,60 +37,19 @@ impl<W: Write> Generator<W> {
         )?;
         w0.write_lines(
             "
-export type handle = i32;
-export type char = u8;
-export type ptr<T> = usize;
-export type mut_ptr<T> = usize;
-export type untyped_ptr = usize;
-export type struct<T> = usize;
-export type union<T> = usize;
-export type wasi_string_ptr = ptr<char>;
+pub const handle = i32;
+pub const char = u8;
+pub const untyped_ptr = usize;
+pub const wasi_string_ptr = *u8;
 ",
         )?;
-        w0.write_lines(
-            "
-@unmanaged
-export class WasiString {
-    ptr: wasi_string_ptr;
-    length: usize;
-
-    constructor(str: string) {
-        let wasiString = String.UTF8.encode(str, false);
-        // @ts-ignore: cast
-        this.ptr = changetype<wasi_string_ptr>(wasiString);
-        this.length = wasiString.byteLength;
-    }
-
-    toString(): string {
-        let tmp = new ArrayBuffer(this.length as u32);
-        memory.copy(changetype<usize>(tmp), this.ptr, this.length);
-        return String.UTF8.decode(tmp);
-    }
-}
-
-@unmanaged
-export class WasiArray<T> {
-    ptr: ptr<T>;
-    length: usize;
-
-    constructor(array: ArrayBufferView) {
-        // @ts-ignore: cast
-        this.ptr = array.dataStart;
-        this.length = array.byteLength;
-    }
-}
-",
-        )?
-        .eob()?;
-        Ok(())
-    }
 
     fn define_as_alias<T: Write>(
         w: &mut PrettyWriter<T>,
         as_type: &ASType,
         other_type: &ASType,
     ) -> Result<(), Error> {
-        w.write_line(format!("export type {} = {};", as_type, other_type))?;
+        w.write_line(format!("pub const {} = {};", as_type, other_type))?;
         Ok(())
     }
 
@@ -100,13 +59,13 @@ export class WasiArray<T> {
         enum_data_type: &witx::EnumDatatype,
     ) -> Result<(), Error> {
         let actual_as_type = ASType::from(enum_data_type.repr);
-        w.write_line(format!("export namespace {} {{", as_type))?;
+        w.write_line(format!("pub const {} = struct {{", as_type))?;
         {
             let mut w = w.new_block();
             for (i, variant) in enum_data_type.variants.iter().enumerate() {
                 Self::write_docs(&mut w, &variant.docs)?;
                 w.write_line(format!(
-                    "export const {}: {} = {};",
+                    "pub const {}: {} = {};",
                     variant.name.as_str().to_uppercase(),
                     as_type,
                     i
@@ -115,13 +74,13 @@ export class WasiArray<T> {
             }
         }
         w.write_line("}")?
-            .write_line(format!("export type {} = {};", as_type, actual_as_type))?
+            .write_line(format!("pub const {} = {};", as_type, actual_as_type))?
             .eob()?;
         Ok(())
     }
 
     fn define_as_handle<T: Write>(w: &mut PrettyWriter<T>, as_type: &ASType) -> Result<(), Error> {
-        w.write_line(format!("export type {} = {};", as_type, ASType::Handle))?;
+        w.write_line(format!("pub const {} = {};", as_type, ASType::Handle))?;
         Ok(())
     }
 
@@ -131,7 +90,7 @@ export class WasiArray<T> {
         int: &witx::IntDatatype,
     ) -> Result<(), Error> {
         let actual_as_type = ASType::from(int);
-        w.write_line(format!("export namespace {} {{", as_type))?;
+        w.write_line(format!("pub const {} = struct {{", as_type))?;
         {
             let mut w = w.new_block();
             for (i, variant) in int.consts.iter().enumerate() {
