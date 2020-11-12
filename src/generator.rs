@@ -37,7 +37,7 @@ impl<W: Write> Generator<W> {
 pub const handle = i32;
 pub const char = u8;
 pub const untyped_ptr = usize;
-pub const wasi_string_ptr = *u8;
+pub const wasi_string_ptr = [*] const u8;
 ",
         )?
         .eob()?;
