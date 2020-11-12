@@ -239,7 +239,7 @@ pub const wasi_string_ptr = *u8;
         let variants = &union.variants;
         let val_offset = union.union_layout().contents_offset;
         let val_size = union.union_layout().contents_size;
-        w.write_line(format!("pub const {} = struct {{", as_type))?;
+        w.write_line(format!("pub const {} = extern struct {{", as_type))?;
         {
             let mut w = w.new_block();
             w.write_line(format!("tag: {} = undefined,", as_tag))?;
@@ -320,7 +320,7 @@ pub const wasi_string_ptr = *u8;
         witx_struct: &witx::StructDatatype,
     ) -> Result<(), Error> {
         let variants = &witx_struct.members;
-        w.write_line(format!("pub const {} = struct {{", as_type))?;
+        w.write_line(format!("pub const {} = extern struct {{", as_type))?;
         {
             let mut w = w.new_block();
             for variant in variants {
@@ -434,7 +434,7 @@ pub const wasi_string_ptr = *u8;
             .collect();
         w0.write_line(format!("// in:  {}", s_in.join(", ")))?
             .write_line(format!("// out: {}", s_out.join(", ")))?;
-        w0.write_line(format!("extern \"{}\" fn {} (", module_name, name))?;
+        w0.write_line(format!("pub extern \"{}\" fn {} (", module_name, name))?;
 
         let params = &func.params;
         let as_params = Self::params_to_as(params);
