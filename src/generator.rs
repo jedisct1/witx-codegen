@@ -36,8 +36,6 @@ impl<W: Write> Generator<W> {
             "
 pub const handle = i32;
 pub const char = u8;
-pub const untyped_ptr = usize;
-pub const wasi_string_ptr = [*] const u8;
 ",
         )?
         .eob()?;
@@ -399,9 +397,9 @@ pub const wasi_string_ptr = [*] const u8;
             module.name.as_str()
         ))?;
         {
-            let w = w.indent()?;
+            let mut w = w.new_block();
             for func in module.funcs() {
-                self.define_func(module.name.as_str(), func.as_ref())?;
+                self.define_func(&mut w, module.name.as_str(), func.as_ref())?;
                 w.eob()?;
             }
         }
@@ -409,16 +407,21 @@ pub const wasi_string_ptr = [*] const u8;
         Ok(())
     }
 
-    fn define_func(&mut self, module_name: &str, func: &witx::InterfaceFunc) -> Result<(), Error> {
+    fn define_func<T: Write>(
+        &mut self,
+        w: &mut PrettyWriter<T>,
+        module_name: &str,
+        func: &witx::InterfaceFunc,
+    ) -> Result<(), Error> {
         let module_name = match self.module_name.as_ref() {
             None => module_name,
             Some(module_name) => module_name.as_str(),
         };
-        let w0 = &mut self.w;
+        let w0 = w;
         let docs = &func.docs;
         let name = func.name.as_str();
         if docs.is_empty() {
-            w0.write_line(format!("\n// {}", name))?;
+            w0.write_line(format!("// {}", name))?;
         } else {
             Self::write_docs(w0, docs)?;
         }
@@ -472,7 +475,7 @@ pub const wasi_string_ptr = [*] const u8;
             w0.continuation()?.write_line(as_results.join(", "))?;
         }
         w0.write_line(format!(
-            ") {}{};",
+            ") callconv(.C) {}{};",
             return_as_type_and_comment.0, return_as_type_and_comment.1
         ))?;
         Ok(())
