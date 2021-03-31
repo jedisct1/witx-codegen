@@ -1,6 +1,6 @@
 [package]
 name = "as-witx"
-version = "1.2.0"
+version = "0.2.0"
 authors = ["Frank Denis <github@pureftpd.org>"]
 edition = "2018"
 
