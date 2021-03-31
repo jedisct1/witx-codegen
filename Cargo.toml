@@ -8,4 +8,4 @@ edition = "2018"
 
 [dependencies]
 clap = { version = "2.33", features = ["wrap_help"] }
-witx = "0.8.7"
+witx = "0.9"

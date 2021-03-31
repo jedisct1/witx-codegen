@@ -18,12 +18,10 @@ pub enum ASType {
     Alias(String),
     Ptr(Box<ASType>),
     MutPtr(Box<ASType>),
-    Struct(Option<String>),
-    WasiStringPtr,
+    Record(Option<String>),
     Handle,
-    WasiString,
-    Union(Option<String>),
-    Array(Box<ASType>),
+    Variant(Option<String>),
+    List(Box<ASType>),
 }
 
 impl fmt::Display for ASType {
@@ -45,14 +43,12 @@ impl fmt::Display for ASType {
             ASType::Alias(to) => write!(f, "{}", to),
             ASType::Ptr(other_type) => write!(f, "ptr<{}>", other_type),
             ASType::MutPtr(other_type) => write!(f, "mut_ptr<{}>", other_type),
-            ASType::Struct(None) => write!(f, "usize /* struct */"),
-            ASType::Struct(Some(name)) => write!(f, "struct<{}>", name),
-            ASType::WasiStringPtr => write!(f, "wasi_string_ptr"),
+            ASType::Record(None) => write!(f, "usize /* struct */"),
+            ASType::Record(Some(name)) => write!(f, "struct<{}>", name),
             ASType::Handle => write!(f, "handle"),
-            ASType::WasiString => write!(f, "WasiString"),
-            ASType::Union(None) => write!(f, "usize /* union */"),
-            ASType::Union(Some(name)) => write!(f, "union<{}>", name),
-            ASType::Array(_) => write!(f, "usize /* array */"),
+            ASType::Variant(None) => write!(f, "usize /* union */"),
+            ASType::Variant(Some(name)) => write!(f, "union<{}>", name),
+            ASType::List(_) => write!(f, "usize /* array */"),
         }
     }
 }
@@ -62,25 +58,20 @@ impl ASType {
         match self {
             ASType::Ptr(_)
             | ASType::MutPtr(_)
-            | ASType::Struct(None)
-            | ASType::Struct(Some(_))
-            | ASType::WasiStringPtr
-            | ASType::WasiString
-            | ASType::Union(_)
-            | ASType::Array(_) => true,
+            | ASType::Record(_)
+            | ASType::Variant(_)
+            | ASType::List(_) => true,
             _ => false,
         }
     }
 
     pub fn decompose(&self) -> ((ASType, &'static str), Option<(ASType, &'static str)>) {
         let first = match self {
-            ASType::WasiString => (ASType::WasiStringPtr, "_ptr"),
-            ASType::Array(element_type) => (ASType::Ptr(element_type.clone()), "_ptr"),
+            ASType::List(element_type) => (ASType::Ptr(element_type.clone()), "_ptr"),
             t => (t.clone(), ""),
         };
         let second = match self {
-            ASType::WasiString => Some((ASType::Usize, "_len")),
-            ASType::Array(_element_type) => Some((ASType::Usize, "_count")),
+            ASType::List(_element_type) => Some((ASType::Usize, "_count")),
             _ => None,
         };
         (first, second)
@@ -88,7 +79,8 @@ impl ASType {
 
     pub fn name(self, name: String) -> Self {
         match self {
-            ASType::Struct(_) => ASType::Struct(Some(name)),
+            ASType::Record(_) => ASType::Record(Some(name)),
+            ASType::Variant(_) => ASType::Variant(Some(name)),
             x => x,
         }
     }
@@ -108,38 +100,43 @@ impl From<witx::IntRepr> for ASType {
 impl From<&witx::BuiltinType> for ASType {
     fn from(witx: &witx::BuiltinType) -> Self {
         match witx {
-            witx::BuiltinType::U8 => ASType::U8,
+            // Assembly script has no C char type
+            witx::BuiltinType::U8 { lang_c_char: _ }  => ASType::U8,
             witx::BuiltinType::U16 => ASType::U16,
-            witx::BuiltinType::U32 => ASType::U32,
+            witx::BuiltinType::U32 { lang_ptr_size: true } => ASType::Usize,
+            witx::BuiltinType::U32 { lang_ptr_size: false } => ASType::U32,
             witx::BuiltinType::U64 => ASType::U64,
             witx::BuiltinType::S8 => ASType::I8,
             witx::BuiltinType::S16 => ASType::I16,
             witx::BuiltinType::S32 => ASType::I32,
             witx::BuiltinType::S64 => ASType::I64,
-            witx::BuiltinType::String => ASType::WasiString,
-            witx::BuiltinType::USize => ASType::Usize,
             witx::BuiltinType::F32 => ASType::F32,
             witx::BuiltinType::F64 => ASType::F64,
-            witx::BuiltinType::Char8 => ASType::Char,
+            witx::BuiltinType::Char => ASType::Char
         }
     }
 }
 
-impl From<&witx::EnumDatatype> for ASType {
-    fn from(witx: &witx::EnumDatatype) -> Self {
-        witx.repr.into()
+impl From<&witx::Variant> for ASType {
+    fn from(_witx: &witx::Variant) -> Self {
+        ASType::Variant(None)
     }
 }
 
-impl From<&witx::FlagsDatatype> for ASType {
-    fn from(witx: &witx::FlagsDatatype) -> Self {
-        witx.repr.into()
+impl From<&witx::IntRepr> for ASType {
+    fn from(witx: &witx::IntRepr) -> Self {
+        match witx {
+            witx::IntRepr::U8 => ASType::U8,
+            witx::IntRepr::U16 => ASType::U16,
+            witx::IntRepr::U32 => ASType::U32,
+            witx::IntRepr::U64 => ASType::U64
+        } 
     }
 }
 
-impl From<&witx::IntDatatype> for ASType {
-    fn from(witx: &witx::IntDatatype) -> Self {
-        witx.repr.into()
+impl From<&witx::Constant> for ASType {
+    fn from(witx: &witx::Constant) -> Self {
+        ASType::Alias(witx.ty.as_str().to_string())
     }
 }
 
@@ -155,18 +152,12 @@ impl From<&witx::NamedType> for ASType {
     }
 }
 
-impl From<&witx::UnionDatatype> for ASType {
-    fn from(witx: &witx::UnionDatatype) -> Self {
-        witx.tag.as_ref().into()
-    }
-}
-
 impl From<&witx::TypeRef> for ASType {
     fn from(witx: &witx::TypeRef) -> Self {
         let type_name = witx.type_name();
         match witx.type_().as_ref() {
             witx::Type::Builtin(x) => ASType::from(x).name(type_name),
-            x @ witx::Type::Array(_)
+            x @ witx::Type::List(_)
             | x @ witx::Type::Pointer(_)
             | x @ witx::Type::ConstPointer(_) => ASType::from(x).name(type_name),
             _ => ASType::Alias(type_name),
@@ -180,13 +171,10 @@ impl From<&witx::Type> for ASType {
             witx::Type::Builtin(x) => x.into(),
             witx::Type::ConstPointer(x) => ASType::Ptr(Box::new(x.into())),
             witx::Type::Pointer(x) => ASType::MutPtr(Box::new(x.into())),
-            witx::Type::Enum(x) => x.into(),
-            witx::Type::Flags(x) => x.into(),
             witx::Type::Handle(x) => x.into(),
-            witx::Type::Int(x) => x.into(),
-            witx::Type::Struct(_) => ASType::Struct(None),
-            witx::Type::Union(_) => ASType::Union(None),
-            witx::Type::Array(x) => ASType::Array(Box::new(x.into())),
+            witx::Type::List(x) => ASType::List(Box::new(x.into())),
+            witx::Type::Variant(x) => x.into(),
+            witx::Type::Record(_) => ASType::Record(None),
         }
     }
 }

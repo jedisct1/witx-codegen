@@ -1,3 +1,5 @@
+use witx::Layout;
+
 use crate::astype::*;
 use crate::error::*;
 use crate::pretty_writer::PrettyWriter;
@@ -94,92 +96,16 @@ export class WasiArray<T> {
         Ok(())
     }
 
-    fn define_as_enum<T: Write>(
-        w: &mut PrettyWriter<T>,
-        as_type: &ASType,
-        enum_data_type: &witx::EnumDatatype,
-    ) -> Result<(), Error> {
-        let actual_as_type = ASType::from(enum_data_type.repr);
-        w.write_line(format!("export namespace {} {{", as_type))?;
-        {
-            let mut w = w.new_block();
-            for (i, variant) in enum_data_type.variants.iter().enumerate() {
-                Self::write_docs(&mut w, &variant.docs)?;
-                w.write_line(format!(
-                    "export const {}: {} = {};",
-                    variant.name.as_str().to_uppercase(),
-                    as_type,
-                    i
-                ))?
-                .eob()?;
-            }
-        }
-        w.write_line("}")?
-            .write_line(format!("export type {} = {};", as_type, actual_as_type))?
-            .eob()?;
-        Ok(())
-    }
-
     fn define_as_handle<T: Write>(w: &mut PrettyWriter<T>, as_type: &ASType) -> Result<(), Error> {
         w.write_line(format!("export type {} = {};", as_type, ASType::Handle))?;
         Ok(())
     }
 
-    fn define_as_int<T: Write>(
-        w: &mut PrettyWriter<T>,
-        as_type: &ASType,
-        int: &witx::IntDatatype,
-    ) -> Result<(), Error> {
-        let actual_as_type = ASType::from(int);
-        w.write_line(format!("export namespace {} {{", as_type))?;
-        {
-            let mut w = w.new_block();
-            for (i, variant) in int.consts.iter().enumerate() {
-                Self::write_docs(&mut w, &variant.docs)?;
-                w.write_line(format!(
-                    "export const {}: {} = {};",
-                    variant.name.as_str().to_uppercase(),
-                    as_type,
-                    i
-                ))?;
-            }
-        }
-        w.write_line("}")?
-            .write_line(format!("export type {} = {};", as_type, actual_as_type))?
-            .eob()?;
-        Ok(())
-    }
-
-    fn define_as_flags<T: Write>(
-        w: &mut PrettyWriter<T>,
-        as_type: &ASType,
-        flags: &witx::FlagsDatatype,
-    ) -> Result<(), Error> {
-        let actual_as_type = ASType::from(flags);
-        w.write_line(format!("export namespace {} {{", as_type))?;
-        {
-            let mut w = w.new_block();
-            for (i, variant) in flags.flags.iter().enumerate() {
-                Self::write_docs(&mut w, &variant.docs)?;
-                w.write_line(format!(
-                    "export const {}: {} = {};",
-                    variant.name.as_str().to_uppercase(),
-                    as_type,
-                    1u64 << i
-                ))?;
-            }
-        }
-        w.write_line("}")?
-            .write_line(format!("export type {} = {};", as_type, actual_as_type))?
-            .eob()?;
-        Ok(())
-    }
-
-    fn define_union_variant_accessors<T: Write>(
+    fn define_variant_case_accessors<T: Write>(
         w: &mut PrettyWriter<T>,
         as_type: &ASType,
         i: usize,
-        variant: &witx::UnionVariant,
+        variant: &witx::Case,
     ) -> Result<(), Error> {
         let variant_name = variant.name.as_str();
         match variant.tref.as_ref() {
@@ -249,11 +175,11 @@ export class WasiArray<T> {
         Ok(())
     }
 
-    fn define_union_variant<T: Write>(
+    fn define_variant_case<T: Write>(
         w: &mut PrettyWriter<T>,
         as_type: &ASType,
         i: usize,
-        variant: &witx::UnionVariant,
+        variant: &witx::Case,
     ) -> Result<(), Error> {
         let variant_name = variant.name.as_str();
         match variant.tref.as_ref() {
@@ -270,22 +196,23 @@ export class WasiArray<T> {
             }
         }
         w.eob()?;
-        Self::define_union_variant_accessors(w, as_type, i, variant)?;
+        Self::define_variant_case_accessors(w, as_type, i, variant)?;
         Ok(())
     }
 
-    fn define_as_union<T: Write>(
+    fn define_as_variant<T: Write>(
         w: &mut PrettyWriter<T>,
         as_type: &ASType,
-        union: &witx::UnionDatatype,
+        union: &witx::Variant,
     ) -> Result<(), Error> {
-        let as_tag = ASType::from(union.tag.as_ref());
-        let variants = &union.variants;
-        let val_offset = union.union_layout().contents_offset;
-        let val_size = union.union_layout().contents_size;
+        let as_tag = ASType::from(&union.tag_repr);
+        let variants = &union.cases;
+
+        let val_offset = union.payload_offset();
+        let val_size = union.mem_size();
         w.write_line("// @ts-ignore: decorator")?
-            .write_line("@unmanaged")?
-            .write_line(format!("export class {} {{", as_type))?;
+         .write_line("@unmanaged")?
+         .write_line(format!("export class {} {{", as_type))?;
         {
             let mut w = w.new_block();
             w.write_line(format!("tag: {};", as_tag))?;
@@ -321,8 +248,8 @@ export class WasiArray<T> {
             {
                 let mut w = w.new_block();
                 w.write_line(format!("let tu = new {}(tag);", as_type))?
-                    .write_line("tu.set(val);")?
-                    .write_line("return tu;")?;
+                 .write_line("tu.set(val);")?
+                 .write_line("return tu;")?;
             }
             w.write_line("}")?.eob()?;
 
@@ -364,7 +291,7 @@ export class WasiArray<T> {
 
             for (i, variant) in variants.iter().enumerate() {
                 w.eob()?;
-                Self::define_union_variant(&mut w, as_type, i, variant)?;
+                Self::define_variant_case(&mut w, as_type, i, variant)?;
             }
         }
         w.write_line("}")?;
@@ -381,12 +308,12 @@ export class WasiArray<T> {
         Ok(())
     }
 
-    fn define_as_struct<T: Write>(
+    fn define_as_record<T: Write>(
         w: &mut PrettyWriter<T>,
         as_type: &ASType,
-        witx_struct: &witx::StructDatatype,
+        record: &witx::RecordDatatype,
     ) -> Result<(), Error> {
-        let variants = &witx_struct.members;
+        let variants = &record.members;
         w.write_line("// @ts-ignore: decorator")?
             .write_line("@unmanaged")?
             .write_line(format!("class {} {{", as_type))?;
@@ -403,7 +330,7 @@ export class WasiArray<T> {
         Ok(())
     }
 
-    fn define_as_array<T: Write>(
+    fn define_as_list<T: Write>(
         w: &mut PrettyWriter<T>,
         as_type: &ASType,
         actual_as_type: &ASType,
@@ -420,16 +347,14 @@ export class WasiArray<T> {
         as_type: &ASType,
         witx_type: &witx::Type,
     ) -> Result<(), Error> {
+        use witx::Type::*;
         match witx_type {
-            witx::Type::Enum(enum_data_type) => Self::define_as_enum(w, as_type, enum_data_type)?,
-            witx::Type::Handle(_handle) => Self::define_as_handle(w, as_type)?,
-            witx::Type::Int(int) => Self::define_as_int(w, as_type, int)?,
-            witx::Type::Flags(flags) => Self::define_as_flags(w, as_type, flags)?,
-            witx::Type::Builtin(builtin) => Self::define_as_builtin(w, as_type, &builtin.into())?,
-            witx::Type::Union(union) => Self::define_as_union(w, as_type, union)?,
-            witx::Type::Struct(witx_struct) => Self::define_as_struct(w, as_type, witx_struct)?,
-            witx::Type::Array(array) => Self::define_as_array(w, as_type, &ASType::from(array))?,
-            witx::Type::ConstPointer(_) | witx::Type::Pointer(_) => {
+            Handle(_handle) => Self::define_as_handle(w, as_type)?,
+            Builtin(builtin) => Self::define_as_builtin(w, as_type, &builtin.into())?,
+            Variant(ref variant) => Self::define_as_variant(w, as_type, variant)?,
+            Record(ref record) =>  Self::define_as_record(w, as_type, record)?,
+            List(elem) => Self::define_as_list(w, as_type, &ASType::from(elem))?,
+            ConstPointer(_) | witx::Type::Pointer(_) => {
                 panic!("Typedef's pointers are not implemented")
             }
         };
