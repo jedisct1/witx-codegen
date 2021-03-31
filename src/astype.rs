@@ -80,7 +80,6 @@ impl ASType {
     pub fn name(self, name: String) -> Self {
         match self {
             ASType::Record(_) => ASType::Record(Some(name)),
-            ASType::Variant(_) => ASType::Variant(Some(name)),
             x => x,
         }
     }
