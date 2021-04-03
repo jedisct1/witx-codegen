@@ -163,8 +163,8 @@ impl From<&witx::Type> for ASType {
                 ASType::Handle(resource_name)
             }
             witx::Type::List(items_tref) => {
-                let pointee = ASType::from(items_tref);
-                ASType::ConstPtr(Rc::new(pointee))
+                let _pointee = ASType::from(items_tref);
+                unimplemented!(); // Lists need to be expanded into a pointer and a length
             }
             witx::Type::Record(record) if record.is_tuple() =>
             // Tuple
