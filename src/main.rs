@@ -1,13 +1,12 @@
+mod assemblyscript;
 mod astype;
 mod error;
-mod generator;
 mod pretty_writer;
 
 #[macro_use]
 extern crate clap;
 
 use crate::error::*;
-use crate::generator::*;
 use clap::Arg;
 use std::fs::File;
 use std::io::Write;
@@ -33,7 +32,7 @@ fn main() {
             Arg::with_name("witx_file")
                 .multiple(false)
                 .required(true)
-                .help("wITX file"),
+                .help("WITX file"),
         )
         .get_matches();
 
@@ -43,6 +42,7 @@ fn main() {
     };
     let witx_file = matches.value_of("witx_file").unwrap();
     let module_name = matches.value_of("module_name").map(|x| x.to_string());
-    let mut generator = Generator::new(writer, module_name);
-    generator.generate(witx_file).unwrap();
+    let witx = witx::load(witx_file).unwrap();
+    let mut generator = assemblyscript::Generator::new(writer, module_name);
+    generator.generate(witx).unwrap();
 }

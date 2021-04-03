@@ -1,97 +1,112 @@
-use std::fmt;
+use std::rc::Rc;
+use witx::Layout as _;
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct ASAlias {
+    pub name: String,
+    pub type_: Rc<ASType>,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct ASStructMember {
+    pub name: String,
+    pub offset: usize,
+    pub type_: Rc<ASType>,
+    pub padding: usize,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct ASEnumChoice {
+    pub name: String,
+    pub value: usize,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct ASEnum {
+    pub repr: Rc<ASType>,
+    pub choices: Vec<ASEnumChoice>,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct ASUnionMember {
+    pub name: String,
+    pub type_: Rc<ASType>,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct ASUnion {
+    pub tag_repr: Rc<ASType>,
+    pub members: Vec<ASUnionMember>,
+    pub member_offset: usize,
+    pub padding_after_tag: usize,
+    pub max_member_size: usize,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct ASTupleMember {
+    pub type_: Rc<ASType>,
+    pub offset: usize,
+    pub padding: usize,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct ASOption {
+    pub tag_repr: Rc<ASType>,
+    pub type_: Rc<ASType>,
+    pub offset: usize,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct ASResult {
+    pub tag_repr: Rc<ASType>,
+    pub error_type: Rc<ASType>,
+    pub ok_type: Rc<ASType>,
+    pub result_offset: usize,
+    pub padding_after_tag: usize,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct ASConstant {
+    pub name: String,
+    pub value: u64,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct ASConstants {
+    pub repr: Rc<ASType>,
+    pub constants: Vec<ASConstant>,
+}
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum ASType {
     Void,
+    Alias(ASAlias),
+    Bool,
+    Char8,
+    Char32,
+    USize,
+    F32,
+    F64,
+    S8,
+    S16,
+    S32,
+    S64,
     U8,
     U16,
     U32,
     U64,
-    I8,
-    I16,
-    I32,
-    I64,
-    Char,
-    Usize,
-    F32,
-    F64,
-    Alias(String),
-    Ptr(Box<ASType>),
-    MutPtr(Box<ASType>),
-    Struct(Option<String>),
-    WasiStringPtr,
-    Handle,
-    WasiString,
-    Union(Option<String>),
-    Array(Box<ASType>),
-}
-
-impl fmt::Display for ASType {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            ASType::Void => write!(f, "void"),
-            ASType::U8 => write!(f, "u8"),
-            ASType::U16 => write!(f, "u16"),
-            ASType::U32 => write!(f, "u32"),
-            ASType::U64 => write!(f, "u64"),
-            ASType::I8 => write!(f, "i8"),
-            ASType::I16 => write!(f, "i16"),
-            ASType::I32 => write!(f, "i32"),
-            ASType::I64 => write!(f, "i64"),
-            ASType::Char => write!(f, "char"),
-            ASType::Usize => write!(f, "usize"),
-            ASType::F32 => write!(f, "f32"),
-            ASType::F64 => write!(f, "f64"),
-            ASType::Alias(to) => write!(f, "{}", to),
-            ASType::Ptr(other_type) => write!(f, "ptr<{}>", other_type),
-            ASType::MutPtr(other_type) => write!(f, "mut_ptr<{}>", other_type),
-            ASType::Struct(None) => write!(f, "usize /* struct */"),
-            ASType::Struct(Some(name)) => write!(f, "struct<{}>", name),
-            ASType::WasiStringPtr => write!(f, "wasi_string_ptr"),
-            ASType::Handle => write!(f, "handle"),
-            ASType::WasiString => write!(f, "WasiString"),
-            ASType::Union(None) => write!(f, "usize /* union */"),
-            ASType::Union(Some(name)) => write!(f, "union<{}>", name),
-            ASType::Array(_) => write!(f, "usize /* array */"),
-        }
-    }
-}
-
-impl ASType {
-    pub fn is_nullable(&self) -> bool {
-        match self {
-            ASType::Ptr(_)
-            | ASType::MutPtr(_)
-            | ASType::Struct(None)
-            | ASType::Struct(Some(_))
-            | ASType::WasiStringPtr
-            | ASType::WasiString
-            | ASType::Union(_)
-            | ASType::Array(_) => true,
-            _ => false,
-        }
-    }
-
-    pub fn decompose(&self) -> ((ASType, &'static str), Option<(ASType, &'static str)>) {
-        let first = match self {
-            ASType::WasiString => (ASType::WasiStringPtr, "_ptr"),
-            ASType::Array(element_type) => (ASType::Ptr(element_type.clone()), "_ptr"),
-            t => (t.clone(), ""),
-        };
-        let second = match self {
-            ASType::WasiString => Some((ASType::Usize, "_len")),
-            ASType::Array(_element_type) => Some((ASType::Usize, "_count")),
-            _ => None,
-        };
-        (first, second)
-    }
-
-    pub fn name(self, name: String) -> Self {
-        match self {
-            ASType::Struct(_) => ASType::Struct(Some(name)),
-            x => x,
-        }
-    }
+    Constants(ASConstants),
+    Result(ASResult),
+    Option(ASOption),
+    Handle(String),
+    ReadBuffer(Rc<ASType>),
+    WriteBuffer(Rc<ASType>),
+    Enum(ASEnum),
+    Tuple(Vec<ASTupleMember>),
+    ConstPtr(Rc<ASType>),
+    MutPtr(Rc<ASType>),
+    Union(ASUnion),
+    Struct(Vec<ASStructMember>),
 }
 
 impl From<witx::IntRepr> for ASType {
@@ -106,87 +121,270 @@ impl From<witx::IntRepr> for ASType {
 }
 
 impl From<&witx::BuiltinType> for ASType {
-    fn from(witx: &witx::BuiltinType) -> Self {
-        match witx {
-            witx::BuiltinType::U8 => ASType::U8,
-            witx::BuiltinType::U16 => ASType::U16,
-            witx::BuiltinType::U32 => ASType::U32,
-            witx::BuiltinType::U64 => ASType::U64,
-            witx::BuiltinType::S8 => ASType::I8,
-            witx::BuiltinType::S16 => ASType::I16,
-            witx::BuiltinType::S32 => ASType::I32,
-            witx::BuiltinType::S64 => ASType::I64,
-            witx::BuiltinType::String => ASType::WasiString,
-            witx::BuiltinType::USize => ASType::Usize,
-            witx::BuiltinType::F32 => ASType::F32,
-            witx::BuiltinType::F64 => ASType::F64,
-            witx::BuiltinType::Char8 => ASType::Char,
-        }
-    }
-}
+    fn from(witx_builtin: &witx::BuiltinType) -> Self {
+        match witx_builtin {
+            witx::BuiltinType::Char => return ASType::Char32,
+            witx::BuiltinType::F32 => return ASType::F32,
+            witx::BuiltinType::F64 => return ASType::F64,
+            witx::BuiltinType::S8 => return ASType::S8,
+            witx::BuiltinType::S16 => return ASType::S16,
+            witx::BuiltinType::S32 => return ASType::S32,
+            witx::BuiltinType::S64 => return ASType::S64,
 
-impl From<&witx::EnumDatatype> for ASType {
-    fn from(witx: &witx::EnumDatatype) -> Self {
-        witx.repr.into()
-    }
-}
-
-impl From<&witx::FlagsDatatype> for ASType {
-    fn from(witx: &witx::FlagsDatatype) -> Self {
-        witx.repr.into()
-    }
-}
-
-impl From<&witx::IntDatatype> for ASType {
-    fn from(witx: &witx::IntDatatype) -> Self {
-        witx.repr.into()
-    }
-}
-
-impl From<&witx::HandleDatatype> for ASType {
-    fn from(_witx: &witx::HandleDatatype) -> Self {
-        ASType::Handle
-    }
-}
-
-impl From<&witx::NamedType> for ASType {
-    fn from(witx: &witx::NamedType) -> Self {
-        ASType::Alias(witx.name.as_str().to_string())
-    }
-}
-
-impl From<&witx::UnionDatatype> for ASType {
-    fn from(witx: &witx::UnionDatatype) -> Self {
-        witx.tag.as_ref().into()
-    }
-}
-
-impl From<&witx::TypeRef> for ASType {
-    fn from(witx: &witx::TypeRef) -> Self {
-        let type_name = witx.type_name();
-        match witx.type_().as_ref() {
-            witx::Type::Builtin(x) => ASType::from(x).name(type_name),
-            x @ witx::Type::Array(_)
-            | x @ witx::Type::Pointer(_)
-            | x @ witx::Type::ConstPointer(_) => ASType::from(x).name(type_name),
-            _ => ASType::Alias(type_name),
+            witx::BuiltinType::U8 { lang_c_char: false } => return ASType::U8,
+            witx::BuiltinType::U8 { lang_c_char: true } => return ASType::Char8,
+            witx::BuiltinType::U16 => return ASType::U16,
+            witx::BuiltinType::U32 {
+                lang_ptr_size: false,
+            } => return ASType::U32,
+            witx::BuiltinType::U32 {
+                lang_ptr_size: true,
+            } => return ASType::USize,
+            witx::BuiltinType::U64 => return ASType::U64,
         }
     }
 }
 
 impl From<&witx::Type> for ASType {
-    fn from(witx: &witx::Type) -> Self {
-        match witx {
-            witx::Type::Builtin(x) => x.into(),
-            witx::Type::ConstPointer(x) => ASType::Ptr(Box::new(x.into())),
-            witx::Type::Pointer(x) => ASType::MutPtr(Box::new(x.into())),
-            witx::Type::Enum(x) => x.into(),
-            witx::Type::Flags(x) => x.into(),
-            witx::Type::Handle(x) => x.into(),
-            witx::Type::Int(x) => x.into(),
-            witx::Type::Struct(_) => ASType::Struct(None),
-            witx::Type::Union(_) => ASType::Union(None),
-            witx::Type::Array(x) => ASType::Array(Box::new(x.into())),
+    fn from(type_witx: &witx::Type) -> Self {
+        match type_witx {
+            witx::Type::Builtin(witx_builtin) => ASType::from(witx_builtin),
+            witx::Type::ConstPointer(constptr_tref) => {
+                let pointee = ASType::from(constptr_tref);
+                return ASType::ConstPtr(Rc::new(pointee));
+            }
+            witx::Type::Pointer(constptr_tref) => {
+                let pointee = ASType::from(constptr_tref);
+                return ASType::MutPtr(Rc::new(pointee));
+            }
+            witx::Type::Handle(handle_data_type) => {
+                // data type doesn't seem to be used for anything
+                let resource_name = handle_data_type.resource_id.name.as_str().to_string();
+                ASType::Handle(resource_name)
+            }
+            witx::Type::List(items_tref) => {
+                let pointee = ASType::from(items_tref);
+                ASType::ConstPtr(Rc::new(pointee))
+            }
+            witx::Type::Record(record) if record.is_tuple() =>
+            // Tuple
+            {
+                let mut tuple_members = vec![];
+                let layout_witx = &record.member_layout(true);
+                for member_witx in layout_witx {
+                    let member_tref = &member_witx.member.tref;
+                    let member_offset = member_witx.offset;
+                    let member = ASTupleMember {
+                        offset: member_offset,
+                        type_: Rc::new(ASType::from(member_tref)),
+                        padding: 0,
+                    };
+                    tuple_members.push(member);
+                }
+                // Perform a second pass to compute padding between members
+                let n = if layout_witx.is_empty() {
+                    0
+                } else {
+                    layout_witx.len() - 1
+                };
+                for (i, member_witx) in layout_witx.iter().enumerate().take(n) {
+                    let member_tref = &member_witx.member.tref;
+                    let member_size = member_tref.mem_size(true);
+                    let member_padding =
+                        layout_witx[i + 1].offset - member_witx.offset - member_size;
+                    tuple_members[i].padding = member_padding;
+                }
+                return ASType::Tuple(tuple_members);
+            }
+            witx::Type::Record(record) if record.bitflags_repr().is_none() =>
+            // Struct
+            {
+                let mut struct_members = vec![];
+                let layout_witx = &record.member_layout(true);
+                for member_witx in layout_witx {
+                    let member_name = member_witx.member.name.as_str().to_string();
+                    let member_tref = &member_witx.member.tref;
+                    let member_offset = member_witx.offset;
+                    let member = ASStructMember {
+                        name: member_name,
+                        offset: member_offset,
+                        type_: Rc::new(ASType::from(member_tref)),
+                        padding: 0,
+                    };
+                    struct_members.push(member);
+                }
+                // Perform a second pass to compute padding between members
+                let n = if layout_witx.is_empty() {
+                    0
+                } else {
+                    layout_witx.len() - 1
+                };
+                for (i, member_witx) in layout_witx.iter().enumerate().take(n) {
+                    let member_tref = &member_witx.member.tref;
+                    let member_size = member_tref.mem_size(true);
+                    let member_padding =
+                        layout_witx[i + 1].offset - member_witx.offset - member_size;
+                    struct_members[i].padding = member_padding;
+                }
+                return ASType::Struct(struct_members);
+            }
+            witx::Type::Record(record) if record.bitflags_repr().is_some() =>
+            // Constants
+            {
+                let mut constants = vec![];
+                let constants_repr = ASType::from(record.bitflags_repr().unwrap());
+                for (idx, contants_witx) in record.member_layout(true).iter().enumerate() {
+                    let constant_name = contants_witx.member.name.as_str().to_string();
+                    let constant = ASConstant {
+                        name: constant_name,
+                        value: 1u64 << idx,
+                    };
+                    constants.push(constant);
+                }
+                return ASType::Constants(ASConstants {
+                    repr: Rc::new(constants_repr),
+                    constants,
+                });
+            }
+            witx::Type::Record(record) => {
+                dbg!(record);
+                dbg!(record.bitflags_repr());
+                unreachable!()
+            }
+            witx::Type::Variant(variant)
+                if (variant.is_enum() || variant.is_bool())
+                    && variant.as_expected().is_none()
+                    && variant.as_option().is_none() =>
+            // Enum
+            {
+                let enum_repr = ASType::from(variant.tag_repr);
+                let mut choices = vec![];
+                for (idx, choice_witx) in variant.cases.iter().enumerate() {
+                    let choice_name = choice_witx.name.as_str().to_string();
+                    let choice = ASEnumChoice {
+                        name: choice_name,
+                        value: idx,
+                    };
+                    choices.push(choice);
+                }
+                // WITX exposes booleans as enums
+                if choices.len() == 2
+                    && choices[0].name == "false"
+                    && choices[0].value == 0
+                    && choices[1].name == "true"
+                    && choices[1].value == 1
+                {
+                    ASType::Bool
+                } else {
+                    ASType::Enum(ASEnum {
+                        repr: Rc::new(enum_repr),
+                        choices,
+                    })
+                }
+            }
+            witx::Type::Variant(variant)
+                if variant.as_expected().is_none() && variant.as_option().is_some() =>
+            // Option
+            {
+                let tag_repr = ASType::from(variant.tag_repr);
+                let option_offset = variant.payload_offset(true);
+                assert_eq!(variant.cases.len(), 1);
+                let option_tref = &variant.cases[0].tref;
+                let option_type = match &option_tref {
+                    None => ASType::Void,
+                    Some(type_witx) => ASType::from(type_witx),
+                };
+                ASType::Option(ASOption {
+                    tag_repr: Rc::new(tag_repr),
+                    offset: option_offset,
+                    type_: Rc::new(option_type),
+                })
+            }
+            witx::Type::Variant(variant)
+                if variant.as_expected().is_some() && variant.as_option().is_none() =>
+            // Result
+            {
+                let tag_repr = ASType::from(variant.tag_repr);
+                let result_offset = variant.payload_offset(true);
+                assert_eq!(variant.cases.len(), 2);
+                assert_eq!(variant.cases[0].name, "ok");
+                assert_eq!(variant.cases[1].name, "err");
+                let ok_tref = &variant.cases[0].tref;
+                let ok_type = match &ok_tref {
+                    None => ASType::Void,
+                    Some(type_witx) => ASType::from(type_witx),
+                };
+                let error_tref = &variant.cases[1].tref;
+                let error_type = match &error_tref {
+                    None => ASType::Void,
+                    Some(type_witx) => ASType::from(type_witx),
+                };
+                let full_size = variant.mem_size(true);
+                let tag_size = variant.tag_repr.mem_size(true);
+                let padding_after_tag = full_size - tag_size;
+                ASType::Result(ASResult {
+                    tag_repr: Rc::new(tag_repr),
+                    result_offset: result_offset,
+                    padding_after_tag,
+                    error_type: Rc::new(error_type),
+                    ok_type: Rc::new(ok_type),
+                })
+            }
+            witx::Type::Variant(variant) =>
+            // Tagged Union
+            {
+                let tag_repr = ASType::from(variant.tag_repr);
+                let member_offset = variant.payload_offset(true);
+                let mut members = vec![];
+                for member_witx in &variant.cases {
+                    let member_name = member_witx.name.as_str().to_string();
+                    let member_type = match member_witx.tref.as_ref() {
+                        None => ASType::Void,
+                        Some(type_witx) => ASType::from(type_witx),
+                    };
+                    let member = ASUnionMember {
+                        name: member_name,
+                        type_: Rc::new(member_type),
+                    };
+                    members.push(member);
+                }
+                let full_size = variant.mem_size(true);
+                let tag_size = variant.tag_repr.mem_size(true);
+                let padding_after_tag = full_size - tag_size;
+                let max_member_size = full_size - member_offset;
+                ASType::Union(ASUnion {
+                    tag_repr: Rc::new(tag_repr),
+                    members,
+                    member_offset,
+                    padding_after_tag,
+                    max_member_size,
+                })
+            }
+            witx::Type::Buffer(buffer) if buffer.out => {
+                let internal_type = ASType::from(&buffer.tref);
+                ASType::WriteBuffer(Rc::new(internal_type))
+            }
+            witx::Type::Buffer(buffer) => {
+                let internal_type = ASType::from(&buffer.tref);
+                ASType::ReadBuffer(Rc::new(internal_type))
+            }
+        }
+    }
+}
+
+impl From<&witx::TypeRef> for ASType {
+    fn from(witx_tref: &witx::TypeRef) -> Self {
+        match witx_tref {
+            witx::TypeRef::Value(type_witx) => ASType::from(type_witx.as_ref()),
+            witx::TypeRef::Name(alias_witx) => {
+                let alias_witx = alias_witx.as_ref();
+                let alias_name = alias_witx.name.as_str().to_string();
+                let alias_target = ASType::from(&alias_witx.tref);
+                ASType::Alias(ASAlias {
+                    name: alias_name,
+                    type_: Rc::new(alias_target),
+                })
+            }
         }
     }
 }

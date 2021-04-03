@@ -1,15 +1,16 @@
-![AS-WITX](logo.png)
-==========
+![WITX code generator](logo.png)
+================================
 
-# AS-WITX: A WITX code generator
+# WITX-CodeGen: A WITX code generator
 
-Originally for AssemblyScript.
+Requires definitions compatible with witx 0.10.
 
-The `docgen` branch turns it into a documentation generator.
+Backends:
 
-The `zig` branch is a code generator for Zig.
-
-Requires definitions compatible with witx 0.8. These tools do not
-support witx 0.9 yet.
-
-More documentation, examples and features are coming soon!
+[X] AssemblyScript
+[ ] Zig
+[ ] Rust
+[ ] TinyGo
+[ ] C/C++
+[ ] API Overview
+[ ] Documentation

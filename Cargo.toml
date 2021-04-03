@@ -1,11 +1,10 @@
 [package]
-name = "as-witx"
-version = "0.1.0"
+name = "witx-codegen"
+version = "0.2.0"
 authors = ["Frank Denis <github@pureftpd.org>"]
 edition = "2018"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
 clap = { version = "2.33", features = ["wrap_help"] }
-witx = "0.8.7"
+convert_case = "0.4"
+witx = { git = "https://github.com/alexcrichton/WASI.git", branch = "abi-next" }
