@@ -7,10 +7,10 @@ Requires definitions compatible with witx 0.10.
 
 Backends:
 
-[X] AssemblyScript
-[ ] Zig
-[ ] Rust
-[ ] TinyGo
-[ ] C/C++
-[ ] API Overview
-[ ] Documentation
+* [X] AssemblyScript
+* [ ] Zig
+* [ ] Rust
+* [ ] TinyGo
+* [ ] C/C++
+* [ ] API Overview
+* [ ] Documentation
