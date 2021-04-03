@@ -3,7 +3,7 @@
 
 # WITX-CodeGen: A WITX code generator
 
-Requires definitions compatible with witx 0.10.
+Requires definitions for witx 0.10.
 
 Backends:
 
@@ -14,3 +14,5 @@ Backends:
 * [ ] C/C++
 * [ ] API Overview
 * [ ] Documentation
+
+`witx-codegen` is a rewrite of `as-witx`.

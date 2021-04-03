@@ -1,10 +1,17 @@
 [package]
 name = "witx-codegen"
 version = "0.2.0"
+description = "WITX code generator for WebAssembly guest modules"
 authors = ["Frank Denis <github@pureftpd.org>"]
 edition = "2018"
+license = "MIT"
+repository = "https://github.com/jedisct1/witx-codegen"
+homepage = "https://github.com/jedisct1/witx-codegen"
+categories = ["wasm", "api-bindings", "web-programming"]
+keywords = ["witx", "webassembly", "wasm", "generator", "bindgen"]
+readme = "README.md"
 
 [dependencies]
 clap = { version = "2.33", features = ["wrap_help"] }
 convert_case = "0.4"
-witx = { git = "https://github.com/alexcrichton/WASI.git", branch = "abi-next" }
+witx = { package = "witnext", version = "0.10.0-beta1" }
