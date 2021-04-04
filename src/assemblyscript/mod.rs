@@ -24,26 +24,30 @@ impl Generator {
     pub fn generate<T: Write>(
         &mut self,
         writer: &mut T,
-        witx: witx::Module,
+        module_witx: witx::Module,
         options: &Options,
     ) -> Result<(), Error> {
         let mut w = PrettyWriter::new(writer, "    ");
         let module_name = match &self.module_name {
-            None => witx.name().as_str().to_string(),
+            None => module_witx.name().as_str().to_string(),
             Some(module_name) => module_name.to_string(),
         };
-        let module_id = witx.module_id();
+        let module_id = module_witx.module_id();
         let skip_imports = options.skip_imports;
 
         if !options.skip_header {
             Self::header(&mut w)?;
         }
 
-        for type_ in witx.typenames() {
+        let module_title_doc = format!("---------- Module: [{}] ----------", module_name);
+        Self::write_docs(&mut w, &module_title_doc)?;
+        w.eob()?;
+
+        for type_ in module_witx.typenames() {
             if skip_imports && &type_.module != module_id {
                 continue;
             }
-            let constants_for_type: Vec<_> = witx
+            let constants_for_type: Vec<_> = module_witx
                 .constants()
                 .into_iter()
                 .filter_map(|x| {
@@ -60,7 +64,7 @@ impl Generator {
             Self::define_type(&mut w, type_.as_ref(), &constants_for_type)?;
         }
 
-        for func in witx.funcs() {
+        for func in module_witx.funcs() {
             Self::define_func(&mut w, &module_name, func.as_ref())?;
         }
 

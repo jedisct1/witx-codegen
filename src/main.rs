@@ -65,13 +65,11 @@ fn main() {
         skip_header,
     };
     let witx_files = matches.values_of("witx_files").unwrap();
-    for (i, witx_file) in witx_files.enumerate() {
+    for witx_file in witx_files {
         let witx = witx::load(witx_file).unwrap();
         let mut generator = assemblyscript::Generator::new(module_name.clone());
         generator.generate(&mut writer, witx, &options).unwrap();
-        if i > 0 {
-            options.skip_imports = true;
-            options.skip_header = true;
-        }
+        options.skip_imports = true;
+        options.skip_header = true;
     }
 }
