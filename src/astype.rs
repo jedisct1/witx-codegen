@@ -106,6 +106,7 @@ pub enum ASType {
     Union(ASUnion),
     Struct(Vec<ASStructMember>),
     Slice(Rc<ASType>),
+    String(Rc<ASType>),
     ReadBuffer(Rc<ASType>),
     WriteBuffer(Rc<ASType>),
 }
@@ -359,7 +360,11 @@ impl From<&witx::Type> for ASType {
             }
             witx::Type::List(items_tref) => {
                 let elements_type = ASType::from(items_tref);
-                ASType::Slice(Rc::new(elements_type))
+                match elements_type {
+                    // The "string" keyword in WITX returns a Char32, even if the actual encoding is expected to be UTF-8
+                    ASType::Char32 | ASType::Char8 => ASType::String(Rc::new(ASType::Char8)),
+                    _ => ASType::Slice(Rc::new(elements_type)),
+                }
             }
             witx::Type::Buffer(buffer) if buffer.out => {
                 let elements_type = ASType::from(&buffer.tref);
@@ -410,7 +415,8 @@ impl ASType {
             ASType::Void => vec![],
             ASType::ReadBuffer(elements_type)
             | ASType::WriteBuffer(elements_type)
-            | ASType::Slice(elements_type) => {
+            | ASType::Slice(elements_type)
+            | ASType::String(elements_type) => {
                 let ptr_name = format!("{}_ptr", name);
                 let len_name = format!("{}_len", name);
                 let ptr_type = if let ASType::ReadBuffer(_) = leaf {
