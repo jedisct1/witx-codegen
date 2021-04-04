@@ -1,7 +1,7 @@
 use super::*;
 use std::io::Write;
 
-impl Generator {
+impl AssemblyScriptGenerator {
     pub fn define_func<T: Write>(
         w: &mut PrettyWriter<T>,
         module_name: &str,

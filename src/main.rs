@@ -1,12 +1,14 @@
 mod assemblyscript;
 mod astype;
 mod error;
+mod generator;
 mod pretty_writer;
 
 #[macro_use]
 extern crate clap;
 
 use crate::error::*;
+use crate::generator::*;
 use clap::Arg;
 use std::fs::File;
 use std::io::Write;
@@ -67,7 +69,9 @@ fn main() {
     let witx_files = matches.values_of("witx_files").unwrap();
     for witx_file in witx_files {
         let witx = witx::load(witx_file).unwrap();
-        let mut generator = assemblyscript::Generator::new(module_name.clone());
+        let generator: Box<dyn Generator<_>> = Box::new(
+            assemblyscript::AssemblyScriptGenerator::new(module_name.clone()),
+        );
         generator.generate(&mut writer, witx, &options).unwrap();
         options.skip_imports = true;
         options.skip_header = true;

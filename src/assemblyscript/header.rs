@@ -1,7 +1,7 @@
 use super::*;
 use std::io::Write;
 
-impl Generator {
+impl AssemblyScriptGenerator {
     pub fn header<T: Write>(w: &mut PrettyWriter<T>) -> Result<(), Error> {
         w.write_lines(
             "

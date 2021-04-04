@@ -1,7 +1,7 @@
 use super::*;
 use std::io::Write;
 
-impl Generator {
+impl AssemblyScriptGenerator {
     fn define_union_member_accessors<T: Write>(
         w: &mut PrettyWriter<T>,
         union_name: &str,

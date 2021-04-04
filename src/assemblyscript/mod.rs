@@ -12,17 +12,19 @@ use crate::pretty_writer::PrettyWriter;
 use common::*;
 use std::io::Write;
 
-pub struct Generator {
+pub struct AssemblyScriptGenerator {
     module_name: Option<String>,
 }
 
-impl Generator {
+impl AssemblyScriptGenerator {
     pub fn new(module_name: Option<String>) -> Self {
-        Generator { module_name }
+        AssemblyScriptGenerator { module_name }
     }
+}
 
-    pub fn generate<T: Write>(
-        &mut self,
+impl<T: Write> Generator<T> for AssemblyScriptGenerator {
+    fn generate(
+        &self,
         writer: &mut T,
         module_witx: witx::Module,
         options: &Options,
@@ -70,7 +72,9 @@ impl Generator {
 
         Ok(())
     }
+}
 
+impl AssemblyScriptGenerator {
     fn write_docs<T: Write>(w: &mut PrettyWriter<T>, docs: &str) -> Result<(), Error> {
         if docs.is_empty() {
             return Ok(());
