@@ -247,7 +247,7 @@ impl AssemblyScriptGenerator {
         if !docs.is_empty() {
             Self::write_docs(w, docs)?;
         }
-        let type_name = type_witx.name.as_str().clone();
+        let type_name = type_witx.name.as_str();
         let tref = &type_witx.tref;
         match tref {
             witx::TypeRef::Name(other_type) => {

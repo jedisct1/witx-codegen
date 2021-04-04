@@ -1,25 +1,5 @@
 use crate::astype::*;
 
-pub trait IsNullable {
-    fn is_nullable(&self) -> bool;
-}
-
-impl IsNullable for ASType {
-    fn is_nullable(&self) -> bool {
-        match self {
-            ASType::ConstPtr(_)
-            | ASType::MutPtr(_)
-            | ASType::ReadBuffer(_)
-            | ASType::WriteBuffer(_)
-            | ASType::Enum(_)
-            | ASType::Struct(_)
-            | ASType::Tuple(_)
-            | ASType::Union(_) => true,
-            _ => false,
-        }
-    }
-}
-
 pub trait Normalize {
     fn as_str(&self) -> &str;
 

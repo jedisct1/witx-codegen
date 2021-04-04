@@ -45,7 +45,7 @@ impl<T: Write> Generator<T> for OverviewGenerator {
             module_name
         );
         w.eob()?;
-        w.write_line(format!("{}", module_title_doc))?;
+        w.write_line(module_title_doc)?;
         w.eob()?;
 
         for type_ in module_witx.typenames() {
@@ -79,7 +79,7 @@ impl<T: Write> Generator<T> for OverviewGenerator {
 
 impl OverviewGenerator {
     fn header<T: Write>(w: &mut PrettyWriter<T>) -> Result<(), Error> {
-        w.write_line("API overview")?;
+        w.write_line("* API overview *")?;
         w.eob()?;
         Ok(())
     }
@@ -102,7 +102,7 @@ impl OverviewGenerator {
         name: &str,
         type_: &ASType,
     ) -> Result<(), Error> {
-        w.write_line(format!("[alias] {} = {}", name.as_type(), type_.as_lang()))?;
+        w.write_line(format!("alias {} = {}", name.as_type(), type_.as_lang()))?;
         Ok(())
     }
 
@@ -217,7 +217,7 @@ impl OverviewGenerator {
         type_witx: &witx::NamedType,
         constants: &[ASConstant],
     ) -> Result<(), Error> {
-        let type_name = type_witx.name.as_str().clone();
+        let type_name = type_witx.name.as_str();
         let tref = &type_witx.tref;
         match tref {
             witx::TypeRef::Name(other_type) => {
