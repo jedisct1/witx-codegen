@@ -1,6 +1,6 @@
 [package]
 name = "witx-codegen"
-version = "0.3.0"
+version = "0.3.1"
 description = "WITX code generator for WebAssembly guest modules"
 authors = ["Frank Denis <github@pureftpd.org>"]
 edition = "2018"
