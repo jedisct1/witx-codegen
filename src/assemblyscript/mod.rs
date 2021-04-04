@@ -28,27 +28,32 @@ impl<W: Write> Generator<W> {
             None => witx.name().as_str().to_string(),
             Some(module_name) => module_name.to_string(),
         };
+        let module_id = witx.module_id();
+        let skip_imports = options.skip_imports;
 
-        if !options.functions_only {
+        if !options.skip_header {
             self.header()?;
+        }
 
-            for type_ in witx.typenames() {
-                let constants_for_type: Vec<_> = witx
-                    .constants()
-                    .into_iter()
-                    .filter_map(|x| {
-                        if x.ty == type_.name {
-                            Some(ASConstant {
-                                name: x.name.as_str().to_string(),
-                                value: x.value,
-                            })
-                        } else {
-                            None
-                        }
-                    })
-                    .collect();
-                self.define_type(type_.as_ref(), &constants_for_type)?;
+        for type_ in witx.typenames() {
+            if skip_imports && &type_.module != module_id {
+                continue;
             }
+            let constants_for_type: Vec<_> = witx
+                .constants()
+                .into_iter()
+                .filter_map(|x| {
+                    if x.ty == type_.name {
+                        Some(ASConstant {
+                            name: x.name.as_str().to_string(),
+                            value: x.value,
+                        })
+                    } else {
+                        None
+                    }
+                })
+                .collect();
+            self.define_type(type_.as_ref(), &constants_for_type)?;
         }
 
         for func in witx.funcs() {

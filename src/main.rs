@@ -12,7 +12,8 @@ use std::fs::File;
 use std::io::Write;
 
 pub struct Options {
-    functions_only: bool,
+    skip_imports: bool,
+    skip_header: bool,
 }
 
 fn main() {
@@ -39,21 +40,30 @@ fn main() {
                 .help("WITX file"),
         )
         .arg(
-            Arg::with_name("functions_only")
-                .short("F")
-                .long("--functions-only")
-                .help("Skip header and types definitions"),
+            Arg::with_name("skip_imports")
+                .short("I")
+                .long("--skip-imports")
+                .help("Ignore imported types and functions"),
+        )
+        .arg(
+            Arg::with_name("skip_header")
+                .short("H")
+                .long("--skip-header")
+                .help("Do not generate a header"),
         )
         .get_matches();
-
+    // generate all or generate no heade,r no imports
     let writer: Box<dyn Write> = match matches.value_of("output_file") {
         None | Some("-") => Box::new(std::io::stdout()),
         Some(file) => Box::new(File::create(file).unwrap()),
     };
     let witx_file = matches.value_of("witx_file").unwrap();
     let module_name = matches.value_of("module_name").map(|x| x.to_string());
+    let skip_imports = matches.is_present("skip_imports");
+    let skip_header = matches.is_present("skip_header");
     let options = Options {
-        functions_only: matches.is_present("functions_only"),
+        skip_imports,
+        skip_header,
     };
     let witx = witx::load(witx_file).unwrap();
     let mut generator = assemblyscript::Generator::new(writer, module_name);
