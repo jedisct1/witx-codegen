@@ -125,24 +125,24 @@ impl From<witx::IntRepr> for ASType {
 impl From<&witx::BuiltinType> for ASType {
     fn from(witx_builtin: &witx::BuiltinType) -> Self {
         match witx_builtin {
-            witx::BuiltinType::Char => return ASType::Char32,
-            witx::BuiltinType::F32 => return ASType::F32,
-            witx::BuiltinType::F64 => return ASType::F64,
-            witx::BuiltinType::S8 => return ASType::S8,
-            witx::BuiltinType::S16 => return ASType::S16,
-            witx::BuiltinType::S32 => return ASType::S32,
-            witx::BuiltinType::S64 => return ASType::S64,
+            witx::BuiltinType::Char => ASType::Char32,
+            witx::BuiltinType::F32 => ASType::F32,
+            witx::BuiltinType::F64 => ASType::F64,
+            witx::BuiltinType::S8 => ASType::S8,
+            witx::BuiltinType::S16 => ASType::S16,
+            witx::BuiltinType::S32 => ASType::S32,
+            witx::BuiltinType::S64 => ASType::S64,
 
-            witx::BuiltinType::U8 { lang_c_char: false } => return ASType::U8,
-            witx::BuiltinType::U8 { lang_c_char: true } => return ASType::Char8,
-            witx::BuiltinType::U16 => return ASType::U16,
+            witx::BuiltinType::U8 { lang_c_char: false } => ASType::U8,
+            witx::BuiltinType::U8 { lang_c_char: true } => ASType::Char8,
+            witx::BuiltinType::U16 => ASType::U16,
             witx::BuiltinType::U32 {
                 lang_ptr_size: false,
-            } => return ASType::U32,
+            } => ASType::U32,
             witx::BuiltinType::U32 {
                 lang_ptr_size: true,
-            } => return ASType::USize,
-            witx::BuiltinType::U64 => return ASType::U64,
+            } => ASType::USize,
+            witx::BuiltinType::U64 => ASType::U64,
         }
     }
 }
@@ -153,11 +153,11 @@ impl From<&witx::Type> for ASType {
             witx::Type::Builtin(witx_builtin) => ASType::from(witx_builtin),
             witx::Type::ConstPointer(constptr_tref) => {
                 let pointee = ASType::from(constptr_tref);
-                return ASType::ConstPtr(Rc::new(pointee));
+                ASType::ConstPtr(Rc::new(pointee))
             }
             witx::Type::Pointer(constptr_tref) => {
                 let pointee = ASType::from(constptr_tref);
-                return ASType::MutPtr(Rc::new(pointee));
+                ASType::MutPtr(Rc::new(pointee))
             }
             witx::Type::Handle(handle_data_type) => {
                 // data type doesn't seem to be used for anything
@@ -192,7 +192,7 @@ impl From<&witx::Type> for ASType {
                         layout_witx[i + 1].offset - member_witx.offset - member_size;
                     tuple_members[i].padding = member_padding;
                 }
-                return ASType::Tuple(tuple_members);
+                ASType::Tuple(tuple_members)
             }
             witx::Type::Record(record) if record.bitflags_repr().is_none() =>
             // Struct
@@ -224,7 +224,7 @@ impl From<&witx::Type> for ASType {
                         layout_witx[i + 1].offset - member_witx.offset - member_size;
                     struct_members[i].padding = member_padding;
                 }
-                return ASType::Struct(struct_members);
+                ASType::Struct(struct_members)
             }
             witx::Type::Record(record) if record.bitflags_repr().is_some() =>
             // Constants
@@ -239,10 +239,10 @@ impl From<&witx::Type> for ASType {
                     };
                     constants.push(constant);
                 }
-                return ASType::Constants(ASConstants {
+                ASType::Constants(ASConstants {
                     repr: Rc::new(constants_repr),
                     constants,
-                });
+                })
             }
             witx::Type::Record(record) => {
                 dbg!(record);
@@ -322,7 +322,7 @@ impl From<&witx::Type> for ASType {
                 let padding_after_tag = full_size - tag_size;
                 ASType::Result(ASResult {
                     tag_repr: Rc::new(tag_repr),
-                    result_offset: result_offset,
+                    result_offset,
                     padding_after_tag,
                     error_type: Rc::new(error_type),
                     ok_type: Rc::new(ok_type),

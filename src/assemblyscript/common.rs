@@ -85,7 +85,7 @@ impl fmt::Display for ASType {
             ASType::Tuple(tuple_members) => Tuple::name_for(tuple_members).as_type(),
             ASType::Union(_) => unimplemented!(),
             ASType::Slice(element_type) => format!("WasiMutSlice<{}>", element_type),
-            ASType::String(_) => format!("WasiString"),
+            ASType::String(_) => "WasiString".to_string(),
             ASType::ReadBuffer(element_type) => format!("WasiSlice<{}>", element_type),
             ASType::WriteBuffer(element_type) => {
                 format!("WasiMutSlice<{}>", element_type.to_string())
