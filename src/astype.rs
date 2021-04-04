@@ -430,7 +430,7 @@ impl ASType {
                 };
                 let len_element = ASTypeDecomposed {
                     name: len_name,
-                    type_: Rc::new(ASType::MutPtr(elements_type.clone())),
+                    type_: Rc::new(ASType::USize),
                 };
                 vec![ptr_element, len_element]
             }
