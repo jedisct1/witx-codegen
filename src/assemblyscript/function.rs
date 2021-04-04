@@ -34,15 +34,27 @@ impl<W: Write> Generator<W> {
             Self::write_docs(w, docs)?;
         }
 
+        let mut params_decomposed = vec![];
+
+        for param in &params {
+            let mut decomposed = param.1.decompose(&param.0, false);
+            params_decomposed.append(&mut decomposed);
+        }
+
+        let mut results = vec![];
         // A tuple in a result is expanded into additional parameters, transformed to pointers
         if let ASType::Tuple(tuple_members) = ok_type.as_ref() {
             for (i, tuple_member) in tuple_members.iter().enumerate() {
-                let ok_type_mut_ptr = ASType::MutPtr(tuple_member.type_.clone());
-                params.push((format!("res{}_ptr", i).as_var(), ok_type_mut_ptr))
+                let name = format!("res{}", i);
+                results.push((name, tuple_member.type_.clone()));
             }
         } else {
-            let ok_type_mut_ptr = ASType::MutPtr(ok_type);
-            params.push(("res_ptr".as_var(), ok_type_mut_ptr))
+            let name = "res";
+            results.push((name.to_string(), ok_type));
+        }
+        for result in &results {
+            let mut decomposed = result.1.decompose(&result.0, true);
+            params_decomposed.append(&mut decomposed);
         }
 
         w.write_line("// @ts-ignore: decorator")?
@@ -51,10 +63,11 @@ impl<W: Write> Generator<W> {
         if !params.is_empty() {
             w.eol()?;
         }
-        for (i, param) in params.iter().enumerate() {
+
+        for (i, param) in params_decomposed.iter().enumerate() {
             let eol = if i + 1 == params.len() { "" } else { "," };
             w.continuation()?;
-            w.write_line(format!("{}: {}{}", param.0.as_var(), param.1, eol))?;
+            w.write_line(format!("{}: {}{}", param.name.as_var(), param.type_, eol))?;
         }
 
         w.write_line(format!("): {};", result.error_type))?;
@@ -62,7 +75,7 @@ impl<W: Write> Generator<W> {
 
         let signature_witx = func_witx.wasm_signature(witx::CallMode::DefinedImport);
         let params_count_witx = signature_witx.params.len() + signature_witx.results.len();
-        assert_eq!(params_count_witx, params.len() + 1);
+        assert_eq!(params_count_witx, params_decomposed.len() + 1);
 
         Ok(())
     }

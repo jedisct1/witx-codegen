@@ -99,14 +99,15 @@ pub enum ASType {
     Result(ASResult),
     Option(ASOption),
     Handle(String),
-    ReadBuffer(Rc<ASType>),
-    WriteBuffer(Rc<ASType>),
     Enum(ASEnum),
     Tuple(Vec<ASTupleMember>),
     ConstPtr(Rc<ASType>),
     MutPtr(Rc<ASType>),
     Union(ASUnion),
     Struct(Vec<ASStructMember>),
+    Slice(Rc<ASType>),
+    ReadBuffer(Rc<ASType>),
+    WriteBuffer(Rc<ASType>),
 }
 
 impl From<witx::IntRepr> for ASType {
@@ -161,10 +162,6 @@ impl From<&witx::Type> for ASType {
                 // data type doesn't seem to be used for anything
                 let resource_name = handle_data_type.resource_id.name.as_str().to_string();
                 ASType::Handle(resource_name)
-            }
-            witx::Type::List(items_tref) => {
-                let _pointee = ASType::from(items_tref);
-                unimplemented!(); // Lists need to be expanded into a pointer and a length
             }
             witx::Type::Record(record) if record.is_tuple() =>
             // Tuple
@@ -360,13 +357,17 @@ impl From<&witx::Type> for ASType {
                     max_member_size,
                 })
             }
+            witx::Type::List(items_tref) => {
+                let elements_type = ASType::from(items_tref);
+                ASType::Slice(Rc::new(elements_type))
+            }
             witx::Type::Buffer(buffer) if buffer.out => {
-                let internal_type = ASType::from(&buffer.tref);
-                ASType::WriteBuffer(Rc::new(internal_type))
+                let elements_type = ASType::from(&buffer.tref);
+                ASType::WriteBuffer(Rc::new(elements_type))
             }
             witx::Type::Buffer(buffer) => {
-                let internal_type = ASType::from(&buffer.tref);
-                ASType::ReadBuffer(Rc::new(internal_type))
+                let elements_typ = ASType::from(&buffer.tref);
+                ASType::ReadBuffer(Rc::new(elements_typ))
             }
         }
     }
@@ -386,5 +387,60 @@ impl From<&witx::TypeRef> for ASType {
                 })
             }
         }
+    }
+}
+
+pub struct ASTypeDecomposed {
+    pub name: String,
+    pub type_: Rc<ASType>,
+}
+
+impl ASType {
+    pub fn leaf(&self) -> &ASType {
+        if let ASType::Alias(alias) = self {
+            alias.type_.as_ref()
+        } else {
+            self
+        }
+    }
+
+    pub fn decompose(&self, name: &str, as_mut_pointers: bool) -> Vec<ASTypeDecomposed> {
+        let leaf = self.leaf();
+        let mut decomposed = match leaf {
+            ASType::Void => vec![],
+            ASType::ReadBuffer(elements_type)
+            | ASType::WriteBuffer(elements_type)
+            | ASType::Slice(elements_type) => {
+                let ptr_name = format!("{}_ptr", name);
+                let len_name = format!("{}_len", name);
+                let ptr_type = if let ASType::ReadBuffer(_) = leaf {
+                    ASType::ConstPtr(elements_type.clone())
+                } else {
+                    ASType::MutPtr(elements_type.clone())
+                };
+                let ptr_element = ASTypeDecomposed {
+                    name: ptr_name,
+                    type_: Rc::new(ptr_type),
+                };
+                let len_element = ASTypeDecomposed {
+                    name: len_name,
+                    type_: Rc::new(ASType::MutPtr(elements_type.clone())),
+                };
+                vec![ptr_element, len_element]
+            }
+            _ => {
+                vec![ASTypeDecomposed {
+                    name: name.to_string(),
+                    type_: Rc::new(self.clone()),
+                }]
+            }
+        };
+        if as_mut_pointers {
+            for part in decomposed.iter_mut() {
+                let type_ = part.type_.clone();
+                part.type_ = Rc::new(ASType::MutPtr(type_));
+            }
+        }
+        decomposed
     }
 }

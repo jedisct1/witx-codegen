@@ -44,8 +44,20 @@ export class WasiString {
 }
 
 @unmanaged
-export class WasiArray<T> {
+export class WasiSlice<T> {
     ptr: WasiPtr<T>;
+    length: usize;
+
+    constructor(array: ArrayBufferView) {
+        // @ts-ignore: cast
+        this.ptr = array.dataStart;
+        this.length = array.byteLength;
+    }
+}
+
+@unmanaged
+export class WasiMutSlice<T> {
+    ptr: WasiMutPtr<T>;
     length: usize;
 
     constructor(array: ArrayBufferView) {

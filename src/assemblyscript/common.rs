@@ -66,10 +66,6 @@ impl fmt::Display for ASType {
             ASType::ConstPtr(pointee) => format!("WasiPtr<{}>", pointee.to_string()),
             ASType::MutPtr(pointee) => format!("WasiMutPtr<{}>", pointee.to_string()),
             ASType::Option(_) => todo!(),
-            ASType::ReadBuffer(element_type) => format!("WasiPtr<{}>", element_type.to_string()),
-            ASType::WriteBuffer(element_type) => {
-                format!("WasiMutPtr<{}>", element_type.to_string())
-            }
             ASType::Result(_) => todo!(),
             ASType::S8 => "i8".to_string(),
             ASType::S16 => "i16".to_string(),
@@ -88,6 +84,11 @@ impl fmt::Display for ASType {
             ASType::Struct(_) => unimplemented!(),
             ASType::Tuple(tuple_members) => Tuple::name_for(tuple_members).as_type(),
             ASType::Union(_) => unimplemented!(),
+            ASType::Slice(element_type) => format!("WasiMutSlice<{}>", element_type),
+            ASType::ReadBuffer(element_type) => format!("WasiSlice<{}>", element_type),
+            ASType::WriteBuffer(element_type) => {
+                format!("WasiMutSlice<{}>", element_type.to_string())
+            }
         };
         write!(f, "{}", s)
     }
