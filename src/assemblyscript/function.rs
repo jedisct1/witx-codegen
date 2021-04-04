@@ -44,11 +44,11 @@ impl AssemblyScriptGenerator {
         // A tuple in a result is expanded into additional parameters, transformed to pointers
         if let ASType::Tuple(tuple_members) = ok_type.as_ref().leaf() {
             for (i, tuple_member) in tuple_members.iter().enumerate() {
-                let name = format!("res{}", i);
+                let name = format!("result{}_ptr", i);
                 results.push((name, tuple_member.type_.clone()));
             }
         } else {
-            let name = "res";
+            let name = "result_ptr";
             results.push((name.to_string(), ok_type));
         }
         for result in &results {
