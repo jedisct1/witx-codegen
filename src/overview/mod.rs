@@ -228,8 +228,8 @@ impl OverviewGenerator {
                 Self::define_as_type(w, type_name, &t)?
             }
         }
-        w.eob()?;
         Self::define_constants_for_type(w, type_name, constants)?;
+        w.eob()?;
         Ok(())
     }
 }
