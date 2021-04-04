@@ -30,7 +30,7 @@ impl AssemblyScriptGenerator {
             let mut w = w.new_block();
             for (i, member) in members.iter().enumerate() {
                 let member_type = member.type_.as_ref();
-                w.write_line(format!("v{}: {};", i, member_type))?;
+                w.write_line(format!("v{}: {};", i, member_type.as_lang()))?;
 
                 let pad_len = member.padding;
                 for i in 0..(pad_len & 1) {

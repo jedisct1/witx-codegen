@@ -14,7 +14,11 @@ impl AssemblyScriptGenerator {
             let mut w = w.new_block();
             for member in members {
                 let member_type = member.type_.as_ref();
-                w.write_line(format!("{}: {};", member.name.as_var(), member_type))?;
+                w.write_line(format!(
+                    "{}: {};",
+                    member.name.as_var(),
+                    member_type.as_lang()
+                ))?;
 
                 let pad_len = member.padding;
                 for i in 0..(pad_len & 1) {

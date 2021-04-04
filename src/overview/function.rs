@@ -1,10 +1,10 @@
 use super::*;
 use std::io::Write;
 
-impl AssemblyScriptGenerator {
+impl OverviewGenerator {
     pub fn define_func<T: Write>(
         w: &mut PrettyWriter<T>,
-        module_name: &str,
+        _module_name: &str,
         func_witx: &witx::Function,
     ) -> Result<(), Error> {
         assert_eq!(func_witx.abi, witx::Abi::Preview1);
@@ -28,18 +28,6 @@ impl AssemblyScriptGenerator {
 
         let ok_type = result.ok_type.clone();
 
-        let docs = &func_witx.docs;
-        if !docs.is_empty() {
-            Self::write_docs(w, docs)?;
-        }
-
-        let mut params_decomposed = vec![];
-
-        for param in &params {
-            let mut decomposed = param.1.decompose(&param.0, false);
-            params_decomposed.append(&mut decomposed);
-        }
-
         let mut results = vec![];
         // A tuple in a result is expanded into additional parameters, transformed to pointers
         if let ASType::Tuple(tuple_members) = ok_type.as_ref() {
@@ -51,36 +39,41 @@ impl AssemblyScriptGenerator {
             let name = "res";
             results.push((name.to_string(), ok_type));
         }
-        for result in &results {
-            let mut decomposed = result.1.decompose(&result.0, true);
-            params_decomposed.append(&mut decomposed);
-        }
 
-        w.write_line("// @ts-ignore: decorator")?
-            .write_line(format!("@external(\"{}\", \"{}\")", module_name, name))?
-            .write(format!("export declare function {}(", name.as_fn()))?;
+        w.write_line(format!(
+            "function {}(): {}",
+            name.as_fn(),
+            result.error_type.as_lang()
+        ))?;
         if !params.is_empty() {
-            w.eol()?;
+            let mut w = w.new_block();
+            w.write_line("- Input:")?;
+            {
+                let mut w = w.new_block();
+                for param in &params {
+                    w.write_line(format!("- {}: {}", param.0.as_var(), param.1.as_lang()))?;
+                }
+            }
         }
-
-        for (i, param) in params_decomposed.iter().enumerate() {
-            let eol = if i + 1 == params.len() { "" } else { "," };
-            w.continuation()?;
-            w.write_line(format!(
-                "{}: {}{}",
-                param.name.as_var(),
-                param.type_.as_lang(),
-                eol
-            ))?;
+        if !results.is_empty() {
+            let mut w = w.new_block();
+            match results[0].1.as_ref() {
+                ASType::Void if results.len() == 1 => {
+                    w.write_line("- No output")?;
+                }
+                _ => {
+                    w.write_line("- Output:")?;
+                    {
+                        let mut w = w.new_block();
+                        for result in &results {
+                            let result_as_ptr = ASType::MutPtr(result.1.clone());
+                            w.write_line(format!("- {}", result_as_ptr.as_lang()))?;
+                        }
+                    }
+                }
+            }
         }
-
-        w.write_line(format!("): {};", result.error_type.as_lang()))?;
         w.eob()?;
-
-        let signature_witx = func_witx.wasm_signature(witx::CallMode::DefinedImport);
-        let params_count_witx = signature_witx.params.len() + signature_witx.results.len();
-        assert_eq!(params_count_witx, params_decomposed.len() + 1);
-
         Ok(())
     }
 }

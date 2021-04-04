@@ -2,6 +2,7 @@ mod assemblyscript;
 mod astype;
 mod error;
 mod generator;
+mod overview;
 mod pretty_writer;
 
 #[macro_use]
@@ -53,6 +54,15 @@ fn main() {
                 .required(true)
                 .help("WITX files"),
         )
+        .arg(
+            Arg::with_name("output_type")
+                .short("-t")
+                .long("--output-type")
+                .value_name("output_type")
+                .multiple(false)
+                .default_value("assemblyscript")
+                .help("Output type. One in: {assemblyscript, overview}"),
+        )
         .get_matches();
     // generate all or generate no heade,r no imports
     let mut writer: Box<dyn Write> = match matches.value_of("output_file") {
@@ -66,12 +76,18 @@ fn main() {
         skip_imports,
         skip_header,
     };
+    let output_type = matches.value_of("output_type").unwrap();
     let witx_files = matches.values_of("witx_files").unwrap();
     for witx_file in witx_files {
         let witx = witx::load(witx_file).unwrap();
-        let generator: Box<dyn Generator<_>> = Box::new(
-            assemblyscript::AssemblyScriptGenerator::new(module_name.clone()),
-        );
+        let generator = match output_type {
+            "assemblyscript" => Box::new(assemblyscript::AssemblyScriptGenerator::new(
+                module_name.clone(),
+            )) as Box<dyn Generator<_>>,
+            "overview" => Box::new(overview::OverviewGenerator::new(module_name.clone()))
+                as Box<dyn Generator<_>>,
+            _ => panic!("Unsupported output type"),
+        };
         generator.generate(&mut writer, witx, &options).unwrap();
         options.skip_imports = true;
         options.skip_header = true;

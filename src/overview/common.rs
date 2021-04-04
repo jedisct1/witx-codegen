@@ -1,6 +1,4 @@
-use super::tuple::Tuple;
 use crate::astype::*;
-use convert_case::{Case, Casing};
 
 pub trait IsNullable {
     fn is_nullable(&self) -> bool;
@@ -26,23 +24,23 @@ pub trait Normalize {
     fn as_str(&self) -> &str;
 
     fn as_type(&self) -> String {
-        self.as_str().to_case(Case::Pascal)
+        self.as_str().to_string()
     }
 
     fn as_fn(&self) -> String {
-        self.as_str().to_case(Case::Camel)
+        self.as_str().to_string()
     }
 
     fn as_fn_suffix(&self) -> String {
-        self.as_str().to_case(Case::UpperCamel)
+        self.as_str().to_string()
     }
 
     fn as_var(&self) -> String {
-        self.as_str().to_case(Case::Snake)
+        format!("`{}`", self.as_str())
     }
 
     fn as_const(&self) -> String {
-        self.as_str().to_case(Case::UpperSnake)
+        format!("`{}`", self.as_str())
     }
 }
 
@@ -63,13 +61,13 @@ pub trait ToLanguageRepresentation {
         match self.as_astype() {
             ASType::Alias(alias) => alias.name.as_type(),
             ASType::Bool => "bool".to_string(),
-            ASType::Char32 => "Char32".to_string(),
-            ASType::Char8 => "Char8".to_string(),
+            ASType::Char32 => "char32".to_string(),
+            ASType::Char8 => "char8".to_string(),
             ASType::F32 => "f32".to_string(),
             ASType::F64 => "f64".to_string(),
-            ASType::Handle(_resource_name) => "WasiHandle".to_string(),
-            ASType::ConstPtr(pointee) => format!("WasiPtr<{}>", pointee.to_string()),
-            ASType::MutPtr(pointee) => format!("WasiMutPtr<{}>", pointee.to_string()),
+            ASType::Handle(_resource_name) => "handle".to_string(),
+            ASType::ConstPtr(pointee) => format!("ptr<{}>", pointee.to_string()),
+            ASType::MutPtr(pointee) => format!("mut_ptr<{}>", pointee.to_string()),
             ASType::Option(_) => todo!(),
             ASType::Result(_) => todo!(),
             ASType::S8 => "i8".to_string(),
@@ -81,19 +79,23 @@ pub trait ToLanguageRepresentation {
             ASType::U32 => "u32".to_string(),
             ASType::U64 => "u64".to_string(),
             ASType::USize => "usize".to_string(),
-            ASType::Void => "void".to_string(),
+            ASType::Void => "(empty)".to_string(),
             ASType::Constants(_) => unimplemented!(),
             ASType::Enum(enum_) => {
-                format!("{} /* Enum */", enum_.repr.as_ref().as_lang())
+                format!("{} (enum)", enum_.repr.as_ref().as_lang())
             }
             ASType::Struct(_) => unimplemented!(),
-            ASType::Tuple(tuple_members) => Tuple::name_for(tuple_members).as_type(),
+            ASType::Tuple(tuple_members) => {
+                let tuple_types: Vec<_> =
+                    tuple_members.iter().map(|x| x.type_.to_string()).collect();
+                format!("({})", tuple_types.join(", "))
+            }
             ASType::Union(_) => unimplemented!(),
-            ASType::Slice(element_type) => format!("WasiMutSlice<{}>", element_type.as_lang()),
-            ASType::String(_) => "WasiString".to_string(),
-            ASType::ReadBuffer(element_type) => format!("WasiSlice<{}>", element_type.as_lang()),
+            ASType::Slice(element_type) => format!("mut_slice<{}>", element_type.as_lang()),
+            ASType::String(_) => "string".to_string(),
+            ASType::ReadBuffer(element_type) => format!("slice<{}>", element_type.as_lang()),
             ASType::WriteBuffer(element_type) => {
-                format!("WasiMutSlice<{}>", element_type.to_string())
+                format!("mut_slice<{}>", element_type.to_string())
             }
         }
     }

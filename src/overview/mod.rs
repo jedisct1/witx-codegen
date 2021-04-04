@@ -1,6 +1,5 @@
 mod common;
 mod function;
-mod header;
 mod r#struct;
 mod tuple;
 mod union;
@@ -12,17 +11,17 @@ use crate::pretty_writer::PrettyWriter;
 use common::*;
 use std::io::Write;
 
-pub struct AssemblyScriptGenerator {
+pub struct OverviewGenerator {
     module_name: Option<String>,
 }
 
-impl AssemblyScriptGenerator {
+impl OverviewGenerator {
     pub fn new(module_name: Option<String>) -> Self {
-        AssemblyScriptGenerator { module_name }
+        OverviewGenerator { module_name }
     }
 }
 
-impl<T: Write> Generator<T> for AssemblyScriptGenerator {
+impl<T: Write> Generator<T> for OverviewGenerator {
     fn generate(
         &self,
         writer: &mut T,
@@ -45,7 +44,8 @@ impl<T: Write> Generator<T> for AssemblyScriptGenerator {
             "---------------------- Module: [{}] ----------------------",
             module_name
         );
-        Self::write_docs(&mut w, &module_title_doc)?;
+        w.eob()?;
+        w.write_line(format!("{}", module_title_doc))?;
         w.eob()?;
 
         for type_ in module_witx.typenames() {
@@ -77,16 +77,10 @@ impl<T: Write> Generator<T> for AssemblyScriptGenerator {
     }
 }
 
-impl AssemblyScriptGenerator {
-    fn write_docs<T: Write>(w: &mut PrettyWriter<T>, docs: &str) -> Result<(), Error> {
-        if docs.is_empty() {
-            return Ok(());
-        }
-        w.write_line("/**")?;
-        for docs_line in docs.lines() {
-            w.write_line(format!(" * {}", docs_line))?;
-        }
-        w.write_line(" */")?;
+impl OverviewGenerator {
+    fn header<T: Write>(w: &mut PrettyWriter<T>) -> Result<(), Error> {
+        w.write_line("API overview")?;
+        w.eob()?;
         Ok(())
     }
 
@@ -96,7 +90,7 @@ impl AssemblyScriptGenerator {
         other_type: &ASType,
     ) -> Result<(), Error> {
         w.write_line(format!(
-            "export type {} = {};",
+            "alias {} = {}",
             name.as_type(),
             other_type.as_lang()
         ))?;
@@ -108,11 +102,7 @@ impl AssemblyScriptGenerator {
         name: &str,
         type_: &ASType,
     ) -> Result<(), Error> {
-        w.write_line(format!(
-            "export type {} = {};",
-            name.as_type(),
-            type_.as_lang()
-        ))?;
+        w.write_line(format!("[alias] {} = {}", name.as_type(), type_.as_lang()))?;
         Ok(())
     }
 
@@ -123,24 +113,16 @@ impl AssemblyScriptGenerator {
     ) -> Result<(), Error> {
         let repr = enum_.repr.as_ref();
         w.write_line(format!(
-            "export type {} = {};",
+            "enum {}: (tag: {})",
             name.as_type(),
             repr.as_lang()
         ))?;
-        w.eob()?;
-        w.write_line(format!("export namespace {} {{", name.as_type()))?;
         {
             let mut w = w.new_block();
             for choice in &enum_.choices {
-                w.write_line(format!(
-                    "export const {}: {} = {};",
-                    choice.name.as_const(),
-                    name.as_type(),
-                    choice.value
-                ))?;
+                w.write_line(format!("- {}: {}", choice.name.as_const(), name.as_type(),))?;
             }
         }
-        w.write_line("}")?;
         Ok(())
     }
 
@@ -151,11 +133,10 @@ impl AssemblyScriptGenerator {
     ) -> Result<(), Error> {
         let repr = constants.repr.as_ref();
         w.write_line(format!(
-            "export type {} = {};",
+            "constants {}: (type: {})",
             name.as_type(),
             repr.as_lang()
         ))?;
-        w.eob()?;
         Self::define_constants_for_type(w, name, &constants.constants)?;
         Ok(())
     }
@@ -203,7 +184,7 @@ impl AssemblyScriptGenerator {
         if constants.is_empty() {
             return Ok(());
         }
-        w.write_line(format!("export namespace {} {{", type_name.as_type()))?;
+        w.write_line(format!("predefined constants for {}:", type_name))?;
         {
             let mut w = w.new_block();
             let mut hex = false;
@@ -225,16 +206,9 @@ impl AssemblyScriptGenerator {
                 } else {
                     format!("{}", constant.value)
                 };
-                w.write_line(format!(
-                    "export const {}: {} = {};",
-                    constant.name.as_const(),
-                    type_name.as_type(),
-                    value_s
-                ))?;
+                w.write_line(format!("- {} = {}", constant.name.as_const(), value_s))?;
             }
         }
-        w.write_line("}")?;
-        w.eob()?;
         Ok(())
     }
 
@@ -243,10 +217,6 @@ impl AssemblyScriptGenerator {
         type_witx: &witx::NamedType,
         constants: &[ASConstant],
     ) -> Result<(), Error> {
-        let docs = &type_witx.docs;
-        if !docs.is_empty() {
-            Self::write_docs(w, docs)?;
-        }
         let type_name = type_witx.name.as_str().clone();
         let tref = &type_witx.tref;
         match tref {

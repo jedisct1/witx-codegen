@@ -36,7 +36,7 @@ impl AssemblyScriptGenerator {
                 w.write_line(format!(
                     "static {}(val: {}): {} {{",
                     member.name.as_fn(),
-                    member_type,
+                    member_type.as_lang(),
                     union_name.as_type()
                 ))?;
                 w.new_block().write_line(format!(
@@ -49,7 +49,7 @@ impl AssemblyScriptGenerator {
                 w.write_line(format!(
                     "set{}(val: {}): void {{",
                     member.name.as_fn_suffix(),
-                    member_type
+                    member_type.as_lang()
                 ))?;
                 {
                     w.new_block()
@@ -68,13 +68,13 @@ impl AssemblyScriptGenerator {
                     w.write_line(format!(
                         "get{}(): {} | null {{",
                         member.name.as_fn_suffix(),
-                        member_type
+                        member_type.as_lang()
                     ))?;
                 } else {
                     w.write_line(format!(
                         "get{}(): {} {{",
                         member.name.as_fn_suffix(),
-                        member_type
+                        member_type.as_lang()
                     ))?;
                 }
                 {
@@ -82,7 +82,7 @@ impl AssemblyScriptGenerator {
                     if member_type.is_nullable() {
                         w.write_line(format!("if (this.tag !== {}) {{ return null; }}", i))?;
                     }
-                    w.write_line(format!("return this.get<{}>();", member_type))?;
+                    w.write_line(format!("return this.get<{}>();", member_type.as_lang()))?;
                 }
                 w.write_line("}")?;
             }
@@ -101,15 +101,15 @@ impl AssemblyScriptGenerator {
             ASType::Void => {
                 w.write_line(format!(
                     "// --- {}: (no associated content) if tag={}",
-                    member.name.as_const(),
+                    member.name.as_var(),
                     i
                 ))?;
             }
             _ => {
                 w.write_line(format!(
                     "// --- {}: {} if tag={}",
-                    member.name.as_const(),
-                    member_type,
+                    member.name.as_var(),
+                    member_type.as_lang(),
                     i
                 ))?;
             }
@@ -130,7 +130,7 @@ impl AssemblyScriptGenerator {
             .write_line(format!("export class {} {{", name.as_type()))?;
         {
             let mut w = w.new_block();
-            w.write_line(format!("tag: {};", tag_repr))?;
+            w.write_line(format!("tag: {};", tag_repr.as_lang()))?;
             let pad_len = union_.padding_after_tag;
             for i in 0..(pad_len & 1) {
                 w.write_line(format!("private __pad8_{}: u8;", i))?;
@@ -146,7 +146,7 @@ impl AssemblyScriptGenerator {
             }
             w.eob()?;
 
-            w.write_line(format!("constructor(tag: {}) {{", tag_repr))?;
+            w.write_line(format!("constructor(tag: {}) {{", tag_repr.as_lang()))?;
             {
                 let mut w = w.new_block();
                 w.write_line("this.tag = tag;")?.write_line(format!(
