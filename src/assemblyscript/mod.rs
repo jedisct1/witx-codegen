@@ -12,18 +12,22 @@ use crate::pretty_writer::PrettyWriter;
 use common::*;
 use std::io::Write;
 
-pub struct Generator<W: Write> {
-    w: PrettyWriter<W>,
+pub struct Generator {
     module_name: Option<String>,
 }
 
-impl<W: Write> Generator<W> {
-    pub fn new(writer: W, module_name: Option<String>) -> Self {
-        let w = PrettyWriter::new(writer, "    ");
-        Generator { w, module_name }
+impl Generator {
+    pub fn new(module_name: Option<String>) -> Self {
+        Generator { module_name }
     }
 
-    pub fn generate(&mut self, witx: witx::Module, options: &Options) -> Result<(), Error> {
+    pub fn generate<T: Write>(
+        &mut self,
+        writer: &mut T,
+        witx: witx::Module,
+        options: &Options,
+    ) -> Result<(), Error> {
+        let mut w = PrettyWriter::new(writer, "    ");
         let module_name = match &self.module_name {
             None => witx.name().as_str().to_string(),
             Some(module_name) => module_name.to_string(),
@@ -32,7 +36,7 @@ impl<W: Write> Generator<W> {
         let skip_imports = options.skip_imports;
 
         if !options.skip_header {
-            self.header()?;
+            Self::header(&mut w)?;
         }
 
         for type_ in witx.typenames() {
@@ -53,11 +57,11 @@ impl<W: Write> Generator<W> {
                     }
                 })
                 .collect();
-            self.define_type(type_.as_ref(), &constants_for_type)?;
+            Self::define_type(&mut w, type_.as_ref(), &constants_for_type)?;
         }
 
         for func in witx.funcs() {
-            self.define_func(&module_name, func.as_ref())?;
+            Self::define_func(&mut w, &module_name, func.as_ref())?;
         }
 
         Ok(())
@@ -208,12 +212,11 @@ impl<W: Write> Generator<W> {
         Ok(())
     }
 
-    fn define_type(
-        &mut self,
+    fn define_type<T: Write>(
+        w: &mut PrettyWriter<T>,
         type_witx: &witx::NamedType,
         constants: &[ASConstant],
     ) -> Result<(), Error> {
-        let w = &mut self.w;
         let docs = &type_witx.docs;
         if !docs.is_empty() {
             Self::write_docs(w, docs)?;

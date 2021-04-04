@@ -1,9 +1,8 @@
 use super::*;
 use std::io::Write;
 
-impl<W: Write> Generator<W> {
-    pub fn header(&mut self) -> Result<(), Error> {
-        let w = &mut self.w;
+impl Generator {
+    pub fn header<T: Write>(w: &mut PrettyWriter<T>) -> Result<(), Error> {
         w.write_lines(
             "
 /*

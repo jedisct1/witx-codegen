@@ -17,7 +17,7 @@ impl Tuple {
     }
 }
 
-impl<W: Write> Generator<W> {
+impl Generator {
     pub fn define_as_tuple<T: Write>(
         w: &mut PrettyWriter<T>,
         name: &str,

@@ -34,12 +34,6 @@ fn main() {
                 .help("Output file, or - for the standard output"),
         )
         .arg(
-            Arg::with_name("witx_file")
-                .multiple(false)
-                .required(true)
-                .help("WITX file"),
-        )
-        .arg(
             Arg::with_name("skip_imports")
                 .short("I")
                 .long("--skip-imports")
@@ -51,21 +45,33 @@ fn main() {
                 .long("--skip-header")
                 .help("Do not generate a header"),
         )
+        .arg(
+            Arg::with_name("witx_files")
+                .multiple(true)
+                .required(true)
+                .help("WITX files"),
+        )
         .get_matches();
     // generate all or generate no heade,r no imports
-    let writer: Box<dyn Write> = match matches.value_of("output_file") {
+    let mut writer: Box<dyn Write> = match matches.value_of("output_file") {
         None | Some("-") => Box::new(std::io::stdout()),
         Some(file) => Box::new(File::create(file).unwrap()),
     };
-    let witx_file = matches.value_of("witx_file").unwrap();
     let module_name = matches.value_of("module_name").map(|x| x.to_string());
     let skip_imports = matches.is_present("skip_imports");
     let skip_header = matches.is_present("skip_header");
-    let options = Options {
+    let mut options = Options {
         skip_imports,
         skip_header,
     };
-    let witx = witx::load(witx_file).unwrap();
-    let mut generator = assemblyscript::Generator::new(writer, module_name);
-    generator.generate(witx, &options).unwrap();
+    let witx_files = matches.values_of("witx_files").unwrap();
+    for (i, witx_file) in witx_files.enumerate() {
+        let witx = witx::load(witx_file).unwrap();
+        let mut generator = assemblyscript::Generator::new(module_name.clone());
+        generator.generate(&mut writer, witx, &options).unwrap();
+        if i > 0 {
+            options.skip_imports = true;
+            options.skip_header = true;
+        }
+    }
 }

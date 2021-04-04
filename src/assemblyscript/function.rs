@@ -1,13 +1,12 @@
 use super::*;
 use std::io::Write;
 
-impl<W: Write> Generator<W> {
-    pub fn define_func(
-        &mut self,
+impl Generator {
+    pub fn define_func<T: Write>(
+        w: &mut PrettyWriter<T>,
         module_name: &str,
         func_witx: &witx::Function,
     ) -> Result<(), Error> {
-        let w = &mut self.w;
         assert_eq!(func_witx.abi, witx::Abi::Preview1);
         let name = func_witx.name.as_str().to_string();
         let params_witx = &func_witx.params;

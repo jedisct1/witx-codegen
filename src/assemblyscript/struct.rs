@@ -1,7 +1,7 @@
 use super::*;
 use std::io::Write;
 
-impl<W: Write> Generator<W> {
+impl Generator {
     pub fn define_as_struct<T: Write>(
         w: &mut PrettyWriter<T>,
         name: &str,
