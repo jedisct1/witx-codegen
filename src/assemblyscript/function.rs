@@ -64,7 +64,11 @@ impl AssemblyScriptGenerator {
         }
 
         for (i, param) in params_decomposed.iter().enumerate() {
-            let eol = if i + 1 == params.len() { "" } else { "," };
+            let eol = if i + 1 == params_decomposed.len() {
+                ""
+            } else {
+                ","
+            };
             w.continuation()?;
             w.write_line(format!(
                 "{}: {}{}",
