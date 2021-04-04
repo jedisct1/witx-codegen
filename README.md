@@ -12,7 +12,7 @@ Backends:
 * [ ] Rust
 * [ ] TinyGo
 * [ ] C/C++
-* [ ] API Overview
+* [X] API Overview
 * [ ] Documentation
 
 `witx-codegen` is a rewrite of `as-witx`.
