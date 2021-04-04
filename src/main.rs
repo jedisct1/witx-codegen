@@ -11,6 +11,10 @@ use clap::Arg;
 use std::fs::File;
 use std::io::Write;
 
+pub struct Options {
+    functions_only: bool,
+}
+
 fn main() {
     let matches = app_from_crate!()
         .arg(
@@ -34,6 +38,12 @@ fn main() {
                 .required(true)
                 .help("WITX file"),
         )
+        .arg(
+            Arg::with_name("functions_only")
+                .short("F")
+                .long("--functions-only")
+                .help("Skip header and types definitions"),
+        )
         .get_matches();
 
     let writer: Box<dyn Write> = match matches.value_of("output_file") {
@@ -42,7 +52,10 @@ fn main() {
     };
     let witx_file = matches.value_of("witx_file").unwrap();
     let module_name = matches.value_of("module_name").map(|x| x.to_string());
+    let options = Options {
+        functions_only: matches.is_present("functions_only"),
+    };
     let witx = witx::load(witx_file).unwrap();
     let mut generator = assemblyscript::Generator::new(writer, module_name);
-    generator.generate(witx).unwrap();
+    generator.generate(witx, &options).unwrap();
 }

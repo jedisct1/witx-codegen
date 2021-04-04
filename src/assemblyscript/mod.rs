@@ -5,6 +5,7 @@ mod r#struct;
 mod tuple;
 mod union;
 
+use super::*;
 use crate::astype::*;
 use crate::error::*;
 use crate::pretty_writer::PrettyWriter;
@@ -22,31 +23,32 @@ impl<W: Write> Generator<W> {
         Generator { w, module_name }
     }
 
-    pub fn generate(&mut self, witx: witx::Module) -> Result<(), Error> {
+    pub fn generate(&mut self, witx: witx::Module, options: &Options) -> Result<(), Error> {
         let module_name = match &self.module_name {
             None => witx.name().as_str().to_string(),
             Some(module_name) => module_name.to_string(),
         };
-        self.header()?;
 
-        // Ignore witx.resources() which doesn't seem to be required for code generation
+        if !options.functions_only {
+            self.header()?;
 
-        for type_ in witx.typenames() {
-            let constants_for_type: Vec<_> = witx
-                .constants()
-                .into_iter()
-                .filter_map(|x| {
-                    if x.ty == type_.name {
-                        Some(ASConstant {
-                            name: x.name.as_str().to_string(),
-                            value: x.value,
-                        })
-                    } else {
-                        None
-                    }
-                })
-                .collect();
-            self.define_type(type_.as_ref(), &constants_for_type)?;
+            for type_ in witx.typenames() {
+                let constants_for_type: Vec<_> = witx
+                    .constants()
+                    .into_iter()
+                    .filter_map(|x| {
+                        if x.ty == type_.name {
+                            Some(ASConstant {
+                                name: x.name.as_str().to_string(),
+                                value: x.value,
+                            })
+                        } else {
+                            None
+                        }
+                    })
+                    .collect();
+                self.define_type(type_.as_ref(), &constants_for_type)?;
+            }
         }
 
         for func in witx.funcs() {
