@@ -15,3 +15,18 @@ readme = "README.md"
 clap = { version = "2.33", features = ["wrap_help"] }
 convert_case = "0.4"
 witx = { package = "witnext", version = "0.10.0-beta1" }
+
+[package.metadata.deb]
+extended-description = """\
+A code generator for WITX (WebAssembly interface description language for WASI).
+
+WITX-CodeGen generates types and function prototypes for various languages targeting
+WebAssembly, from a common WITX interface description.
+"""
+assets = [
+  ["target/release/witx-codegen", "usr/bin/", "755"],
+  ["README.md", "usr/share/doc/witx-codegen/README.md", "644"]
+]
+section = "development"
+depends = "$auto"
+priority = "optional"
