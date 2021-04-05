@@ -75,13 +75,13 @@
   )
 
   ;;; This function gets a string
-   (@interface func (export "a_function_that_gets_a_string")
+  (@interface func (export "a_function_that_gets_a_string")
     (param $str string)
     (result $error (expected $test_bool (error $test_errno)))
   )
 
-    ;;; This function return a tagged union
-   (@interface func (export "a_function_that_returns_a_tagged_union")
+  ;;; This function return a tagged union
+  (@interface func (export "a_function_that_returns_a_tagged_union")
     (param $str $test_string)
     (result $error (expected $test_tagged_union (error $test_errno)))
   )
