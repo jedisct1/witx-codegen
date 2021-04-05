@@ -31,7 +31,6 @@ jobs:
 
       - name: Build
         run: |
-          echo 'lto = "fat"' >> Cargo.toml
           env RUSTFLAGS="-C link-arg=-s" cargo build --release
           mkdir witx-codegen
           mv target/release/witx-codegen witx-codegen/
