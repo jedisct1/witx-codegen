@@ -181,7 +181,11 @@ impl AssemblyScriptGenerator {
             | ASType::S32
             | ASType::S64
             | ASType::USize
-            | ASType::Handle(_) => Self::define_as_atom(w, name, type_)?,
+            | ASType::Handle(_)
+            | ASType::Slice(_)
+            | ASType::String(_)
+            | ASType::ReadBuffer(_)
+            | ASType::WriteBuffer(_) => Self::define_as_atom(w, name, type_)?,
             ASType::Enum(enum_) => Self::define_as_enum(w, name, enum_)?,
             ASType::Union(union_) => Self::define_as_union(w, name, union_)?,
             ASType::Constants(constants) => Self::define_as_constants(w, name, constants)?,

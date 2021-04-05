@@ -42,6 +42,15 @@
 ;;; A tuple
 (typename $test_tuple (tuple $test_bool $test_medium_int $test_big_int))
 
+;;; A string
+(typename $test_string string)
+
+;;; An output buffer
+(typename $test_output_buffer (out-buffer u16))
+
+;;; An input buffer
+(typename $test_input_buffer (in-buffer u16))
+
 ;;; A tagged union
 (typename $test_tagged_union (variant (@witx tag u16) (case $first_choice u8) (case $second_choice string) (case $third_choice f32) (case $empty_choice)))
 
