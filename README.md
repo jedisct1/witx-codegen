@@ -11,7 +11,42 @@ WITX is the description language used by [WASI](https://wasi.dev). This tool use
 
 WITX-CodeGen is written in Rust, but was designed to generate code for multiple languages that is simple to use, as well as multiple documentation formats.
 
-Backends:
+This is a rewrite of `as-witx`.
+
+## Installation
+
+* Via `cargo`:
+
+```sh
+cargo install witx-codegen
+```
+
+* Precompiled binaries: tarballs and Debian/Ubuntu packages are available [here](https://github.com/jedisct1/witx-codegen/releases/latest).
+
+## Usage
+
+```text
+WITX code generator for WebAssembly guest modules
+
+USAGE:
+    witx-codegen [FLAGS] [OPTIONS] <witx_files>...
+
+FLAGS:
+    -h, --help            Prints help information
+    -H, --skip-header     Do not generate a header
+    -I, --skip-imports    Ignores imported types and functions
+    -V, --version         Prints version information
+
+OPTIONS:
+    -m, --module-name <module_name>    Set the module name to use instead of reading it from the witx file
+    -o, --output <output_file>         Output file, or - for the standard output
+    -t, --output-type <output_type>    Output type. One in: {assemblyscript, overview} [default: assemblyscript]
+
+ARGS:
+    <witx_files>...    WITX files
+```
+
+## Backends
 
 * [X] AssemblyScript
 * [ ] Zig
@@ -20,5 +55,3 @@ Backends:
 * [ ] C/C++
 * [X] API Overview
 * [ ] Documentation
-
-`witx-codegen` is a rewrite of `as-witx`.

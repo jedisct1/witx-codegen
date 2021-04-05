@@ -42,7 +42,7 @@ fn main() {
             Arg::with_name("skip_imports")
                 .short("I")
                 .long("--skip-imports")
-                .help("Ignore imported types and functions"),
+                .help("Ignores imported types and functions"),
         )
         .arg(
             Arg::with_name("skip_header")
