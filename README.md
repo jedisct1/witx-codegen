@@ -1,6 +1,9 @@
 ![WITX code generator](logo.png)
 ================================
 
+![CI status](https://github.com/jedisct1/witx-codegen/actions/workflows/ci.yml/badge.svg)
+[![crates.io](https://img.shields.io/crates/v/witx-codegen.svg)](https://crates.io/crates/witx-codegen)
+
 # WITX-CodeGen: A WITX code generator
 
 WITX is a way to describe types and function interfaces from WebAssembly modules.
