@@ -1,3 +1,5 @@
+#![forbid(unsafe_code)]
+
 mod assemblyscript;
 mod astype;
 mod error;
