@@ -44,6 +44,10 @@ pub trait Normalize {
     fn as_const(&self) -> String {
         self.as_str().to_case(Case::UpperSnake)
     }
+
+    fn as_namespace(&self) -> String {
+        self.as_str().to_case(Case::Pascal)
+    }
 }
 
 impl<T: AsRef<str>> Normalize for T {

@@ -22,6 +22,10 @@ pub trait Normalize {
     fn as_const(&self) -> String {
         format!("`{}`", self.as_str())
     }
+
+    fn as_namespace(&self) -> String {
+        format!("`{}`", self.as_str())
+    }
 }
 
 impl<T: AsRef<str>> Normalize for T {

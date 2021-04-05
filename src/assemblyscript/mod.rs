@@ -128,7 +128,7 @@ impl AssemblyScriptGenerator {
             repr.as_lang()
         ))?;
         w.eob()?;
-        w.write_line(format!("export namespace {} {{", name.as_type()))?;
+        w.write_line(format!("export namespace {} {{", name.as_namespace()))?;
         {
             let mut w = w.new_block();
             for choice in &enum_.choices {
@@ -207,7 +207,7 @@ impl AssemblyScriptGenerator {
         if constants.is_empty() {
             return Ok(());
         }
-        w.write_line(format!("export namespace {} {{", type_name.as_type()))?;
+        w.write_line(format!("export namespace {} {{", type_name.as_namespace()))?;
         {
             let mut w = w.new_block();
             let mut hex = false;

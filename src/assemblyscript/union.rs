@@ -157,7 +157,8 @@ impl AssemblyScriptGenerator {
             w.write_line("}")?.eob()?;
 
             w.write_line("// @ts-ignore: default")?.write_line(format!(
-                "static new<T>(tag: u8, val: T = 0): {} {{",
+                "static new<T>(tag: {}, val: T = 0): {} {{",
+                tag_repr.as_lang(),
                 name.as_type()
             ))?;
             {
