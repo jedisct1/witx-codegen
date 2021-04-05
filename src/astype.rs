@@ -411,7 +411,18 @@ impl ASType {
 
     pub fn decompose(&self, name: &str, as_mut_pointers: bool) -> Vec<ASTypeDecomposed> {
         let leaf = self.leaf();
-        let mut decomposed = match leaf {
+
+        if as_mut_pointers {
+            return match leaf {
+                ASType::Void => vec![],
+                _ => vec![ASTypeDecomposed {
+                    name: name.to_string(),
+                    type_: Rc::new(ASType::MutPtr(Rc::new(self.clone()))),
+                }],
+            };
+        }
+
+        match leaf {
             ASType::Void => vec![],
             ASType::ReadBuffer(elements_type)
             | ASType::WriteBuffer(elements_type)
@@ -440,13 +451,6 @@ impl ASType {
                     type_: Rc::new(self.clone()),
                 }]
             }
-        };
-        if as_mut_pointers {
-            for part in decomposed.iter_mut() {
-                let type_ = part.type_.clone();
-                part.type_ = Rc::new(ASType::MutPtr(type_));
-            }
         }
-        decomposed
     }
 }
