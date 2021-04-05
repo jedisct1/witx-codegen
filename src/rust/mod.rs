@@ -203,6 +203,7 @@ impl RustGenerator {
         w.write_line(format!("pub mod {} {{", type_name.as_namespace()))?;
         {
             let mut w = w.new_block();
+            w.write_line(format!("use super::{};", type_name.as_type()))?;
 
             let mut hex = false;
             let mut single_bits: usize = 0;
