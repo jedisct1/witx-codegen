@@ -56,29 +56,32 @@ impl RustGenerator {
             params_decomposed.append(&mut decomposed);
         }
 
-        w.write_line("// @ts-ignore: decorator")?
-            .write_line(format!("@external(\"{}\", \"{}\")", module_name, name))?
-            .write(format!("export declare function {}(", name.as_fn()))?;
-        if !params.is_empty() {
-            w.eol()?;
-        }
+        w.write_line(format!("#[link(wasm_import_module = \"{}\")]", module_name))?;
+        w.write_line("extern \"C\" {")?;
+        {
+            let mut w = w.new_block();
+            w.indent()?.write(format!("pub fn {}(", name.as_fn()))?;
 
-        for (i, param) in params_decomposed.iter().enumerate() {
-            let eol = if i + 1 == params_decomposed.len() {
-                ""
-            } else {
-                ","
-            };
-            w.continuation()?;
-            w.write_line(format!(
-                "{}: {}{}",
-                param.name.as_var(),
-                param.type_.as_lang(),
-                eol
-            ))?;
+            if !params_decomposed.is_empty() {
+                w.eol()?;
+            }
+            for (i, param) in params_decomposed.iter().enumerate() {
+                let eol = if i + 1 == params_decomposed.len() {
+                    ""
+                } else {
+                    ","
+                };
+                w.indent()?;
+                w.write_line(format!(
+                    "{}: {}{}",
+                    param.name.as_var(),
+                    param.type_.as_lang(),
+                    eol
+                ))?;
+            }
+            w.write_line(format!(") -> {};", result.error_type.as_lang()))?;
         }
-
-        w.write_line(format!("): {};", result.error_type.as_lang()))?;
+        w.write_line("}")?;
         w.eob()?;
 
         let signature_witx = func_witx.wasm_signature(witx::CallMode::DefinedImport);

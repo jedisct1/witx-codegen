@@ -58,11 +58,12 @@ impl AssemblyScriptGenerator {
 
         w.write_line("// @ts-ignore: decorator")?
             .write_line(format!("@external(\"{}\", \"{}\")", module_name, name))?
+            .indent()?
             .write(format!("export declare function {}(", name.as_fn()))?;
-        if !params.is_empty() {
+
+        if !params_decomposed.is_empty() {
             w.eol()?;
         }
-
         for (i, param) in params_decomposed.iter().enumerate() {
             let eol = if i + 1 == params_decomposed.len() {
                 ""
