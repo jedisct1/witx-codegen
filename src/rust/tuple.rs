@@ -24,7 +24,7 @@ impl RustGenerator {
         members: &[ASTupleMember],
     ) -> Result<(), Error> {
         w.write_line("#[repr(C, packed)]")?
-            .write_line("#[derive(Copy,Clone)]")?
+            .write_line("#[derive(Copy, Clone, Debug)]")?
             .write_line(format!("pub struct {} {{ // -- Tuple", name.as_type()))?;
         {
             let mut w = w.new_block();

@@ -14,6 +14,30 @@ impl RustGenerator {
 pub type WasiHandle = i32;
 pub type Char8 = u8;
 pub type Char32 = u32;
+pub type WasiPtr<T> = *const T;
+pub type WasiMutPtr<T> = *mut T;
+pub type WasiStringBytesPtr = WasiMutPtr<Char8>;
+
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
+pub struct WasiString {
+    ptr: WasiStringBytesPtr,
+    len: usize,
+}
+
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
+pub struct WasiSlice<T> {
+    ptr: WasiPtr<T>,
+    len: usize,
+}
+
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
+pub struct WasiMutSlice<T> {
+    ptr: WasiMutPtr<T>,
+    len: usize,
+}
 ",
         )?;
         w.eob()?;

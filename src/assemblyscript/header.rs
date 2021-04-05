@@ -16,22 +16,20 @@ export type Char8 = u8;
 export type Char32 = u32;
 export type WasiPtr<T> = usize;
 export type WasiMutPtr<T> = usize;
-export type WasiStruct<T> = usize;
-export type WasiUnion<T> = usize;
-export type WasiStringPtr = WasiPtr<Char8>;
+export type WasiStringBytesPtr = WasiMutPtr<Char8>;
 ",
         )?;
         w.write_lines(
             "
 @unmanaged
 export class WasiString {
-    ptr: WasiStringPtr;
+    ptr: WasiStringBytesPtr;
     length: usize;
 
     constructor(str: string) {
         let wasiString = String.UTF8.encode(str, false);
         // @ts-ignore: cast
-        this.ptr = changetype<WasiStringPtr>(wasiString);
+        this.ptr = changetype<WasiStringBytesPtr>(wasiString);
         this.length = wasiString.byteLength;
     }
 

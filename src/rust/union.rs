@@ -108,7 +108,7 @@ impl RustGenerator {
         let tag_repr = union_.tag_repr.as_ref();
         let inner_name = format!("{}_member", name);
         w.write_line("#[repr(C)]")?
-            .write_line("#[derive(Copy,Clone)]")?
+            .write_line("#[derive(Copy, Clone, Debug)]")?
             .write_line(format!("pub union {} {{", inner_name.as_type()))?;
         {
             let mut w = w.new_block();
@@ -125,7 +125,7 @@ impl RustGenerator {
         w.eob()?;
 
         w.write_line("#[repr(C, packed)]")?
-            .write_line("#[derive(Copy,Clone)]")?
+            .write_line("#[derive(Copy, Clone, Debug)]")?
             .write_line(format!("pub struct {} {{", name.as_type()))?;
         {
             let mut w = w.new_block();
@@ -151,10 +151,7 @@ impl RustGenerator {
         w.write_line(format!("impl {} {{", name.as_type()))?;
         {
             let mut w = w.new_block();
-            w.write_line(format!(
-                "pub fn new(tag: {}) -> Self {{",
-                tag_repr.as_lang()
-            ))?;
+            w.write_line(format!("fn new(tag: {}) -> Self {{", tag_repr.as_lang()))?;
             {
                 let mut w = w.new_block();
                 w.write_line("let mut tu = unsafe { std::mem::zeroed::<Self>() };")?;
