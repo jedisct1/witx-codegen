@@ -6,6 +6,7 @@ mod error;
 mod generator;
 mod overview;
 mod pretty_writer;
+mod rust;
 
 #[macro_use]
 extern crate clap;
@@ -63,7 +64,7 @@ fn main() {
                 .value_name("output_type")
                 .multiple(false)
                 .default_value("assemblyscript")
-                .help("Output type. One in: {assemblyscript, overview}"),
+                .help("Output type. One in: {assemblyscript, overview, rust}"),
         )
         .get_matches();
     // generate all or generate no heade,r no imports
@@ -88,6 +89,9 @@ fn main() {
             )) as Box<dyn Generator<_>>,
             "overview" => Box::new(overview::OverviewGenerator::new(module_name.clone()))
                 as Box<dyn Generator<_>>,
+            "rust" => {
+                Box::new(rust::RustGenerator::new(module_name.clone())) as Box<dyn Generator<_>>
+            }
             _ => panic!("Unsupported output type"),
         };
         generator.generate(&mut writer, witx, &options).unwrap();
