@@ -53,7 +53,7 @@ ARGS:
 
 * [X] AssemblyScript
 * [ ] Zig
-* [ ] Rust
+* [X] Rust (WIP)
 * [ ] TinyGo
 * [ ] C/C++
 * [X] API Overview
