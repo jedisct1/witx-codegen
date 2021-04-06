@@ -85,6 +85,7 @@ impl DocGenerator {
         }
         w.eob()?;
         for docs_line in docs.lines() {
+            let docs_line = docs_line.trim().replace("<", "\\<").replace(">", "\\>");
             w.write_line(format!("> {}", docs_line))?;
         }
         w.eob()?;
@@ -144,7 +145,7 @@ impl DocGenerator {
         {
             let mut w = w.new_block();
             for choice in &enum_.choices {
-                w.write_line(format!("{}: {}", choice.name.as_const(), name.as_type(),))?;
+                w.write_line(format!("{}: {}", choice.name.as_const(), name.as_type()))?;
             }
         }
         Ok(())
@@ -213,7 +214,7 @@ impl DocGenerator {
         if constants.is_empty() {
             return Ok(());
         }
-        w.write_line(format!("Predefined constants for {}:", type_name))?
+        w.write_line(format!("Predefined constants for {}:", type_name.as_type()))?
             .eob()?;
         {
             let mut w = w.new_block();
@@ -236,7 +237,7 @@ impl DocGenerator {
                 } else {
                     format!("{}", constant.value)
                 };
-                w.write_line(format!("{} = {}", constant.name.as_const(), value_s))?;
+                w.write_line(format!("{} = `{}`", constant.name.as_const(), value_s))?;
             }
         }
         Ok(())

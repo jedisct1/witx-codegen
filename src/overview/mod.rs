@@ -188,7 +188,7 @@ impl OverviewGenerator {
         if constants.is_empty() {
             return Ok(());
         }
-        w.write_line(format!("predefined constants for {}:", type_name))?;
+        w.write_line(format!("predefined constants for {}:", type_name.as_type()))?;
         {
             let mut w = w.new_block();
             let mut hex = false;

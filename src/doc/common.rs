@@ -3,12 +3,17 @@ use crate::astype::*;
 pub trait Normalize {
     fn as_str(&self) -> &str;
 
+    fn as_link(&self) -> String {
+        let s = self.as_str().trim().to_lowercase();
+        format!("#{}", s)
+    }
+
     fn as_type(&self) -> String {
-        format!("_`{}`_", self.as_str())
+        format!("[`_{}_`]({})", self.as_str(), self.as_link())
     }
 
     fn as_fn(&self) -> String {
-        format!("`{}()`", self.as_str())
+        format!("[`{}()`]({})", self.as_str(), self.as_link())
     }
 
     fn as_fn_suffix(&self) -> String {
@@ -24,7 +29,7 @@ pub trait Normalize {
     }
 
     fn as_namespace(&self) -> String {
-        format!("`{}`", self.as_str())
+        format!("[`{}`]({})", self.as_str(), self.as_link())
     }
 }
 
