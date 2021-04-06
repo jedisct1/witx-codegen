@@ -111,13 +111,7 @@ impl DocGenerator {
         Ok(())
     }
 
-    fn header<T: Write>(w: &mut PrettyWriter<T>) -> Result<(), Error> {
-        w.write_lines(
-            "
-## [[Types](#types)] - [[Functions](#functions)]
-
- ",
-        )?;
+    fn header<T: Write>(_w: &mut PrettyWriter<T>) -> Result<(), Error> {
         Ok(())
     }
 

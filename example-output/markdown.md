@@ -1,8 +1,4 @@
 
-## [[Types](#types)] - [[Functions](#functions)]
-
- 
-
 # Module: proposal_symmetric
 
 ## Table of contents
