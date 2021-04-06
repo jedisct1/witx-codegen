@@ -51,14 +51,15 @@ ARGS:
 
 ## Backends
 
-* [X] AssemblyScript
-* [X] Rust
-* [X] API Overview
-* [X] Markdown documentation
+* [X] AssemblyScript ([example](https://github.com/jedisct1/witx-codegen/blob/master/example-output/assemblyscript.ts))
+* [X] Rust ([example](https://github.com/jedisct1/witx-codegen/blob/master/example-output/rust.rs))
+* [X] API Overview ([example](https://github.com/jedisct1/witx-codegen/blob/master/example-output/overview.txt))
+* [X] Markdown documentation ([example](https://github.com/jedisct1/witx-codegen/blob/master/example-output/markdown.md))
 * [ ] Zig
 * [ ] TinyGo
 * [ ] C/C++
 
-## Example inputs and outputs
+## Example inputs
 
-See the `test` folder for example inputs and the `example-output` folder for example outputs.
+See the [`test`](https://github.com/jedisct1/witx-codegen/tree/master/test) folder for examples of WITX input files.
+
