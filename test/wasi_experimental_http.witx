@@ -1,0 +1,86 @@
+(typename $http_error
+    (enum (@witx tag u32)
+;;; Success    
+        $success
+;;; Invalid handle        
+        $invalid_handle
+;;; Memory not found        
+        $memory_not_found
+;;; Memory access error        
+        $memory_access_error
+;;; Buffer too small        
+        $buffer_too_small
+;;; Header not found        
+        $header_not_found
+;;; UTF-8 error        
+        $utf8_error
+;;; Destination not allowed        
+        $destination_not_allowed
+;;; Invalid method        
+        $invalid_method
+;;; Invalid encoding        
+        $invalid_encoding
+;;; Invalid URL        
+        $invalid_url
+;;; Request error        
+        $request_error
+;;; Runtime error        
+        $runtime_error
+;;; Too many sessions        
+        $too_many_sessions
+    )
+)
+
+;;; Handles for the HTTP extensions
+(resource $http_handle)
+
+;;; HTTP status code
+(typename $status_code u16)
+
+;;; An HTTP body being sent
+(typename $outgoing_body (in-buffer u8))
+
+;;; Buffer for an HTTP body being received
+(typename $incoming_body (out-buffer u8))
+
+;;; A response handle
+(typename $response_handle (handle $http_handle))
+
+;;; Buffer to store a header value
+(typename $header_value_buf (out-buffer u8))
+
+;;; Number of bytes having been written
+(typename $written_bytes (@witx usize))
+
+;;; Experimental HTTP API for WebAssembly
+(module $wasi_experimental_http
+;;; Send a request
+    (@interface func (export "req")
+        (param $url string)
+        (param $method string)
+        (param $headers string)
+        (param $body $outgoing_body)
+        (result $error (expected (tuple $status_code $response_handle) (error $http_error)))
+    )
+
+;;; Close a request handle
+    (@interface func (export "close")
+        (param $response_handle $response_handle)
+        (result $error (expected (error $http_error)))
+    )
+
+;;; Get the value associated with a header
+    (@interface func (export "header_get")
+        (param $response_handle $response_handle)
+        (param $header_name string)
+        (param $header_value_buf $header_value_buf)
+        (result $error (expected $written_bytes (error $http_error)))
+    )
+
+;;; Fill a buffer with the streamed content of a response body
+    (@interface func (export "body_read")
+        (param $response_handle $response_handle)
+        (param $body_buf $incoming_body)       
+        (result $error (expected $written_bytes (error $http_error)))
+    )
+)
