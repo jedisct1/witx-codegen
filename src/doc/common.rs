@@ -56,8 +56,8 @@ pub trait ToLanguageRepresentation {
             ASType::F32 => "`f32`".to_string(),
             ASType::F64 => "`f64`".to_string(),
             ASType::Handle(_resource_name) => "`handle`".to_string(),
-            ASType::ConstPtr(pointee) => format!("`{}` pointer", pointee.to_string()),
-            ASType::MutPtr(pointee) => format!("`{}` mutable pointer", pointee.to_string()),
+            ASType::ConstPtr(pointee) => format!("{} pointer", pointee.to_string()),
+            ASType::MutPtr(pointee) => format!("{} mutable pointer", pointee.to_string()),
             ASType::Option(_) => todo!(),
             ASType::Result(_) => todo!(),
             ASType::S8 => "`i8`".to_string(),
@@ -72,20 +72,20 @@ pub trait ToLanguageRepresentation {
             ASType::Void => "_(empty)_".to_string(),
             ASType::Constants(_) => unimplemented!(),
             ASType::Enum(enum_) => {
-                format!("`{}` enumeration", enum_.repr.as_ref().as_lang())
+                format!("{} enumeration", enum_.repr.as_ref().as_lang())
             }
             ASType::Struct(_) => unimplemented!(),
             ASType::Tuple(tuple_members) => {
                 let tuple_types: Vec<_> =
                     tuple_members.iter().map(|x| x.type_.to_string()).collect();
-                format!("`({})`", tuple_types.join(", "))
+                format!("({})", tuple_types.join(", "))
             }
             ASType::Union(_) => unimplemented!(),
-            ASType::Slice(element_type) => format!("`{}` mutable slice", element_type.as_lang()),
+            ASType::Slice(element_type) => format!("{} mutable slice", element_type.as_lang()),
             ASType::String(_) => "`string`".to_string(),
-            ASType::ReadBuffer(element_type) => format!("`{}` slice", element_type.as_lang()),
+            ASType::ReadBuffer(element_type) => format!("{} slice", element_type.as_lang()),
             ASType::WriteBuffer(element_type) => {
-                format!("`{}`ß mutable slice", element_type.to_string())
+                format!("{} mutable slice", element_type.to_string())
             }
         }
     }

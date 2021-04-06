@@ -365,7 +365,7 @@ Returned error type: _[`crypto_errno`](#crypto_errno)_
 
 #### Output:
 
-* `_[`symmetric_key`](#symmetric_key)_` mutable pointer
+* _[`symmetric_key`](#symmetric_key)_ mutable pointer
 
 > Generate a new symmetric key for a given algorithm.
 > 
@@ -382,12 +382,12 @@ Returned error type: _[`crypto_errno`](#crypto_errno)_
 #### Input:
 
 * **`algorithm`**: `string`
-* **`raw`**: ``u8`` pointer
+* **`raw`**: `u8` pointer
 * **`raw_len`**: _[`size`](#size)_
 
 #### Output:
 
-* `_[`symmetric_key`](#symmetric_key)_` mutable pointer
+* _[`symmetric_key`](#symmetric_key)_ mutable pointer
 
 > Create a symmetric key from raw material.
 > 
@@ -407,7 +407,7 @@ Returned error type: _[`crypto_errno`](#crypto_errno)_
 
 #### Output:
 
-* `_[`array_output`](#array_output)_` mutable pointer
+* _[`array_output`](#array_output)_ mutable pointer
 
 > Export a symmetric key as raw material.
 > 
@@ -445,7 +445,7 @@ Returned error type: _[`crypto_errno`](#crypto_errno)_
 
 #### Output:
 
-* `_[`symmetric_key`](#symmetric_key)_` mutable pointer
+* _[`symmetric_key`](#symmetric_key)_ mutable pointer
 
 > __(optional)__
 > Generate a new managed symmetric key.
@@ -471,7 +471,7 @@ Returned error type: _[`crypto_errno`](#crypto_errno)_
 
 * **`secrets_manager`**: _[`secrets_manager`](#secrets_manager)_
 * **`symmetric_key`**: _[`symmetric_key`](#symmetric_key)_
-* **`symmetric_key_id`**: ``u8`` mutable pointer
+* **`symmetric_key_id`**: `u8` mutable pointer
 * **`symmetric_key_id_max_len`**: _[`size`](#size)_
 
 This function has no output.
@@ -498,7 +498,7 @@ Returned error type: _[`crypto_errno`](#crypto_errno)_
 
 #### Output:
 
-* `_[`version`](#version)_` mutable pointer
+* _[`version`](#version)_ mutable pointer
 
 > __(optional)__
 > Replace a managed symmetric key.
@@ -531,13 +531,13 @@ Returned error type: _[`crypto_errno`](#crypto_errno)_
 #### Input:
 
 * **`symmetric_key`**: _[`symmetric_key`](#symmetric_key)_
-* **`symmetric_key_id`**: ``u8`` mutable pointer
+* **`symmetric_key_id`**: `u8` mutable pointer
 * **`symmetric_key_id_max_len`**: _[`size`](#size)_
 
 #### Output:
 
-* `_[`size`](#size)_` mutable pointer
-* `_[`version`](#version)_` mutable pointer
+* _[`size`](#size)_ mutable pointer
+* _[`version`](#version)_ mutable pointer
 
 > __(optional)__
 > Return the key identifier and version of a managed symmetric key.
@@ -555,13 +555,13 @@ Returned error type: _[`crypto_errno`](#crypto_errno)_
 #### Input:
 
 * **`secrets_manager`**: _[`secrets_manager`](#secrets_manager)_
-* **`symmetric_key_id`**: ``u8`` pointer
+* **`symmetric_key_id`**: `u8` pointer
 * **`symmetric_key_id_len`**: _[`size`](#size)_
 * **`symmetric_key_version`**: _[`version`](#version)_
 
 #### Output:
 
-* `_[`symmetric_key`](#symmetric_key)_` mutable pointer
+* _[`symmetric_key`](#symmetric_key)_ mutable pointer
 
 > __(optional)__
 > Return a managed symmetric key from a key identifier.
@@ -586,7 +586,7 @@ Returned error type: _[`crypto_errno`](#crypto_errno)_
 
 #### Output:
 
-* `_[`symmetric_state`](#symmetric_state)_` mutable pointer
+* _[`symmetric_state`](#symmetric_state)_ mutable pointer
 
 > Create a new state to aborb and produce data using symmetric operations.
 > 
@@ -775,12 +775,12 @@ Returned error type: _[`crypto_errno`](#crypto_errno)_
 
 * **`handle`**: _[`symmetric_state`](#symmetric_state)_
 * **`name`**: `string`
-* **`value`**: ``u8`` mutable pointer
+* **`value`**: `u8` mutable pointer
 * **`value_max_len`**: _[`size`](#size)_
 
 #### Output:
 
-* `_[`size`](#size)_` mutable pointer
+* _[`size`](#size)_ mutable pointer
 
 > Retrieve a parameter from the current state.
 > 
@@ -803,7 +803,7 @@ Returned error type: _[`crypto_errno`](#crypto_errno)_
 
 #### Output:
 
-* `_[`u64`](#u64)_` mutable pointer
+* _[`u64`](#u64)_ mutable pointer
 
 > Retrieve an integer parameter from the current state.
 > 
@@ -838,7 +838,7 @@ Returned error type: _[`crypto_errno`](#crypto_errno)_
 #### Input:
 
 * **`handle`**: _[`symmetric_state`](#symmetric_state)_
-* **`data`**: ``u8`` pointer
+* **`data`**: `u8` pointer
 * **`data_len`**: _[`size`](#size)_
 
 This function has no output.
@@ -865,7 +865,7 @@ Returned error type: _[`crypto_errno`](#crypto_errno)_
 #### Input:
 
 * **`handle`**: _[`symmetric_state`](#symmetric_state)_
-* **`out`**: ``u8`` mutable pointer
+* **`out`**: `u8` mutable pointer
 * **`out_len`**: _[`size`](#size)_
 
 This function has no output.
@@ -894,7 +894,7 @@ Returned error type: _[`crypto_errno`](#crypto_errno)_
 
 #### Output:
 
-* `_[`symmetric_tag`](#symmetric_tag)_` mutable pointer
+* _[`symmetric_tag`](#symmetric_tag)_ mutable pointer
 
 > Compute and return a tag for all the data injected into the state so far.
 > 
@@ -920,7 +920,7 @@ Returned error type: _[`crypto_errno`](#crypto_errno)_
 
 #### Output:
 
-* `_[`symmetric_key`](#symmetric_key)_` mutable pointer
+* _[`symmetric_key`](#symmetric_key)_ mutable pointer
 
 > Use the current state to produce a key for a target algorithm.
 > 
@@ -941,7 +941,7 @@ Returned error type: _[`crypto_errno`](#crypto_errno)_
 
 #### Output:
 
-* `_[`size`](#size)_` mutable pointer
+* _[`size`](#size)_ mutable pointer
 
 > Return the maximum length of an authentication tag for the current algorithm.
 > 
@@ -962,14 +962,14 @@ Returned error type: _[`crypto_errno`](#crypto_errno)_
 #### Input:
 
 * **`handle`**: _[`symmetric_state`](#symmetric_state)_
-* **`out`**: ``u8`` mutable pointer
+* **`out`**: `u8` mutable pointer
 * **`out_len`**: _[`size`](#size)_
-* **`data`**: ``u8`` pointer
+* **`data`**: `u8` pointer
 * **`data_len`**: _[`size`](#size)_
 
 #### Output:
 
-* `_[`size`](#size)_` mutable pointer
+* _[`size`](#size)_ mutable pointer
 
 > Encrypt data with an attached tag.
 > 
@@ -992,14 +992,14 @@ Returned error type: _[`crypto_errno`](#crypto_errno)_
 #### Input:
 
 * **`handle`**: _[`symmetric_state`](#symmetric_state)_
-* **`out`**: ``u8`` mutable pointer
+* **`out`**: `u8` mutable pointer
 * **`out_len`**: _[`size`](#size)_
-* **`data`**: ``u8`` pointer
+* **`data`**: `u8` pointer
 * **`data_len`**: _[`size`](#size)_
 
 #### Output:
 
-* `_[`symmetric_tag`](#symmetric_tag)_` mutable pointer
+* _[`symmetric_tag`](#symmetric_tag)_ mutable pointer
 
 > Encrypt data, with a detached tag.
 > 
@@ -1022,14 +1022,14 @@ Returned error type: _[`crypto_errno`](#crypto_errno)_
 #### Input:
 
 * **`handle`**: _[`symmetric_state`](#symmetric_state)_
-* **`out`**: ``u8`` mutable pointer
+* **`out`**: `u8` mutable pointer
 * **`out_len`**: _[`size`](#size)_
-* **`data`**: ``u8`` pointer
+* **`data`**: `u8` pointer
 * **`data_len`**: _[`size`](#size)_
 
 #### Output:
 
-* `_[`size`](#size)_` mutable pointer
+* _[`size`](#size)_ mutable pointer
 
 > - **Stream cipher:** adds the input to the stream cipher output. `out_len` and `data_len` can be equal, as no authentication tags will be added.
 > - **AEAD:** decrypts `data` into `out`. Additional data must have been previously absorbed using `symmetric_state_absorb()`.
@@ -1054,16 +1054,16 @@ Returned error type: _[`crypto_errno`](#crypto_errno)_
 #### Input:
 
 * **`handle`**: _[`symmetric_state`](#symmetric_state)_
-* **`out`**: ``u8`` mutable pointer
+* **`out`**: `u8` mutable pointer
 * **`out_len`**: _[`size`](#size)_
-* **`data`**: ``u8`` pointer
+* **`data`**: `u8` pointer
 * **`data_len`**: _[`size`](#size)_
-* **`raw_tag`**: ``u8`` pointer
+* **`raw_tag`**: `u8` pointer
 * **`raw_tag_len`**: _[`size`](#size)_
 
 #### Output:
 
-* `_[`size`](#size)_` mutable pointer
+* _[`size`](#size)_ mutable pointer
 
 > - **Stream cipher:** returns `invalid_operation` since stream ciphers do not include authentication tags.
 > - **AEAD:** decrypts `data` into `out`. Additional data must have been previously absorbed using `symmetric_state_absorb()`.
@@ -1110,7 +1110,7 @@ Returned error type: _[`crypto_errno`](#crypto_errno)_
 
 #### Output:
 
-* `_[`size`](#size)_` mutable pointer
+* _[`size`](#size)_ mutable pointer
 
 > Return the length of an authentication tag.
 > 
@@ -1125,12 +1125,12 @@ Returned error type: _[`crypto_errno`](#crypto_errno)_
 #### Input:
 
 * **`symmetric_tag`**: _[`symmetric_tag`](#symmetric_tag)_
-* **`buf`**: ``u8`` mutable pointer
+* **`buf`**: `u8` mutable pointer
 * **`buf_len`**: _[`size`](#size)_
 
 #### Output:
 
-* `_[`size`](#size)_` mutable pointer
+* _[`size`](#size)_ mutable pointer
 
 > Copy an authentication tag into a guest-allocated buffer.
 > 
@@ -1156,7 +1156,7 @@ Returned error type: _[`crypto_errno`](#crypto_errno)_
 #### Input:
 
 * **`symmetric_tag`**: _[`symmetric_tag`](#symmetric_tag)_
-* **`expected_raw_tag_ptr`**: ``u8`` pointer
+* **`expected_raw_tag_ptr`**: `u8` pointer
 * **`expected_raw_tag_len`**: _[`size`](#size)_
 
 This function has no output.
