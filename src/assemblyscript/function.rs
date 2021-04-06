@@ -70,8 +70,7 @@ impl AssemblyScriptGenerator {
             } else {
                 ","
             };
-            w.continuation()?;
-            w.write_line(format!(
+            w.write_line_continued(format!(
                 "{}: {}{}",
                 param.name.as_var(),
                 param.type_.as_lang(),

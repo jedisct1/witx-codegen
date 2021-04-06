@@ -131,4 +131,10 @@ impl<W: Write> PrettyWriter<W> {
         }
         Ok(self)
     }
+
+    /// Indent, write raw data after a continuation and terminate with an end of line
+    pub fn write_line_continued<T: AsRef<[u8]>>(&mut self, buf: T) -> Result<&mut Self, Error> {
+        let buf = buf.as_ref();
+        self.continuation()?.write(buf)?.eol()
+    }
 }

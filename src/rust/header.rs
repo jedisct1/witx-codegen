@@ -11,6 +11,19 @@ impl RustGenerator {
         )?;
         w.write_lines(
             "
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub enum Error {
+    WasiError(i32),
+}
+impl std::error::Error for Error {}
+impl std::fmt::Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Error::WasiError(e) => write!(f, \"Wasi error {}\", e),
+        }
+    }
+}
+
 pub type WasiHandle = i32;
 pub type Char8 = u8;
 pub type Char32 = u32;

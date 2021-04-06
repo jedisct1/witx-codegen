@@ -56,37 +56,75 @@ impl RustGenerator {
             params_decomposed.append(&mut decomposed);
         }
 
-        w.write_line(format!("#[link(wasm_import_module = \"{}\")]", module_name))?;
-        w.write_line("extern \"C\" {")?;
-        {
-            let mut w = w.new_block();
-            w.indent()?.write(format!("pub fn {}(", name.as_fn()))?;
-
-            if !params_decomposed.is_empty() {
-                w.eol()?;
-            }
-            for (i, param) in params_decomposed.iter().enumerate() {
-                let eol = if i + 1 == params_decomposed.len() {
-                    ""
-                } else {
-                    ","
-                };
-                w.indent()?;
-                w.write_line(format!(
-                    "{}: {}{}",
-                    param.name.as_var(),
-                    param.type_.as_lang(),
-                    eol
-                ))?;
-            }
-            w.write_line(format!(") -> {};", result.error_type.as_lang()))?;
-        }
-        w.write_line("}")?;
-        w.eob()?;
+        Self::define_func_raw(w, module_name, &name, &params_decomposed, &result)?;
 
         let signature_witx = func_witx.wasm_signature(witx::CallMode::DefinedImport);
         let params_count_witx = signature_witx.params.len() + signature_witx.results.len();
         assert_eq!(params_count_witx, params_decomposed.len() + 1);
+
+        Ok(())
+    }
+
+    fn define_func_raw<T: Write>(
+        w: &mut PrettyWriter<T>,
+        module_name: &str,
+        name: &str,
+        params_decomposed: &[ASTypeDecomposed],
+        result: &ASResult,
+    ) -> Result<(), Error> {
+        w.indent()?.write(format!("pub fn {}(", name.as_fn()))?;
+        if !params_decomposed.is_empty() {
+            w.eol()?;
+        }
+        for param in params_decomposed {
+            w.write_line_continued(format!(
+                "{}: {},",
+                param.name.as_var(),
+                param.type_.as_lang(),
+            ))?;
+        }
+        w.write_line(") -> Result<(), Error> {")?;
+
+        {
+            let mut w = w.new_block();
+
+            // Inner (raw) definition
+            {
+                w.write_line(format!("#[link(wasm_import_module = \"{}\")]", module_name))?;
+                w.write_line("extern \"C\" {")?;
+                {
+                    let mut w = w.new_block();
+                    w.indent()?.write(format!("fn {}(", name.as_fn()))?;
+                    if !params_decomposed.is_empty() {
+                        w.eol()?;
+                    }
+                    for param in params_decomposed {
+                        w.write_line_continued(format!(
+                            "{}: {},",
+                            param.name.as_var(),
+                            param.type_.as_lang(),
+                        ))?;
+                    }
+                    w.write_line(format!(") -> {};", result.error_type.as_lang()))?;
+                }
+                w.write_line("}")?;
+            }
+
+            // Wrapper
+            w.write_line(format!("let res = unsafe {{ {}(", name.as_fn()))?;
+            for param in params_decomposed {
+                w.write_line_continued(format!("{},", param.name.as_var()))?;
+            }
+            w.write_line(")};")?;
+            w.write_lines(
+                "if res != 0 {
+    return Err(Error::WasiError(res as _));
+}
+Ok(())",
+            )?;
+        }
+        w.write_line("}")?;
+        w.eob()?;
 
         Ok(())
     }
