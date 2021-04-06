@@ -2,6 +2,7 @@
 
 mod assemblyscript;
 mod astype;
+mod doc;
 mod error;
 mod generator;
 mod overview;
@@ -64,7 +65,7 @@ fn main() {
                 .value_name("output_type")
                 .multiple(false)
                 .default_value("assemblyscript")
-                .help("Output type. One in: {assemblyscript, overview, rust}"),
+                .help("Output type. One in: {assemblyscript, rust, overview, markdown}"),
         )
         .get_matches();
     // generate all or generate no heade,r no imports
@@ -87,10 +88,13 @@ fn main() {
             "assemblyscript" => Box::new(assemblyscript::AssemblyScriptGenerator::new(
                 module_name.clone(),
             )) as Box<dyn Generator<_>>,
-            "overview" => Box::new(overview::OverviewGenerator::new(module_name.clone()))
-                as Box<dyn Generator<_>>,
             "rust" => {
                 Box::new(rust::RustGenerator::new(module_name.clone())) as Box<dyn Generator<_>>
+            }
+            "overview" => Box::new(overview::OverviewGenerator::new(module_name.clone()))
+                as Box<dyn Generator<_>>,
+            "markdown" | "doc" => {
+                Box::new(doc::DocGenerator::new(module_name.clone())) as Box<dyn Generator<_>>
             }
             _ => panic!("Unsupported output type"),
         };
