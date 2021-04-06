@@ -4,7 +4,7 @@
 ![CI status](https://github.com/jedisct1/witx-codegen/actions/workflows/ci.yml/badge.svg)
 [![crates.io](https://img.shields.io/crates/v/witx-codegen.svg)](https://crates.io/crates/witx-codegen)
 
-# WITX-CodeGen: A WITX code generator
+# WITX-CodeGen: A WITX code and documentation generator
 
 WITX is a way to describe types and function interfaces from WebAssembly modules.
 
@@ -52,9 +52,13 @@ ARGS:
 ## Backends
 
 * [X] AssemblyScript
-* [ ] Zig
 * [X] Rust
-* [ ] TinyGo
-* [ ] C/C++
 * [X] API Overview
 * [X] Markdown documentation
+* [ ] Zig
+* [ ] TinyGo
+* [ ] C/C++
+
+## Example inputs and outputs
+
+See the `test` folder for example inputs and the `example-output` folder for example outputs.
