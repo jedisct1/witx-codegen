@@ -12,9 +12,8 @@ From this, code generators can generate code that accesses data and calls functi
 
 WITX is the description language used by [WASI](https://wasi.dev). This tool uses the next (as on April 5th, 2021) revision of the format, as implemented in the forthcoming version 0.10 of the Rust `witx` crate.
 
-`witx-codegen` is written in Rust, but was designed to generate code for multiple languages that is simple to use. It can also produce multiple documentation formats.
-
-Other input formats may also be eventually supported.
+`witx-codegen` is written in Rust, but was designed to generate code for multiple languages. The generated code is meant to be simple to understand.
+The tool can also produce different documentation formats.
 
 `witx-codegen` supersedes `as-witx`, `zig-witx`, `witx-docgen`, `witx-overview-docgen` and `witx-generate-raw`.
 
@@ -70,3 +69,4 @@ ARGS:
 
 See the [`test`](https://github.com/jedisct1/witx-codegen/tree/master/test) folder for examples of WITX input files.
 
+Other input formats may also be eventually supported.
