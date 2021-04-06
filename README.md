@@ -41,9 +41,13 @@ FLAGS:
     -V, --version         Prints version information
 
 OPTIONS:
-    -m, --module-name <module_name>    Set the module name to use instead of reading it from the witx file
+    -m, --module-name <module_name>
+            Set the module name to use instead of reading it from the witx file
+
     -o, --output <output_file>         Output file, or - for the standard output
-    -t, --output-type <output_type>    Output type. One in: {assemblyscript, rust, overview, markdown} [default: assemblyscript]
+    -t, --output-type <output_type>
+            Output type. One in: {assemblyscript, rust, overview, markdown}
+            [default: assemblyscript]
 
 ARGS:
     <witx_files>...    WITX files
