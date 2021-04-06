@@ -45,6 +45,25 @@ impl<T: Write> Generator<T> for DocGenerator {
         w.write_line(module_title_doc)?;
         w.eob()?;
 
+        w.write_line("## Table of contents")?.eob()?;
+        w.write_line("### Types list:")?.eob()?;
+        w.write("\\[**[All](#types)**\\]")?;
+        for type_ in module_witx.typenames() {
+            if skip_imports && &type_.module != module_id {
+                continue;
+            }
+            let type_name = type_.name.as_str();
+            w.write(format!(" - \\[{}\\]", type_name.as_type()))?;
+        }
+        w.eol()?.eob()?;
+        w.write_line("### Functions list:")?.eob()?;
+        w.write("\\[**[All](#functions)**\\]")?;
+        for func in module_witx.funcs() {
+            let func_name = func.name.as_str();
+            w.write(format!(" - \\[{}\\]", func_name.as_fn()))?;
+        }
+        w.eol()?.eob()?;
+
         w.write_line("## Types")?.eob()?;
 
         for type_ in module_witx.typenames() {

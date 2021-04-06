@@ -40,8 +40,8 @@ impl DocGenerator {
             results.push((name.to_string(), ok_type));
         }
 
-        w.write_line(format!(
-            "### {}: {}",
+        w.write_lines(format!(
+            "### {}\nReturned error type: {}",
             name.as_fn(),
             result.error_type.as_lang()
         ))?;
