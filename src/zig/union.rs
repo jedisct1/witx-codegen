@@ -7,7 +7,6 @@ impl ZigGenerator {
         union_name: &str,
         _i: usize,
         member: &ASUnionMember,
-        _inner_name: &str,
     ) -> Result<(), Error> {
         let name = &member.name;
         let member_is_void = matches!(member.type_.as_ref(), ASType::Void);
@@ -97,9 +96,8 @@ impl ZigGenerator {
         union_name: &str,
         i: usize,
         member: &ASUnionMember,
-        inner_name: &str,
     ) -> Result<(), Error> {
-        Self::define_union_member_accessors(w, union_name, i, member, inner_name)?;
+        Self::define_union_member_accessors(w, union_name, i, member)?;
         Ok(())
     }
 
@@ -109,27 +107,6 @@ impl ZigGenerator {
         union_: &ASUnion,
     ) -> Result<(), Error> {
         let tag_repr = union_.tag_repr.as_ref();
-        let inner_name = format!("{}_member", name);
-        w.write_line(format!(
-            "pub const {} = extern union {{",
-            inner_name.as_type()
-        ))?;
-        {
-            let mut w = w.new_block();
-            for (_i, member) in union_.members.iter().enumerate() {
-                let member_is_void = matches!(member.type_.as_ref(), ASType::Void);
-                if !member_is_void {
-                    w.write_line(format!(
-                        "{}: {},",
-                        member.name.as_var(),
-                        member.type_.as_lang(),
-                    ))?;
-                }
-            }
-        }
-        w.write_line("};")?;
-        w.eob()?;
-
         w.write_line(format!("pub const {} = extern struct {{", name.as_type()))?;
         {
             let mut w = w.new_block();
@@ -155,13 +132,27 @@ impl ZigGenerator {
             for i in 0..pad_len / 8 {
                 w.write_line(format!("__pad64_{}: u64 = undefined,", i))?;
             }
-            w.write_line(format!("member: {} = undefined,", inner_name.as_type()))?;
+            w.write_line("member = extern union {")?;
+            {
+                let mut w = w.new_block();
+                for (_i, member) in union_.members.iter().enumerate() {
+                    let member_is_void = matches!(member.type_.as_ref(), ASType::Void);
+                    if !member_is_void {
+                        w.write_line(format!(
+                            "{}: {},",
+                            member.name.as_var(),
+                            member.type_.as_lang(),
+                        ))?;
+                    }
+                }
+            }
+            w.write_line("},")?;
         }
         w.eob()?;
 
         for (i, member) in union_.members.iter().enumerate() {
             w.eob()?;
-            Self::define_union_member(w, name, i, member, &inner_name)?;
+            Self::define_union_member(w, name, i, member)?;
         }
         w.write_line("};")?.eob()?;
         Ok(())
