@@ -210,7 +210,8 @@ The function returns an error code of type `$crypto_errno`. Or, if no error occu
 In Rust, an equivalent function would be:
 
 ```rust
-fn symmetric_key_generate(algorithm: &str, options: OptOptions) -> Result<SymmetricKey, CryptoErrno>;
+fn symmetric_key_generate(algorithm: &str, options: OptOptions)
+  -> Result<SymmetricKey, CryptoErrno>;
 ```
 
 Returning multiple values:
