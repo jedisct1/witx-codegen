@@ -46,7 +46,7 @@ pub trait Normalize {
     }
 
     fn as_namespace(&self) -> String {
-        format!("{}", self.as_str()).to_case(Case::Pascal)
+        self.as_str().to_string().to_case(Case::Pascal)
     }
 }
 
@@ -87,9 +87,7 @@ pub trait ToLanguageRepresentation {
             ASType::USize => "usize".to_string(),
             ASType::Void => "()".to_string(),
             ASType::Constants(_) => unimplemented!(),
-            ASType::Enum(enum_) => {
-                format!("{}", enum_.repr.as_ref().as_lang())
-            }
+            ASType::Enum(enum_) => enum_.repr.as_ref().as_lang(),
             ASType::Struct(_) => unimplemented!(),
             ASType::Tuple(tuple_members) => Tuple::name_for(tuple_members).as_type(),
             ASType::Union(_) => unimplemented!(),

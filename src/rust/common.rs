@@ -46,7 +46,7 @@ pub trait Normalize {
     }
 
     fn as_namespace(&self) -> String {
-        format!("{}", self.as_str()).to_case(Case::UpperSnake)
+        self.as_str().to_string().to_case(Case::UpperSnake)
     }
 }
 

@@ -18,7 +18,7 @@ pub trait Normalize {
     }
 
     fn as_fn_suffix(&self) -> String {
-        format!("{}", self.as_str())
+        self.as_str().to_string()
     }
 
     fn as_var(&self) -> String {
