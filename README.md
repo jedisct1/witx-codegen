@@ -63,7 +63,7 @@ ARGS:
 * [X] API Overview ([example](https://github.com/jedisct1/witx-codegen/blob/master/example-output/overview.txt))
 * [X] AssemblyScript ([example](https://github.com/jedisct1/witx-codegen/blob/master/example-output/assemblyscript.ts))
 * [X] Rust ([example](https://github.com/jedisct1/witx-codegen/blob/master/example-output/rust.rs))
-* [ ] Zig
+* [ ] Zig (WIP)
 * [ ] TinyGo
 * [ ] C/C++
 * [ ] HTML documentation
