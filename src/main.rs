@@ -8,6 +8,7 @@ mod generator;
 mod overview;
 mod pretty_writer;
 mod rust;
+mod zig;
 
 #[macro_use]
 extern crate clap;
@@ -65,7 +66,7 @@ fn main() {
                 .value_name("output_type")
                 .multiple(false)
                 .default_value("assemblyscript")
-                .help("Output type. One in: {assemblyscript, rust, overview, markdown}"),
+                .help("Output type. One in: {assemblyscript, zig, rust, overview, markdown}"),
         )
         .get_matches();
     // generate all or generate no heade,r no imports
@@ -88,6 +89,7 @@ fn main() {
             "assemblyscript" => Box::new(assemblyscript::AssemblyScriptGenerator::new(
                 module_name.clone(),
             )) as Box<dyn Generator<_>>,
+            "zig" => Box::new(zig::ZigGenerator::new(module_name.clone())) as Box<dyn Generator<_>>,
             "rust" => {
                 Box::new(rust::RustGenerator::new(module_name.clone())) as Box<dyn Generator<_>>
             }

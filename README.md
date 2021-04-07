@@ -50,7 +50,7 @@ OPTIONS:
 
     -o, --output <output_file>         Output file, or - for the standard output
     -t, --output-type <output_type>
-            Output type. One in: {assemblyscript, rust, overview, markdown}
+            Output type. One in: {assemblyscript, zig, rust, overview, markdown}
             [default: assemblyscript]
 
 ARGS:
@@ -63,7 +63,7 @@ ARGS:
 * [X] API Overview ([example](https://github.com/jedisct1/witx-codegen/blob/master/example-output/overview.txt))
 * [X] AssemblyScript ([example](https://github.com/jedisct1/witx-codegen/blob/master/example-output/assemblyscript.ts))
 * [X] Rust ([example](https://github.com/jedisct1/witx-codegen/blob/master/example-output/rust.rs))
-* [ ] Zig (WIP)
+* [X] Zig (WIP)
 * [ ] TinyGo
 * [ ] C/C++
 * [ ] HTML documentation
