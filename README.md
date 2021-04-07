@@ -118,11 +118,11 @@ Each handle type can then be declared as aliases:
 ### Constants
 
 ```
-(typename $test_big_int u64)
-(@witx const $test_big_int $zero 0)
-(@witx const $test_big_int $a_hundred 100)
-(@witx const $test_big_int $a_big_value 0xff00000000000000)
-(@witx const $test_big_int $a_bigger_value 0xffffffffffffffff)
+(typename $big_int u64)
+(@witx const $big_int $zero 0)
+(@witx const $big_int $a_hundred 100)
+(@witx const $big_int $a_big_value 0xff00000000000000)
+(@witx const $big_int $a_bigger_value 0xffffffffffffffff)
 ```
 
 ### Structures
@@ -142,7 +142,7 @@ Structures that only contain booleans are encoded as bit sets.
 ### Tuples
 
 ```
-(typename $test_tuple (tuple $test_bool $test_medium_int $test_big_int))
+(typename $test_tuple (tuple $test_bool $test_medium_int $big_int))
 ```
 
 ### Tagged unions
