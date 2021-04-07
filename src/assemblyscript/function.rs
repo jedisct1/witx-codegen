@@ -61,7 +61,7 @@ impl AssemblyScriptGenerator {
             .indent()?
             .write(format!("export declare function {}(", name.as_fn()))?;
 
-        if !params_decomposed.is_empty() {
+        if !params_decomposed.is_empty() || !results.is_empty() {
             w.eol()?;
         }
         for (i, param) in params_decomposed.iter().enumerate() {

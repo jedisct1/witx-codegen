@@ -104,7 +104,7 @@ impl RustGenerator {
             _ => format!("({})", results_set.join(", ")),
         };
         w.indent()?.write(format!("pub fn {}(", name.as_fn()))?;
-        if !params_decomposed.is_empty() {
+        if !params_decomposed.is_empty() || !results_decomposed.is_empty() {
             w.eol()?;
         }
         for param in params_decomposed {
