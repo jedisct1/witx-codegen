@@ -20,7 +20,7 @@ pub type Char8 = u8;
 pub type Char32 = u32;
 pub type WasiPtr<T> = *const T;
 pub type WasiMutPtr<T> = *mut T;
-pub type WasiStringBytesPtr = WasiMutPtr<Char8>;
+pub type WasiStringBytesPtr = WasiPtr<Char8>;
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug)]
@@ -95,28 +95,13 @@ impl WasiString {
         std::str::from_utf8(unsafe { std::slice::from_raw_parts(self.ptr, self.len) })
     }
 
-    pub fn as_mut_str(&mut self) -> Result<&mut str, std::str::Utf8Error> {
-        std::str::from_utf8_mut(unsafe { std::slice::from_raw_parts_mut(self.ptr, self.len) })
-    }
-
     pub fn as_slice(&self) -> &[u8] {
         unsafe { std::slice::from_raw_parts(self.ptr, self.len) }
-    }
-
-    pub fn as_mut_slice(&self) -> &mut [u8] {
-        unsafe { std::slice::from_raw_parts_mut(self.ptr, self.len) }
     }
 
     pub fn from_slice(&self, slice: &[u8]) -> Self {
         WasiString {
             ptr: slice.as_ptr() as _,
-            len: slice.len(),
-        }
-    }
-
-    pub fn from_mut_slice(&self, slice: &mut [u8]) -> Self {
-        WasiString {
-            ptr: slice.as_mut_ptr(),
             len: slice.len(),
         }
     }
@@ -450,14 +435,14 @@ impl OptSymmetricKey {
 ///
 /// This function may return `unsupported_feature` if key generation is not supported by the host for the chosen algorithm, or `unsupported_algorithm` if the algorithm is not supported by the host.
 pub fn symmetric_key_generate(
-    algorithm_ptr: WasiMutPtr<Char8>,
+    algorithm_ptr: WasiPtr<Char8>,
     algorithm_len: usize,
     options: OptOptions,
 ) -> Result<SymmetricKey, Error> {
     #[link(wasm_import_module = "proposal_symmetric")]
     extern "C" {
         fn symmetric_key_generate(
-            algorithm_ptr: WasiMutPtr<Char8>,
+            algorithm_ptr: WasiPtr<Char8>,
             algorithm_len: usize,
             options: OptOptions,
             result_ptr: WasiMutPtr<SymmetricKey>,
@@ -484,7 +469,7 @@ pub fn symmetric_key_generate(
 ///
 /// The function may also return `unsupported_algorithm` if the algorithm is not supported by the host.
 pub fn symmetric_key_import(
-    algorithm_ptr: WasiMutPtr<Char8>,
+    algorithm_ptr: WasiPtr<Char8>,
     algorithm_len: usize,
     raw: WasiPtr<u8>,
     raw_len: Size,
@@ -492,7 +477,7 @@ pub fn symmetric_key_import(
     #[link(wasm_import_module = "proposal_symmetric")]
     extern "C" {
         fn symmetric_key_import(
-            algorithm_ptr: WasiMutPtr<Char8>,
+            algorithm_ptr: WasiPtr<Char8>,
             algorithm_len: usize,
             raw: WasiPtr<u8>,
             raw_len: Size,
@@ -566,7 +551,7 @@ pub fn symmetric_key_close(symmetric_key: SymmetricKey) -> Result<(), Error> {
 /// This is also an optional import, meaning that the function may not even exist.
 pub fn symmetric_key_generate_managed(
     secrets_manager: SecretsManager,
-    algorithm_ptr: WasiMutPtr<Char8>,
+    algorithm_ptr: WasiPtr<Char8>,
     algorithm_len: usize,
     options: OptOptions,
 ) -> Result<SymmetricKey, Error> {
@@ -574,7 +559,7 @@ pub fn symmetric_key_generate_managed(
     extern "C" {
         fn symmetric_key_generate_managed(
             secrets_manager: SecretsManager,
-            algorithm_ptr: WasiMutPtr<Char8>,
+            algorithm_ptr: WasiPtr<Char8>,
             algorithm_len: usize,
             options: OptOptions,
             result_ptr: WasiMutPtr<SymmetricKey>,
@@ -697,7 +682,7 @@ pub fn symmetric_key_id(
     extern "C" {
         fn symmetric_key_id(
             symmetric_key: SymmetricKey,
-            symmetric_key_id: WasiMutPtr<u8>,
+            symmetric_key_id_: WasiMutPtr<u8>,
             symmetric_key_id_max_len: Size,
             result_0_ptr: WasiMutPtr<Size>,
             result_1_ptr: WasiMutPtr<Version>,
@@ -708,7 +693,7 @@ pub fn symmetric_key_id(
     let res = unsafe {
         symmetric_key_id(
             symmetric_key,
-            symmetric_key_id,
+            symmetric_key_id_,
             symmetric_key_id_max_len,
             result_0_ptr.as_mut_ptr(),
             result_1_ptr.as_mut_ptr(),
@@ -937,7 +922,7 @@ pub fn symmetric_key_from_id(
 /// // ...
 /// ```
 pub fn symmetric_state_open(
-    algorithm_ptr: WasiMutPtr<Char8>,
+    algorithm_ptr: WasiPtr<Char8>,
     algorithm_len: usize,
     key: OptSymmetricKey,
     options: OptOptions,
@@ -945,7 +930,7 @@ pub fn symmetric_state_open(
     #[link(wasm_import_module = "proposal_symmetric")]
     extern "C" {
         fn symmetric_state_open(
-            algorithm_ptr: WasiMutPtr<Char8>,
+            algorithm_ptr: WasiPtr<Char8>,
             algorithm_len: usize,
             key: OptSymmetricKey,
             options: OptOptions,
@@ -977,7 +962,7 @@ pub fn symmetric_state_open(
 /// It may also return `unsupported_option` if the option doesn't exist for the chosen algorithm.
 pub fn symmetric_state_options_get(
     handle: SymmetricState,
-    name_ptr: WasiMutPtr<Char8>,
+    name_ptr: WasiPtr<Char8>,
     name_len: usize,
     value: WasiMutPtr<u8>,
     value_max_len: Size,
@@ -986,7 +971,7 @@ pub fn symmetric_state_options_get(
     extern "C" {
         fn symmetric_state_options_get(
             handle: SymmetricState,
-            name_ptr: WasiMutPtr<Char8>,
+            name_ptr: WasiPtr<Char8>,
             name_len: usize,
             value: WasiMutPtr<u8>,
             value_max_len: Size,
@@ -1019,14 +1004,14 @@ pub fn symmetric_state_options_get(
 /// It may also return `unsupported_option` if the option doesn't exist for the chosen algorithm.
 pub fn symmetric_state_options_get_u_64(
     handle: SymmetricState,
-    name_ptr: WasiMutPtr<Char8>,
+    name_ptr: WasiPtr<Char8>,
     name_len: usize,
 ) -> Result<U64, Error> {
     #[link(wasm_import_module = "proposal_symmetric")]
     extern "C" {
         fn symmetric_state_options_get_u_64(
             handle: SymmetricState,
-            name_ptr: WasiMutPtr<Char8>,
+            name_ptr: WasiPtr<Char8>,
             name_len: usize,
             result_ptr: WasiMutPtr<U64>,
         ) -> CryptoErrno;
@@ -1153,14 +1138,14 @@ pub fn symmetric_state_squeeze_tag(handle: SymmetricState) -> Result<SymmetricTa
 /// `invalid_operation` is returned for algorithms not supporting this operation.
 pub fn symmetric_state_squeeze_key(
     handle: SymmetricState,
-    alg_str_ptr: WasiMutPtr<Char8>,
+    alg_str_ptr: WasiPtr<Char8>,
     alg_str_len: usize,
 ) -> Result<SymmetricKey, Error> {
     #[link(wasm_import_module = "proposal_symmetric")]
     extern "C" {
         fn symmetric_state_squeeze_key(
             handle: SymmetricState,
-            alg_str_ptr: WasiMutPtr<Char8>,
+            alg_str_ptr: WasiPtr<Char8>,
             alg_str_len: usize,
             result_ptr: WasiMutPtr<SymmetricKey>,
         ) -> CryptoErrno;

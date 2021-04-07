@@ -320,7 +320,7 @@ pub const ProposalSymmetric = struct {
     ///
     /// This function may return `unsupported_feature` if key generation is not supported by the host for the chosen algorithm, or `unsupported_algorithm` if the algorithm is not supported by the host.
     pub extern "proposal_symmetric" fn symmetric_key_generate(
-        algorithm_ptr: WasiMutPtr(Char8),
+        algorithm_ptr: WasiPtr(Char8),
         algorithm_len: usize,
         options: OptOptions,
         result_ptr: WasiMutPtr(SymmetricKey),
@@ -332,7 +332,7 @@ pub const ProposalSymmetric = struct {
     ///
     /// The function may also return `unsupported_algorithm` if the algorithm is not supported by the host.
     pub extern "proposal_symmetric" fn symmetric_key_import(
-        algorithm_ptr: WasiMutPtr(Char8),
+        algorithm_ptr: WasiPtr(Char8),
         algorithm_len: usize,
         raw: WasiPtr(u8),
         raw_len: Size,
@@ -371,7 +371,7 @@ pub const ProposalSymmetric = struct {
     /// This is also an optional import, meaning that the function may not even exist.
     pub extern "proposal_symmetric" fn symmetric_key_generate_managed(
         secrets_manager: SecretsManager,
-        algorithm_ptr: WasiMutPtr(Char8),
+        algorithm_ptr: WasiPtr(Char8),
         algorithm_len: usize,
         options: OptOptions,
         result_ptr: WasiMutPtr(SymmetricKey),
@@ -626,7 +626,7 @@ pub const ProposalSymmetric = struct {
     /// // ...
     /// ```
     pub extern "proposal_symmetric" fn symmetric_state_open(
-        algorithm_ptr: WasiMutPtr(Char8),
+        algorithm_ptr: WasiPtr(Char8),
         algorithm_len: usize,
         key: OptSymmetricKey,
         options: OptOptions,
@@ -642,7 +642,7 @@ pub const ProposalSymmetric = struct {
     /// It may also return `unsupported_option` if the option doesn't exist for the chosen algorithm.
     pub extern "proposal_symmetric" fn symmetric_state_options_get(
         handle: SymmetricState,
-        name_ptr: WasiMutPtr(Char8),
+        name_ptr: WasiPtr(Char8),
         name_len: usize,
         value: WasiMutPtr(u8),
         value_max_len: Size,
@@ -658,7 +658,7 @@ pub const ProposalSymmetric = struct {
     /// It may also return `unsupported_option` if the option doesn't exist for the chosen algorithm.
     pub extern "proposal_symmetric" fn symmetric_state_options_get_u64(
         handle: SymmetricState,
-        name_ptr: WasiMutPtr(Char8),
+        name_ptr: WasiPtr(Char8),
         name_len: usize,
         result_ptr: WasiMutPtr(U64),
     ) callconv(.C) CryptoErrno;
@@ -728,7 +728,7 @@ pub const ProposalSymmetric = struct {
     /// `invalid_operation` is returned for algorithms not supporting this operation.
     pub extern "proposal_symmetric" fn symmetric_state_squeeze_key(
         handle: SymmetricState,
-        alg_str_ptr: WasiMutPtr(Char8),
+        alg_str_ptr: WasiPtr(Char8),
         alg_str_len: usize,
         result_ptr: WasiMutPtr(SymmetricKey),
     ) callconv(.C) CryptoErrno;

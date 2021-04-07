@@ -16,7 +16,7 @@ export type Char8 = u8;
 export type Char32 = u32;
 export type WasiPtr<T> = usize;
 export type WasiMutPtr<T> = usize;
-export type WasiStringBytesPtr = WasiMutPtr<Char8>;
+export type WasiStringBytesPtr = WasiPtr<Char8>;
 ",
         )?;
         w.write_lines(

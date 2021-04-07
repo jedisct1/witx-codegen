@@ -430,10 +430,10 @@ impl ASType {
             | ASType::String(elements_type) => {
                 let ptr_name = format!("{}_ptr", name);
                 let len_name = format!("{}_len", name);
-                let ptr_type = if let ASType::ReadBuffer(_) = leaf {
-                    ASType::ConstPtr(elements_type.clone())
-                } else {
+                let ptr_type = if let ASType::WriteBuffer(_) = leaf {
                     ASType::MutPtr(elements_type.clone())
+                } else {
+                    ASType::ConstPtr(elements_type.clone())
                 };
                 let ptr_element = ASTypeDecomposed {
                     name: ptr_name,
