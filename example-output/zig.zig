@@ -229,7 +229,6 @@ pub const OptOptions = extern struct {
         some = 0,
         none = 1,
     },
-
     __pad8_0: u8 = undefined,
     __pad16_0: u16 = undefined,
     __pad32_0: u32 = undefined,
@@ -278,7 +277,6 @@ pub const OptSymmetricKey = extern struct {
         some = 0,
         none = 1,
     },
-
     __pad8_0: u8 = undefined,
     __pad16_0: u16 = undefined,
     __pad32_0: u32 = undefined,
