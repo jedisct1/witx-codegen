@@ -84,12 +84,9 @@ impl ZigGenerator {
         results_decomposed: &[ASTypeDecomposed],
         result: &ASResult,
     ) -> Result<(), Error> {
-        w.indent()?.write(format!(
-            "pub extern \"{}\" fn {}(",
-            module_name,
-            name.as_fn()
-        ))?;
-        if !params_decomposed.is_empty() {
+        w.indent()?
+            .write(format!("pub extern \"{}\" fn {}(", module_name, name))?;
+        if !params_decomposed.is_empty() || !results_decomposed.is_empty() {
             w.eol()?;
         }
         for param in params_decomposed.iter().chain(results_decomposed.iter()) {

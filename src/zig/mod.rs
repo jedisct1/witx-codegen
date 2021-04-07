@@ -69,9 +69,18 @@ impl<T: Write> Generator<T> for ZigGenerator {
             Self::define_type(&mut w, type_.as_ref(), &constants_for_type)?;
         }
 
-        for func in module_witx.funcs() {
-            Self::define_func(&mut w, &module_name, func.as_ref())?;
+        w.write_line(format!(
+            "pub const {} = struct {{",
+            module_name.as_namespace()
+        ))?;
+        {
+            let mut w = w.new_block();
+            for func in module_witx.funcs() {
+                Self::define_func(&mut w, &module_name, func.as_ref())?;
+            }
         }
+        w.write_line("};")?;
+        w.eob()?;
 
         Ok(())
     }
