@@ -46,7 +46,7 @@ pub fn WasiMutSlice(comptime T) type {
         ptr: WasiMutPtr(T),
         len: usize,
 
-        fn from_slice(slice: *u8) WasiMutSlice {
+        fn from_slice(slice: []u8) WasiMutSlice {
             return WasiMutSlice{ .ptr = slice.ptr, .len = slice.len };
         }
 
