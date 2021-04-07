@@ -118,7 +118,6 @@ impl ZigGenerator {
                 }
             }
             w.write_line("},")?;
-            w.eob()?;
             let pad_len = union_.padding_after_tag;
             for i in 0..(pad_len & 1) {
                 w.write_line(format!("__pad8_{}: u8 = undefined,", i))?;
