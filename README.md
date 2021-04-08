@@ -66,6 +66,7 @@ ARGS:
 * [X] Rust ([example](https://github.com/jedisct1/witx-codegen/blob/master/example-output/rust.rs))
 * [ ] TinyGo
 * [ ] C/C++
+* [ ] Swift
 * [ ] HTML documentation
 
 ## Example inputs
