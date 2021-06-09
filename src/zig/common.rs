@@ -103,6 +103,6 @@ pub trait ToLanguageRepresentation {
 
 impl ToLanguageRepresentation for ASType {
     fn as_astype(&self) -> &ASType {
-        &self
+        self
     }
 }
