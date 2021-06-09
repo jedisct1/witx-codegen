@@ -56,7 +56,7 @@ pub fn WasiMutSlice(comptime T) type {
     };
 }
 
-/// ---------------------- Module: [proposal_symmetric] ----------------------
+/// ---------------------- Module: [wasi_ephemeral_crypto_symmetric] ----------------------
 /// Error codes.
 pub const CryptoErrno = extern enum(u16) {
     SUCCESS = 0,
@@ -311,13 +311,13 @@ pub const OptSymmetricKey = extern struct {
     }
 };
 
-pub const ProposalSymmetric = struct {
+pub const WasiEphemeralCryptoSymmetric = struct {
     /// Generate a new symmetric key for a given algorithm.
     ///
     /// `options` can be `None` to use the default parameters, or an algoritm-specific set of parameters to override.
     ///
     /// This function may return `unsupported_feature` if key generation is not supported by the host for the chosen algorithm, or `unsupported_algorithm` if the algorithm is not supported by the host.
-    pub extern "proposal_symmetric" fn symmetric_key_generate(
+    pub extern "wasi_ephemeral_crypto_symmetric" fn symmetric_key_generate(
         algorithm_ptr: WasiPtr(Char8),
         algorithm_len: usize,
         options: OptOptions,
@@ -329,7 +329,7 @@ pub const ProposalSymmetric = struct {
     /// The algorithm is internally stored along with the key, and trying to use the key with an operation expecting a different algorithm will return `invalid_key`.
     ///
     /// The function may also return `unsupported_algorithm` if the algorithm is not supported by the host.
-    pub extern "proposal_symmetric" fn symmetric_key_import(
+    pub extern "wasi_ephemeral_crypto_symmetric" fn symmetric_key_import(
         algorithm_ptr: WasiPtr(Char8),
         algorithm_len: usize,
         raw: WasiPtr(u8),
@@ -342,7 +342,7 @@ pub const ProposalSymmetric = struct {
     /// This is mainly useful to export a managed key.
     ///
     /// May return `prohibited_operation` if this operation is denied.
-    pub extern "proposal_symmetric" fn symmetric_key_export(
+    pub extern "wasi_ephemeral_crypto_symmetric" fn symmetric_key_export(
         symmetric_key: SymmetricKey,
         result_ptr: WasiMutPtr(ArrayOutput),
     ) callconv(.C) CryptoErrno;
@@ -350,7 +350,7 @@ pub const ProposalSymmetric = struct {
     /// Destroy a symmetric key.
     ///
     /// Objects are reference counted. It is safe to close an object immediately after the last function needing it is called.
-    pub extern "proposal_symmetric" fn symmetric_key_close(
+    pub extern "wasi_ephemeral_crypto_symmetric" fn symmetric_key_close(
         symmetric_key: SymmetricKey,
     ) callconv(.C) CryptoErrno;
 
@@ -367,7 +367,7 @@ pub const ProposalSymmetric = struct {
     /// The function may also return `unsupported_algorithm` if the algorithm is not supported by the host.
     ///
     /// This is also an optional import, meaning that the function may not even exist.
-    pub extern "proposal_symmetric" fn symmetric_key_generate_managed(
+    pub extern "wasi_ephemeral_crypto_symmetric" fn symmetric_key_generate_managed(
         secrets_manager: SecretsManager,
         algorithm_ptr: WasiPtr(Char8),
         algorithm_len: usize,
@@ -382,7 +382,7 @@ pub const ProposalSymmetric = struct {
     /// into which up to `$symmetric_key_id_max_len` can be written.
     ///
     /// The function returns `overflow` if the supplied buffer is too small.
-    pub extern "proposal_symmetric" fn symmetric_key_store_managed(
+    pub extern "wasi_ephemeral_crypto_symmetric" fn symmetric_key_store_managed(
         secrets_manager: SecretsManager,
         symmetric_key: SymmetricKey,
         symmetric_key_id: WasiMutPtr(u8),
@@ -410,7 +410,7 @@ pub const ProposalSymmetric = struct {
     /// If the operation succeeded, the new version is returned.
     ///
     /// This is an optional import, meaning that the function may not even exist.
-    pub extern "proposal_symmetric" fn symmetric_key_replace_managed(
+    pub extern "wasi_ephemeral_crypto_symmetric" fn symmetric_key_replace_managed(
         secrets_manager: SecretsManager,
         symmetric_key_old: SymmetricKey,
         symmetric_key_new: SymmetricKey,
@@ -423,7 +423,7 @@ pub const ProposalSymmetric = struct {
     /// If the key is not managed, `unsupported_feature` is returned instead.
     ///
     /// This is an optional import, meaning that the function may not even exist.
-    pub extern "proposal_symmetric" fn symmetric_key_id(
+    pub extern "wasi_ephemeral_crypto_symmetric" fn symmetric_key_id(
         symmetric_key: SymmetricKey,
         symmetric_key_id: WasiMutPtr(u8),
         symmetric_key_id_max_len: Size,
@@ -439,7 +439,7 @@ pub const ProposalSymmetric = struct {
     /// If no key matching the provided information is found, `not_found` is returned instead.
     ///
     /// This is an optional import, meaning that the function may not even exist.
-    pub extern "proposal_symmetric" fn symmetric_key_from_id(
+    pub extern "wasi_ephemeral_crypto_symmetric" fn symmetric_key_from_id(
         secrets_manager: SecretsManager,
         symmetric_key_id: WasiPtr(u8),
         symmetric_key_id_len: Size,
@@ -623,7 +623,7 @@ pub const ProposalSymmetric = struct {
     /// let next_key_handle = ctx.symmetric_state_squeeze_key(state_handle, "Xoodyak-128")?;
     /// // ...
     /// ```
-    pub extern "proposal_symmetric" fn symmetric_state_open(
+    pub extern "wasi_ephemeral_crypto_symmetric" fn symmetric_state_open(
         algorithm_ptr: WasiPtr(Char8),
         algorithm_len: usize,
         key: OptSymmetricKey,
@@ -638,7 +638,7 @@ pub const ProposalSymmetric = struct {
     /// The function may return `options_not_set` if an option was not set, which is different from an empty value.
     ///
     /// It may also return `unsupported_option` if the option doesn't exist for the chosen algorithm.
-    pub extern "proposal_symmetric" fn symmetric_state_options_get(
+    pub extern "wasi_ephemeral_crypto_symmetric" fn symmetric_state_options_get(
         handle: SymmetricState,
         name_ptr: WasiPtr(Char8),
         name_len: usize,
@@ -654,7 +654,7 @@ pub const ProposalSymmetric = struct {
     /// The function may return `options_not_set` if an option was not set.
     ///
     /// It may also return `unsupported_option` if the option doesn't exist for the chosen algorithm.
-    pub extern "proposal_symmetric" fn symmetric_state_options_get_u64(
+    pub extern "wasi_ephemeral_crypto_symmetric" fn symmetric_state_options_get_u64(
         handle: SymmetricState,
         name_ptr: WasiPtr(Char8),
         name_len: usize,
@@ -664,7 +664,7 @@ pub const ProposalSymmetric = struct {
     /// Destroy a symmetric state.
     ///
     /// Objects are reference counted. It is safe to close an object immediately after the last function needing it is called.
-    pub extern "proposal_symmetric" fn symmetric_state_close(
+    pub extern "wasi_ephemeral_crypto_symmetric" fn symmetric_state_close(
         handle: SymmetricState,
     ) callconv(.C) CryptoErrno;
 
@@ -680,7 +680,7 @@ pub const ProposalSymmetric = struct {
     /// If the chosen algorithm doesn't accept input data, the `invalid_operation` error code is returned.
     ///
     /// If too much data has been fed for the algorithm, `overflow` may be thrown.
-    pub extern "proposal_symmetric" fn symmetric_state_absorb(
+    pub extern "wasi_ephemeral_crypto_symmetric" fn symmetric_state_absorb(
         handle: SymmetricState,
         data: WasiPtr(u8),
         data_len: Size,
@@ -697,7 +697,7 @@ pub const ProposalSymmetric = struct {
     ///
     /// For password-stretching functions, the function may return `in_progress`.
     /// In that case, the guest should retry with the same parameters until the function completes.
-    pub extern "proposal_symmetric" fn symmetric_state_squeeze(
+    pub extern "wasi_ephemeral_crypto_symmetric" fn symmetric_state_squeeze(
         handle: SymmetricState,
         out: WasiMutPtr(u8),
         out_len: Size,
@@ -713,7 +713,7 @@ pub const ProposalSymmetric = struct {
     ///
     /// For password-stretching functions, the function may return `in_progress`.
     /// In that case, the guest should retry with the same parameters until the function completes.
-    pub extern "proposal_symmetric" fn symmetric_state_squeeze_tag(
+    pub extern "wasi_ephemeral_crypto_symmetric" fn symmetric_state_squeeze_tag(
         handle: SymmetricState,
         result_ptr: WasiMutPtr(SymmetricTag),
     ) callconv(.C) CryptoErrno;
@@ -724,7 +724,7 @@ pub const ProposalSymmetric = struct {
     /// For session-base authentication encryption, this returns a key that can be used to resume a session without storing a nonce.
     ///
     /// `invalid_operation` is returned for algorithms not supporting this operation.
-    pub extern "proposal_symmetric" fn symmetric_state_squeeze_key(
+    pub extern "wasi_ephemeral_crypto_symmetric" fn symmetric_state_squeeze_key(
         handle: SymmetricState,
         alg_str_ptr: WasiPtr(Char8),
         alg_str_len: usize,
@@ -740,7 +740,7 @@ pub const ProposalSymmetric = struct {
     /// For an encryption operation, the size of the output buffer should be `input_len + symmetric_state_max_tag_len()`.
     ///
     /// For a decryption operation, the size of the buffer that will store the decrypted data must be `ciphertext_len - symmetric_state_max_tag_len()`.
-    pub extern "proposal_symmetric" fn symmetric_state_max_tag_len(
+    pub extern "wasi_ephemeral_crypto_symmetric" fn symmetric_state_max_tag_len(
         handle: SymmetricState,
         result_ptr: WasiMutPtr(Size),
     ) callconv(.C) CryptoErrno;
@@ -756,7 +756,7 @@ pub const ProposalSymmetric = struct {
     /// The function returns the actual size of the ciphertext along with the tag.
     ///
     /// `invalid_operation` is returned for algorithms not supporting encryption.
-    pub extern "proposal_symmetric" fn symmetric_state_encrypt(
+    pub extern "wasi_ephemeral_crypto_symmetric" fn symmetric_state_encrypt(
         handle: SymmetricState,
         out: WasiMutPtr(u8),
         out_len: Size,
@@ -776,7 +776,7 @@ pub const ProposalSymmetric = struct {
     /// The function returns the tag.
     ///
     /// `invalid_operation` is returned for algorithms not supporting encryption.
-    pub extern "proposal_symmetric" fn symmetric_state_encrypt_detached(
+    pub extern "wasi_ephemeral_crypto_symmetric" fn symmetric_state_encrypt_detached(
         handle: SymmetricState,
         out: WasiMutPtr(u8),
         out_len: Size,
@@ -798,7 +798,7 @@ pub const ProposalSymmetric = struct {
     /// `invalid_tag` is returned if the tag didn't verify.
     ///
     /// `invalid_operation` is returned for algorithms not supporting encryption.
-    pub extern "proposal_symmetric" fn symmetric_state_decrypt(
+    pub extern "wasi_ephemeral_crypto_symmetric" fn symmetric_state_decrypt(
         handle: SymmetricState,
         out: WasiMutPtr(u8),
         out_len: Size,
@@ -821,7 +821,7 @@ pub const ProposalSymmetric = struct {
     /// `invalid_tag` is returned if the tag verification failed.
     ///
     /// `invalid_operation` is returned for algorithms not supporting encryption.
-    pub extern "proposal_symmetric" fn symmetric_state_decrypt_detached(
+    pub extern "wasi_ephemeral_crypto_symmetric" fn symmetric_state_decrypt_detached(
         handle: SymmetricState,
         out: WasiMutPtr(u8),
         out_len: Size,
@@ -837,14 +837,14 @@ pub const ProposalSymmetric = struct {
     /// This operation is supported by some systems keeping a rolling state over an entire session, for forward security.
     ///
     /// `invalid_operation` is returned for algorithms not supporting ratcheting.
-    pub extern "proposal_symmetric" fn symmetric_state_ratchet(
+    pub extern "wasi_ephemeral_crypto_symmetric" fn symmetric_state_ratchet(
         handle: SymmetricState,
     ) callconv(.C) CryptoErrno;
 
     /// Return the length of an authentication tag.
     ///
     /// This function can be used by a guest to allocate the correct buffer size to copy a computed authentication tag.
-    pub extern "proposal_symmetric" fn symmetric_tag_len(
+    pub extern "wasi_ephemeral_crypto_symmetric" fn symmetric_tag_len(
         symmetric_tag: SymmetricTag,
         result_ptr: WasiMutPtr(Size),
     ) callconv(.C) CryptoErrno;
@@ -863,7 +863,7 @@ pub const ProposalSymmetric = struct {
     /// The function returns `overflow` if the supplied buffer is too small to copy the tag.
     ///
     /// Otherwise, it returns the number of bytes that have been copied.
-    pub extern "proposal_symmetric" fn symmetric_tag_pull(
+    pub extern "wasi_ephemeral_crypto_symmetric" fn symmetric_tag_pull(
         symmetric_tag: SymmetricTag,
         buf: WasiMutPtr(u8),
         buf_len: Size,
@@ -885,7 +885,7 @@ pub const ProposalSymmetric = struct {
     /// let computed_tag_handle = ctx.symmetric_state_squeeze_tag(state_handle)?;
     /// ctx.symmetric_tag_verify(computed_tag_handle, expected_raw_tag)?;
     /// ```
-    pub extern "proposal_symmetric" fn symmetric_tag_verify(
+    pub extern "wasi_ephemeral_crypto_symmetric" fn symmetric_tag_verify(
         symmetric_tag: SymmetricTag,
         expected_raw_tag_ptr: WasiPtr(u8),
         expected_raw_tag_len: Size,
@@ -896,7 +896,7 @@ pub const ProposalSymmetric = struct {
     /// This is usually not necessary, as `symmetric_tag_pull()` automatically closes a tag after it has been copied.
     ///
     /// Objects are reference counted. It is safe to close an object immediately after the last function needing it is called.
-    pub extern "proposal_symmetric" fn symmetric_tag_close(
+    pub extern "wasi_ephemeral_crypto_symmetric" fn symmetric_tag_close(
         symmetric_tag: SymmetricTag,
     ) callconv(.C) CryptoErrno;
 };

@@ -1,7 +1,7 @@
 * API overview *
 
 
----------------------- Module: [proposal_symmetric] ----------------------
+---------------------- Module: [wasi_ephemeral_crypto_symmetric] ----------------------
 
 enum crypto_errno: (tag: u16)
     - `success`: crypto_errno

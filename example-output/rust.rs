@@ -107,7 +107,7 @@ impl WasiString {
     }
 }
 
-/// ---------------------- Module: [proposal_symmetric] ----------------------
+/// ---------------------- Module: [wasi_ephemeral_crypto_symmetric] ----------------------
 
 /// Error codes.
 pub type CryptoErrno = u16;
@@ -439,7 +439,7 @@ pub fn symmetric_key_generate(
     algorithm_len: usize,
     options: OptOptions,
 ) -> Result<SymmetricKey, Error> {
-    #[link(wasm_import_module = "proposal_symmetric")]
+    #[link(wasm_import_module = "wasi_ephemeral_crypto_symmetric")]
     extern "C" {
         fn symmetric_key_generate(
             algorithm_ptr: WasiPtr<Char8>,
@@ -474,7 +474,7 @@ pub fn symmetric_key_import(
     raw: WasiPtr<u8>,
     raw_len: Size,
 ) -> Result<SymmetricKey, Error> {
-    #[link(wasm_import_module = "proposal_symmetric")]
+    #[link(wasm_import_module = "wasi_ephemeral_crypto_symmetric")]
     extern "C" {
         fn symmetric_key_import(
             algorithm_ptr: WasiPtr<Char8>,
@@ -506,7 +506,7 @@ pub fn symmetric_key_import(
 ///
 /// May return `prohibited_operation` if this operation is denied.
 pub fn symmetric_key_export(symmetric_key: SymmetricKey) -> Result<ArrayOutput, Error> {
-    #[link(wasm_import_module = "proposal_symmetric")]
+    #[link(wasm_import_module = "wasi_ephemeral_crypto_symmetric")]
     extern "C" {
         fn symmetric_key_export(
             symmetric_key: SymmetricKey,
@@ -525,7 +525,7 @@ pub fn symmetric_key_export(symmetric_key: SymmetricKey) -> Result<ArrayOutput, 
 ///
 /// Objects are reference counted. It is safe to close an object immediately after the last function needing it is called.
 pub fn symmetric_key_close(symmetric_key: SymmetricKey) -> Result<(), Error> {
-    #[link(wasm_import_module = "proposal_symmetric")]
+    #[link(wasm_import_module = "wasi_ephemeral_crypto_symmetric")]
     extern "C" {
         fn symmetric_key_close(symmetric_key: SymmetricKey) -> CryptoErrno;
     }
@@ -555,7 +555,7 @@ pub fn symmetric_key_generate_managed(
     algorithm_len: usize,
     options: OptOptions,
 ) -> Result<SymmetricKey, Error> {
-    #[link(wasm_import_module = "proposal_symmetric")]
+    #[link(wasm_import_module = "wasi_ephemeral_crypto_symmetric")]
     extern "C" {
         fn symmetric_key_generate_managed(
             secrets_manager: SecretsManager,
@@ -594,7 +594,7 @@ pub fn symmetric_key_store_managed(
     symmetric_key_id: WasiMutPtr<u8>,
     symmetric_key_id_max_len: Size,
 ) -> Result<(), Error> {
-    #[link(wasm_import_module = "proposal_symmetric")]
+    #[link(wasm_import_module = "wasi_ephemeral_crypto_symmetric")]
     extern "C" {
         fn symmetric_key_store_managed(
             secrets_manager: SecretsManager,
@@ -643,7 +643,7 @@ pub fn symmetric_key_replace_managed(
     symmetric_key_old: SymmetricKey,
     symmetric_key_new: SymmetricKey,
 ) -> Result<Version, Error> {
-    #[link(wasm_import_module = "proposal_symmetric")]
+    #[link(wasm_import_module = "wasi_ephemeral_crypto_symmetric")]
     extern "C" {
         fn symmetric_key_replace_managed(
             secrets_manager: SecretsManager,
@@ -678,11 +678,11 @@ pub fn symmetric_key_id(
     symmetric_key_id: WasiMutPtr<u8>,
     symmetric_key_id_max_len: Size,
 ) -> Result<(Size, Version), Error> {
-    #[link(wasm_import_module = "proposal_symmetric")]
+    #[link(wasm_import_module = "wasi_ephemeral_crypto_symmetric")]
     extern "C" {
         fn symmetric_key_id(
             symmetric_key: SymmetricKey,
-            symmetric_key_id_: WasiMutPtr<u8>,
+            symmetric_key_id: WasiMutPtr<u8>,
             symmetric_key_id_max_len: Size,
             result_0_ptr: WasiMutPtr<Size>,
             result_1_ptr: WasiMutPtr<Version>,
@@ -693,7 +693,7 @@ pub fn symmetric_key_id(
     let res = unsafe {
         symmetric_key_id(
             symmetric_key,
-            symmetric_key_id_,
+            symmetric_key_id,
             symmetric_key_id_max_len,
             result_0_ptr.as_mut_ptr(),
             result_1_ptr.as_mut_ptr(),
@@ -719,7 +719,7 @@ pub fn symmetric_key_from_id(
     symmetric_key_id_len: Size,
     symmetric_key_version: Version,
 ) -> Result<SymmetricKey, Error> {
-    #[link(wasm_import_module = "proposal_symmetric")]
+    #[link(wasm_import_module = "wasi_ephemeral_crypto_symmetric")]
     extern "C" {
         fn symmetric_key_from_id(
             secrets_manager: SecretsManager,
@@ -927,7 +927,7 @@ pub fn symmetric_state_open(
     key: OptSymmetricKey,
     options: OptOptions,
 ) -> Result<SymmetricState, Error> {
-    #[link(wasm_import_module = "proposal_symmetric")]
+    #[link(wasm_import_module = "wasi_ephemeral_crypto_symmetric")]
     extern "C" {
         fn symmetric_state_open(
             algorithm_ptr: WasiPtr<Char8>,
@@ -967,7 +967,7 @@ pub fn symmetric_state_options_get(
     value: WasiMutPtr<u8>,
     value_max_len: Size,
 ) -> Result<Size, Error> {
-    #[link(wasm_import_module = "proposal_symmetric")]
+    #[link(wasm_import_module = "wasi_ephemeral_crypto_symmetric")]
     extern "C" {
         fn symmetric_state_options_get(
             handle: SymmetricState,
@@ -1007,7 +1007,7 @@ pub fn symmetric_state_options_get_u_64(
     name_ptr: WasiPtr<Char8>,
     name_len: usize,
 ) -> Result<U64, Error> {
-    #[link(wasm_import_module = "proposal_symmetric")]
+    #[link(wasm_import_module = "wasi_ephemeral_crypto_symmetric")]
     extern "C" {
         fn symmetric_state_options_get_u_64(
             handle: SymmetricState,
@@ -1030,7 +1030,7 @@ pub fn symmetric_state_options_get_u_64(
 ///
 /// Objects are reference counted. It is safe to close an object immediately after the last function needing it is called.
 pub fn symmetric_state_close(handle: SymmetricState) -> Result<(), Error> {
-    #[link(wasm_import_module = "proposal_symmetric")]
+    #[link(wasm_import_module = "wasi_ephemeral_crypto_symmetric")]
     extern "C" {
         fn symmetric_state_close(handle: SymmetricState) -> CryptoErrno;
     }
@@ -1058,7 +1058,7 @@ pub fn symmetric_state_absorb(
     data: WasiPtr<u8>,
     data_len: Size,
 ) -> Result<(), Error> {
-    #[link(wasm_import_module = "proposal_symmetric")]
+    #[link(wasm_import_module = "wasi_ephemeral_crypto_symmetric")]
     extern "C" {
         fn symmetric_state_absorb(
             handle: SymmetricState,
@@ -1089,7 +1089,7 @@ pub fn symmetric_state_squeeze(
     out: WasiMutPtr<u8>,
     out_len: Size,
 ) -> Result<(), Error> {
-    #[link(wasm_import_module = "proposal_symmetric")]
+    #[link(wasm_import_module = "wasi_ephemeral_crypto_symmetric")]
     extern "C" {
         fn symmetric_state_squeeze(
             handle: SymmetricState,
@@ -1115,7 +1115,7 @@ pub fn symmetric_state_squeeze(
 /// For password-stretching functions, the function may return `in_progress`.
 /// In that case, the guest should retry with the same parameters until the function completes.
 pub fn symmetric_state_squeeze_tag(handle: SymmetricState) -> Result<SymmetricTag, Error> {
-    #[link(wasm_import_module = "proposal_symmetric")]
+    #[link(wasm_import_module = "wasi_ephemeral_crypto_symmetric")]
     extern "C" {
         fn symmetric_state_squeeze_tag(
             handle: SymmetricState,
@@ -1141,7 +1141,7 @@ pub fn symmetric_state_squeeze_key(
     alg_str_ptr: WasiPtr<Char8>,
     alg_str_len: usize,
 ) -> Result<SymmetricKey, Error> {
-    #[link(wasm_import_module = "proposal_symmetric")]
+    #[link(wasm_import_module = "wasi_ephemeral_crypto_symmetric")]
     extern "C" {
         fn symmetric_state_squeeze_key(
             handle: SymmetricState,
@@ -1170,7 +1170,7 @@ pub fn symmetric_state_squeeze_key(
 ///
 /// For a decryption operation, the size of the buffer that will store the decrypted data must be `ciphertext_len - symmetric_state_max_tag_len()`.
 pub fn symmetric_state_max_tag_len(handle: SymmetricState) -> Result<Size, Error> {
-    #[link(wasm_import_module = "proposal_symmetric")]
+    #[link(wasm_import_module = "wasi_ephemeral_crypto_symmetric")]
     extern "C" {
         fn symmetric_state_max_tag_len(
             handle: SymmetricState,
@@ -1203,7 +1203,7 @@ pub fn symmetric_state_encrypt(
     data: WasiPtr<u8>,
     data_len: Size,
 ) -> Result<Size, Error> {
-    #[link(wasm_import_module = "proposal_symmetric")]
+    #[link(wasm_import_module = "wasi_ephemeral_crypto_symmetric")]
     extern "C" {
         fn symmetric_state_encrypt(
             handle: SymmetricState,
@@ -1249,7 +1249,7 @@ pub fn symmetric_state_encrypt_detached(
     data: WasiPtr<u8>,
     data_len: Size,
 ) -> Result<SymmetricTag, Error> {
-    #[link(wasm_import_module = "proposal_symmetric")]
+    #[link(wasm_import_module = "wasi_ephemeral_crypto_symmetric")]
     extern "C" {
         fn symmetric_state_encrypt_detached(
             handle: SymmetricState,
@@ -1297,7 +1297,7 @@ pub fn symmetric_state_decrypt(
     data: WasiPtr<u8>,
     data_len: Size,
 ) -> Result<Size, Error> {
-    #[link(wasm_import_module = "proposal_symmetric")]
+    #[link(wasm_import_module = "wasi_ephemeral_crypto_symmetric")]
     extern "C" {
         fn symmetric_state_decrypt(
             handle: SymmetricState,
@@ -1348,7 +1348,7 @@ pub fn symmetric_state_decrypt_detached(
     raw_tag: WasiPtr<u8>,
     raw_tag_len: Size,
 ) -> Result<Size, Error> {
-    #[link(wasm_import_module = "proposal_symmetric")]
+    #[link(wasm_import_module = "wasi_ephemeral_crypto_symmetric")]
     extern "C" {
         fn symmetric_state_decrypt_detached(
             handle: SymmetricState,
@@ -1386,7 +1386,7 @@ pub fn symmetric_state_decrypt_detached(
 ///
 /// `invalid_operation` is returned for algorithms not supporting ratcheting.
 pub fn symmetric_state_ratchet(handle: SymmetricState) -> Result<(), Error> {
-    #[link(wasm_import_module = "proposal_symmetric")]
+    #[link(wasm_import_module = "wasi_ephemeral_crypto_symmetric")]
     extern "C" {
         fn symmetric_state_ratchet(handle: SymmetricState) -> CryptoErrno;
     }
@@ -1401,7 +1401,7 @@ pub fn symmetric_state_ratchet(handle: SymmetricState) -> Result<(), Error> {
 ///
 /// This function can be used by a guest to allocate the correct buffer size to copy a computed authentication tag.
 pub fn symmetric_tag_len(symmetric_tag: SymmetricTag) -> Result<Size, Error> {
-    #[link(wasm_import_module = "proposal_symmetric")]
+    #[link(wasm_import_module = "wasi_ephemeral_crypto_symmetric")]
     extern "C" {
         fn symmetric_tag_len(
             symmetric_tag: SymmetricTag,
@@ -1435,7 +1435,7 @@ pub fn symmetric_tag_pull(
     buf: WasiMutPtr<u8>,
     buf_len: Size,
 ) -> Result<Size, Error> {
-    #[link(wasm_import_module = "proposal_symmetric")]
+    #[link(wasm_import_module = "wasi_ephemeral_crypto_symmetric")]
     extern "C" {
         fn symmetric_tag_pull(
             symmetric_tag: SymmetricTag,
@@ -1472,7 +1472,7 @@ pub fn symmetric_tag_verify(
     expected_raw_tag_ptr: WasiPtr<u8>,
     expected_raw_tag_len: Size,
 ) -> Result<(), Error> {
-    #[link(wasm_import_module = "proposal_symmetric")]
+    #[link(wasm_import_module = "wasi_ephemeral_crypto_symmetric")]
     extern "C" {
         fn symmetric_tag_verify(
             symmetric_tag: SymmetricTag,
@@ -1494,7 +1494,7 @@ pub fn symmetric_tag_verify(
 ///
 /// Objects are reference counted. It is safe to close an object immediately after the last function needing it is called.
 pub fn symmetric_tag_close(symmetric_tag: SymmetricTag) -> Result<(), Error> {
-    #[link(wasm_import_module = "proposal_symmetric")]
+    #[link(wasm_import_module = "wasi_ephemeral_crypto_symmetric")]
     extern "C" {
         fn symmetric_tag_close(symmetric_tag: SymmetricTag) -> CryptoErrno;
     }

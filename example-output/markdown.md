@@ -1,5 +1,5 @@
 
-# Module: proposal_symmetric
+# Module: wasi_ephemeral_crypto_symmetric
 
 ## Table of contents
 
