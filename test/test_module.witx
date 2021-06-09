@@ -1,6 +1,7 @@
-;;; An enumeration
-(typename $test_errno
-  (enum (@witx tag u16)
+(module $test_module
+  ;;; An enumeration
+  (typename $test_errno
+    (enum (@witx tag u16)
     ;;; Operation succeeded.
     $success
 
@@ -9,52 +10,51 @@
 
     ;;; Something else went wrong
     $some_other_error
+    )
   )
-)
 
-;;; A boolean alias
-(typename $test_bool bool)
+  ;;; A boolean alias
+  (typename $test_bool bool)
 
-;;; A u32 alias
-(typename $test_medium_int u32)
+  ;;; A u32 alias
+  (typename $test_medium_int u32)
 
-;;; A u64 alias
-(typename $test_big_int u64)
+  ;;; A u64 alias
+  (typename $test_big_int u64)
 
-;;; Some constants for a type
-(@witx const $test_big_int $zero 0)
-(@witx const $test_big_int $a_hundred 100)
-(@witx const $test_big_int $a_big_value 0xff00000000000000)
-(@witx const $test_big_int $a_bigger_value 0xffffffffffffffff)
+  ;;; Some constants for a type
+  (@witx const $test_big_int $zero 0)
+  (@witx const $test_big_int $a_hundred 100)
+  (@witx const $test_big_int $a_big_value 0xff00000000000000)
+  (@witx const $test_big_int $a_bigger_value 0xffffffffffffffff)
 
-;;; Some constants for another type, these are smaller and won't be encoded as hex
-(@witx const $test_medium_int $zero 0)
-(@witx const $test_medium_int $one 1)
-(@witx const $test_medium_int $two 2)
-(@witx const $test_medium_int $three 3)
+  ;;; Some constants for another type, these are smaller and won't be encoded as hex
+  (@witx const $test_medium_int $zero 0)
+  (@witx const $test_medium_int $one 1)
+  (@witx const $test_medium_int $two 2)
+  (@witx const $test_medium_int $three 3)
 
-;;; Flags
-(typename $test_big_flags (record (field $a bool) (field $b bool) (field $c bool) (field $d bool)))
+  ;;; Flags
+  (typename $test_big_flags (record (field $a bool) (field $b bool) (field $c bool) (field $d bool)))
 
-;;; A structure
-(typename $test_struct (record (field $a_boolean bool) (field $a_byte u8) (field $a_string string)))
+  ;;; A structure
+  (typename $test_struct (record (field $a_boolean bool) (field $a_byte u8) (field $a_string string)))
 
-;;; A tuple
-(typename $test_tuple (tuple $test_bool $test_medium_int $test_big_int))
+  ;;; A tuple
+  (typename $test_tuple (tuple $test_bool $test_medium_int $test_big_int))
 
-;;; A string
-(typename $test_string string)
+  ;;; A string
+  (typename $test_string string)
 
-;;; An output buffer
-(typename $test_output_buffer (out-buffer u16))
+  ;;; An output buffer
+  (typename $test_output_buffer (out-buffer u16))
 
-;;; An input buffer
-(typename $test_input_buffer (in-buffer u16))
+  ;;; An input buffer
+  (typename $test_input_buffer (in-buffer u16))
 
-;;; A tagged union
-(typename $test_tagged_union (variant (@witx tag u16) (case $first_choice u8) (case $second_choice string) (case $third_choice f32) (case $empty_choice)))
+  ;;; A tagged union
+  (typename $test_tagged_union (variant (@witx tag u16) (case $first_choice u8) (case $second_choice string) (case $third_choice f32) (case $empty_choice)))
 
-(module $test_module
   ;;; This function returns multiple values
   (@interface func (export "a_function_that_returns_multiple_values")
     (param $some_parameter u64)

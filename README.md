@@ -12,7 +12,7 @@ From this, code generators can produce code to access data and call functions fr
 
 The generated code is compatible with the WebAssembly standard APIs ([WASI](https://wasi.dev)).
 
-This tool uses the next (as on April 5th, 2021) revision of the format definition, as implemented in the forthcoming version 0.10 of the Rust `witx` crate.
+This tool uses the next (as on June 9th, 2021) revision of the format definition, as implemented in the forthcoming version 0.10 of the Rust `witx` crate.
 
 `witx-codegen` is written in Rust, but is language-agnostic. The output is meant to be simple to understand.
 
@@ -76,6 +76,8 @@ See the [`test`](https://github.com/jedisct1/witx-codegen/tree/master/test) fold
 Other input formats may also be eventually supported, as well as extensions to produce more structured documentation.
 
 ## WITX format
+
+See the `test` directory for some examples.
 
 ### Basic types
 
@@ -184,7 +186,7 @@ Import some aliases, or all of them, from `common.witx`:
 
 ### Modules
 
-Only one module can be present in a file. A module is defined as follows:
+Only one module can be present in a file, whose name must match the module name. A module is defined as follows:
 
 ```
 (module $module_name
@@ -192,7 +194,7 @@ Only one module can be present in a file. A module is defined as follows:
 )
 ```
 
-It contains a set of functions.
+It contains everything: types, handles, functions and imports.
 
 ### Functions
 
