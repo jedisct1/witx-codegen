@@ -12,9 +12,9 @@ From this, code generators can produce code to access data and call functions fr
 
 The generated code is compatible with the WebAssembly standard APIs ([WASI](https://wasi.dev)).
 
-This tool uses the next (as on June 9th, 2021) revision of the format definition, as implemented in the forthcoming version 0.10 of the Rust `witx` crate.
+This tool uses the next (as on June 9th, 2021) revision of the format definition, that will eventually be required for interface types.
 
-`witx-codegen` is written in Rust, but is language-agnostic. The output is meant to be simple to understand.
+`witx-codegen` is currently written in Rust, but it is language-agnostic. The output is meant to be simple to understand.
 
 The tool can also produce different documentation formats.
 
