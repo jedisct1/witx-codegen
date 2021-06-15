@@ -41,11 +41,11 @@ impl<T: Write> Generator<T> for ZigGenerator {
             Self::header(&mut w)?;
         }
 
-        let module_title_doc = format!(
+        let module_title_comments = format!(
             "---------------------- Module: [{}] ----------------------",
             module_name
         );
-        Self::write_docs(&mut w, &module_title_doc)?;
+        Self::write_comments(&mut w, &module_title_comments)?;
         w.eob()?;
 
         for type_ in module_witx.typenames() {
@@ -93,6 +93,16 @@ impl ZigGenerator {
         }
         for docs_line in docs.lines() {
             w.write_line(format!("/// {}", docs_line))?;
+        }
+        Ok(())
+    }
+
+    fn write_comments<T: Write>(w: &mut PrettyWriter<T>, docs: &str) -> Result<(), Error> {
+        if docs.is_empty() {
+            return Ok(());
+        }
+        for docs_line in docs.lines() {
+            w.write_line(format!("// {}", docs_line))?;
         }
         Ok(())
     }
