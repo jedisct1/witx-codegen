@@ -56,7 +56,8 @@ pub fn WasiMutSlice(comptime T) type {
     };
 }
 
-/// ---------------------- Module: [wasi_ephemeral_crypto_symmetric] ----------------------
+// ---------------------- Module: [wasi_ephemeral_crypto_symmetric] ----------------------
+
 /// Error codes.
 pub const CryptoErrno = extern enum(u16) {
     SUCCESS = 0,

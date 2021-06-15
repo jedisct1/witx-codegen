@@ -107,7 +107,7 @@ impl WasiString {
     }
 }
 
-/// ---------------------- Module: [wasi_ephemeral_crypto_symmetric] ----------------------
+// ---------------------- Module: [wasi_ephemeral_crypto_symmetric] ----------------------
 
 /// Error codes.
 pub type CryptoErrno = u16;
