@@ -8,13 +8,15 @@
 
 WITX is a way to describe types and function interfaces for WebAssembly modules.
 
-From this, code generators can produce code to access data and call functions from different languages using the same layout and calling conventions.
+From this, code generators can produce code to access data, call or implement functions from different languages using the same layout and calling conventions.
+
+WITX-CodeGen doesn't do transformations when functions are called. Instead, it exposes types that have the same layout in all languages, like a zero-copy serialization format. Data can thus be easily shared between guests and hosts without any overhead.
 
 The generated code is compatible with the WebAssembly standard APIs ([WASI](https://wasi.dev)).
 
 This tool uses the next (as on June 9th, 2021) revision of the format definition, that will eventually be required for interface types.
 
-`witx-codegen` is currently written in Rust, but it is language-agnostic. The output is meant to be simple to understand.
+`witx-codegen` is currently written in Rust, but it is totally language-agnostic. It is also compatible with all WebAssembly runtimes. The generated code is optimized for simplicity and readability.
 
 The tool can also produce different documentation formats.
 
@@ -68,6 +70,8 @@ ARGS:
 * [ ] C/C++
 * [ ] Swift
 * [ ] HTML documentation
+
+Support for additional languages is more than welcome!
 
 ## Example inputs
 
