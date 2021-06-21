@@ -14,7 +14,7 @@ readme = "README.md"
 [dependencies]
 clap = { version = "2.33", features = ["wrap_help"] }
 convert_case = "0.4"
-witx = { package = "witnext", version = "0.10.0-beta2" }
+witx = { package = "witnext", version = "0.10.0-beta3" }
 
 [package.metadata.deb]
 extended-description = """\
