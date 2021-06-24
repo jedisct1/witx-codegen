@@ -110,7 +110,7 @@ impl ZigGenerator {
         w.write_line(format!("pub const {} = extern struct {{", name.as_type()))?;
         {
             let mut w = w.new_block();
-            w.write_line(format!("tag: extern enum({}) {{", tag_repr.as_lang()))?;
+            w.write_line(format!("tag: enum({}) {{", tag_repr.as_lang()))?;
             {
                 let mut w = w.new_block();
                 for (i, member) in union_.members.iter().enumerate() {

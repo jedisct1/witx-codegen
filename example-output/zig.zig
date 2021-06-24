@@ -59,7 +59,7 @@ pub fn WasiMutSlice(comptime T) type {
 // ---------------------- Module: [wasi_ephemeral_crypto_symmetric] ----------------------
 
 /// Error codes.
-pub const CryptoErrno = extern enum(u16) {
+pub const CryptoErrno = enum(u16) {
     SUCCESS = 0,
     GUEST_ERROR = 1,
     NOT_IMPLEMENTED = 2,
@@ -94,7 +94,7 @@ pub const CryptoErrno = extern enum(u16) {
 };
 
 /// Encoding to use for importing or exporting a key pair.
-pub const KeypairEncoding = extern enum(u16) {
+pub const KeypairEncoding = enum(u16) {
     RAW = 0,
     PKCS_8 = 1,
     PEM = 2,
@@ -102,7 +102,7 @@ pub const KeypairEncoding = extern enum(u16) {
 };
 
 /// Encoding to use for importing or exporting a public key.
-pub const PublickeyEncoding = extern enum(u16) {
+pub const PublickeyEncoding = enum(u16) {
     RAW = 0,
     PKCS_8 = 1,
     PEM = 2,
@@ -112,7 +112,7 @@ pub const PublickeyEncoding = extern enum(u16) {
 };
 
 /// Encoding to use for importing or exporting a secret key.
-pub const SecretkeyEncoding = extern enum(u16) {
+pub const SecretkeyEncoding = enum(u16) {
     RAW = 0,
     PKCS_8 = 1,
     PEM = 2,
@@ -122,13 +122,13 @@ pub const SecretkeyEncoding = extern enum(u16) {
 };
 
 /// Encoding to use for importing or exporting a signature.
-pub const SignatureEncoding = extern enum(u16) {
+pub const SignatureEncoding = enum(u16) {
     RAW = 0,
     DER = 1,
 };
 
 /// An algorithm category.
-pub const AlgorithmType = extern enum(u16) {
+pub const AlgorithmType = enum(u16) {
     SIGNATURES = 0,
     SYMMETRIC = 1,
     KEY_EXCHANGE = 2,
@@ -217,7 +217,7 @@ pub const SymmetricKey = WasiHandle;
 pub const SymmetricTag = WasiHandle;
 
 /// Options index, only required by the Interface Types translation layer.
-pub const OptOptionsU = extern enum(u8) {
+pub const OptOptionsU = enum(u8) {
     SOME = 0,
     NONE = 1,
 };
@@ -226,7 +226,7 @@ pub const OptOptionsU = extern enum(u8) {
 ///
 /// This union simulates an `Option<Options>` type to make the `options` parameter of some functions optional.
 pub const OptOptions = extern struct {
-    tag: extern enum(u8) {
+    tag: enum(u8) {
         some = 0,
         none = 1,
     },
@@ -265,7 +265,7 @@ pub const OptOptions = extern struct {
 };
 
 /// Symmetric key index, only required by the Interface Types translation layer.
-pub const OptSymmetricKeyU = extern enum(u8) {
+pub const OptSymmetricKeyU = enum(u8) {
     SOME = 0,
     NONE = 1,
 };
@@ -274,7 +274,7 @@ pub const OptSymmetricKeyU = extern enum(u8) {
 ///
 /// This union simulates an `Option<SymmetricKey>` type to make the `symmetric_key` parameter of some functions optional.
 pub const OptSymmetricKey = extern struct {
-    tag: extern enum(u8) {
+    tag: enum(u8) {
         some = 0,
         none = 1,
     },

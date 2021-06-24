@@ -140,7 +140,7 @@ impl ZigGenerator {
     ) -> Result<(), Error> {
         let repr = enum_.repr.as_ref();
         w.write_line(format!(
-            "pub const {} = extern enum({}) {{",
+            "pub const {} = enum({}) {{",
             name.as_type(),
             repr.as_lang()
         ))?;
