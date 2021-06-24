@@ -33,7 +33,7 @@ pub const WasiString = extern struct {
     }
 };
 
-pub fn WasiSlice(comptime T) type {
+pub fn WasiSlice(comptime T: type) type {
     return extern struct {
         ptr: WasiPtr(T),
         len: usize,
@@ -48,7 +48,7 @@ pub fn WasiSlice(comptime T) type {
     };
 }
 
-pub fn WasiMutSlice(comptime T) type {
+pub fn WasiMutSlice(comptime T: type) type {
     return extern struct {
         ptr: WasiMutPtr(T),
         len: usize,
