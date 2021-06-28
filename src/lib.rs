@@ -54,6 +54,21 @@ pub struct Config {
     pub flags: Options,
 }
 
+impl Default for Config {
+    fn default() -> Self {
+        Self{
+            module_name: None,
+            output_file: None,
+            witx_files: vec![],
+            output_type: OutputType::Doc,
+            flags: Options{
+                skip_header: false,
+                skip_imports: false,
+            }
+        }
+    }
+}
+
 /// Options for WITX generators
 #[derive(Debug, Clone, PartialEq, StructOpt)]
 pub struct Options {
