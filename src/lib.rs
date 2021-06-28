@@ -1,13 +1,12 @@
 #![forbid(unsafe_code)]
 
-use std::io::Write;
 use std::fs::File;
+use std::io::Write;
 
 use structopt::StructOpt;
 
 use strum::VariantNames;
 use strum_macros::{Display, EnumString, EnumVariantNames};
-
 
 mod assemblyscript;
 mod astype;
@@ -28,7 +27,7 @@ pub enum OutputType {
     Rust,
     Zig,
     Overview,
-    #[strum(serialize="doc", serialize="markdown")]
+    #[strum(serialize = "doc", serialize = "markdown")]
     Doc,
 }
 
@@ -56,15 +55,15 @@ pub struct Config {
 
 impl Default for Config {
     fn default() -> Self {
-        Self{
+        Self {
             module_name: None,
             output_file: None,
             witx_files: vec![],
             output_type: OutputType::Doc,
-            flags: Options{
+            flags: Options {
                 skip_header: false,
                 skip_imports: false,
-            }
+            },
         }
     }
 }
@@ -75,7 +74,7 @@ pub struct Options {
     /// Ignores imported types and functions
     #[structopt(long)]
     skip_imports: bool,
-    
+
     /// Do not generate a header
     #[structopt(long)]
     skip_header: bool,
@@ -105,7 +104,6 @@ fn get_generator<T: Write>(module: Option<&str>, output: OutputType) -> Box<dyn 
 
 /// Generate sources from WITX files using the provided config
 pub fn generate(cfg: &Config) -> Result<(), Error> {
-
     // generate all or generate no header no imports
 
     // Setup writer based on output file config
@@ -126,8 +124,7 @@ pub fn generate(cfg: &Config) -> Result<(), Error> {
         // Generate output file
         generator.generate(&mut writer, witx, &flags).unwrap();
 
-        // Update flags
-        // TODO: not sure why this is required?
+        // Generate definitions only once if we have multiple input files
         flags.skip_imports = true;
         flags.skip_header = true;
     }

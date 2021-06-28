@@ -1,6 +1,4 @@
-
-
-use witx_codegen::{Config, OutputType, generate};
+use witx_codegen::{generate, Config, OutputType};
 
 const WITX_SOURCES: &[&str] = &[
     "test_module.witx",
@@ -24,7 +22,7 @@ fn witx_parse() {
 
 #[test]
 fn generate_rust() {
-    let mut c = Config{
+    let mut c = Config {
         output_type: OutputType::Rust,
         output_file: Some("/dev/null".to_string()),
         ..Default::default()
@@ -42,7 +40,7 @@ fn generate_rust() {
 
 #[test]
 fn generate_zig() {
-    let mut c = Config{
+    let mut c = Config {
         output_type: OutputType::Zig,
         output_file: Some("/dev/null".to_string()),
         ..Default::default()
@@ -60,7 +58,7 @@ fn generate_zig() {
 
 #[test]
 fn generate_doc() {
-    let mut c = Config{
+    let mut c = Config {
         output_type: OutputType::Doc,
         output_file: Some("/dev/null".to_string()),
         ..Default::default()
@@ -78,7 +76,7 @@ fn generate_doc() {
 
 #[test]
 fn generate_assemblyscript() {
-    let mut c = Config{
+    let mut c = Config {
         output_type: OutputType::AssemblyScript,
         output_file: Some("/dev/null".to_string()),
         ..Default::default()
