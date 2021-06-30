@@ -18,10 +18,10 @@ jobs:
         run: cargo test --verbose
       - name: Run functional tests
         run: |
-          cargo run -- --output-type=overview test/*.witx > /dev/null
-          cargo run -- --output-type=markdown test/*.witx > /dev/null
-          cargo run -- --output-type=assemblyscript test/*.witx > /dev/null
-          cargo run -- --output-type=zig test/*.witx > /dev/null
-          cargo run -- --output-type=rust test/*.witx > /dev/null
+          cargo run -- --output-type=overview tests/*.witx > /dev/null
+          cargo run -- --output-type=markdown tests/*.witx > /dev/null
+          cargo run -- --output-type=assemblyscript tests/*.witx > /dev/null
+          cargo run -- --output-type=zig tests/*.witx > /dev/null
+          cargo run -- --output-type=rust tests/*.witx > /dev/null
       - name: Check that crates version works
         run: cargo install witx-docgen --debug
