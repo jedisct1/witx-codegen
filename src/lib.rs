@@ -23,6 +23,7 @@ pub use crate::error::*;
 #[derive(Debug, Copy, Clone, PartialEq, Display, EnumString, EnumVariantNames)]
 #[strum(serialize_all = "snake_case")]
 pub enum OutputType {
+    #[strum(serialize = "assemblyscript")]
     AssemblyScript,
     Rust,
     Zig,
