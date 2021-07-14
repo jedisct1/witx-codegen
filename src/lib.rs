@@ -73,11 +73,11 @@ impl Default for Config {
 #[derive(Debug, Clone, PartialEq, StructOpt)]
 pub struct Options {
     /// Ignores imported types and functions
-    #[structopt(long)]
+    #[structopt(short = "I", long)]
     skip_imports: bool,
 
     /// Do not generate a header
-    #[structopt(long)]
+    #[structopt(short = "H", long)]
     skip_header: bool,
 }
 
