@@ -42,8 +42,8 @@ USAGE:
 
 FLAGS:
     -h, --help            Prints help information
-    -H, --skip-header     Do not generate a header
-    -I, --skip-imports    Ignores imported types and functions
+        --skip-header     Do not generate a header
+        --skip-imports    Ignores imported types and functions
     -V, --version         Prints version information
 
 OPTIONS:
