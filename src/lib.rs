@@ -16,6 +16,7 @@ mod overview;
 mod pretty_writer;
 mod rust;
 mod zig;
+mod cpp;
 
 pub use crate::error::*;
 
@@ -30,6 +31,7 @@ pub enum OutputType {
     Overview,
     #[strum(serialize = "doc", serialize = "markdown")]
     Doc,
+    Cpp
 }
 
 #[derive(Debug, Clone, PartialEq, StructOpt)]
@@ -91,7 +93,7 @@ pub trait Generator<T: Write> {
     ) -> Result<(), Error>;
 }
 
-fn get_generator<T: Write>(module: Option<&str>, output: OutputType) -> Box<dyn Generator<T>> {
+fn get_generator<T: Write>(module: Option<&str>, output: OutputType)  -> Box<dyn Generator<T>> {
     let m = module.map(|v| v.to_string());
 
     match output {
@@ -100,6 +102,7 @@ fn get_generator<T: Write>(module: Option<&str>, output: OutputType) -> Box<dyn 
         OutputType::Rust => Box::new(rust::RustGenerator::new(m)),
         OutputType::Overview => Box::new(overview::OverviewGenerator::new(m)),
         OutputType::Doc => Box::new(doc::DocGenerator::new(m)),
+        OutputType::Cpp => Box::new(cpp::CppGenerator::new(m)),
     }
 }
 

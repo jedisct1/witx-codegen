@@ -91,3 +91,21 @@ fn generate_assemblyscript() {
         generate(&c).unwrap();
     }
 }
+
+#[test]
+fn generate_cpp() {
+    let mut c = Config {
+        output_type: OutputType::Cpp,
+        output_file: Some("/dev/null".to_string()),
+        ..Default::default()
+    };
+
+    for s in WITX_SOURCES {
+        println!("Generate {}", s);
+
+        let p = format!("{}/tests/{}", WITX_DIR, s);
+        c.witx_files = vec![p];
+
+        generate(&c).unwrap();
+    }
+}
