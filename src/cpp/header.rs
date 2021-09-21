@@ -10,9 +10,9 @@ impl CppGenerator {
  */
 #include <cstdint>
 #include <cstring>
-#include <string_view>
 #include <tuple>
 #include <cstddef>
+#include <variant>
 
 // namespace WitxCodegenHeader {
 using WasiHandle = int32_t;
@@ -20,6 +20,9 @@ template <typename T> using WasiPtr = T *const;
 template <typename T> using WasiMutPtr = T *;
 using WasiStringBytesPtr = WasiPtr<unsigned char>;
 
+template <typename R, typename E> using Expected = std::variant<R, E>;
+
+using WasiStringBytesPtr = WasiPtr<unsigned char>;
 struct WasiString {
     WasiStringBytesPtr ptr;
     size_t length;

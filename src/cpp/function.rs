@@ -51,13 +51,35 @@ impl CppGenerator {
             let name = "result_ptr";
             results.push((name.to_string(), ok_type));
         }
+        
+        let mut results_decomposed = vec![];
         for result in &results {
             let mut decomposed = result.1.decompose(&result.0, true);
-            params_decomposed.append(&mut decomposed);
+            results_decomposed.append(&mut decomposed);
         }
 
+        let results_decomposed_deref = results_decomposed
+            .iter()
+            .map(|result_ptr_type| match result_ptr_type.type_.as_ref() {
+                ASType::MutPtr(result_type) => ASTypeDecomposed {
+                    name: result_ptr_type.name.clone(),
+                    type_: result_type.clone(),
+                },
+                _ => panic!("Result type is not a pointer"),
+            })
+            .collect::<Vec<_>>();
+        let results_set = results_decomposed_deref
+            .iter()
+            .map(|result| result.type_.as_lang())
+            .collect::<Vec<_>>();
+        let rust_fn_result_str = match results_set.len() {
+            0 => "std::monostate".to_string(),
+            1 => results_set[0].clone(),
+            _ => format!("std::tuple<{}>", results_set.join(", ")),
+        };
+        
         w.indent()?
-            .write(format!("{} {}(",result.error_type.as_lang(), name.as_fn()))?;
+            .write(format!("Expected<{}, {}> {}(", rust_fn_result_str, result.error_type.as_lang() ,name.as_fn()))?;
 
         if !params_decomposed.is_empty() || !results.is_empty() {
             w.eol()?;
@@ -81,7 +103,7 @@ impl CppGenerator {
 
         let signature_witx = func_witx.wasm_signature(witx::CallMode::DefinedImport);
         let params_count_witx = signature_witx.params.len() + signature_witx.results.len();
-        assert_eq!(params_count_witx, params_decomposed.len() + 1);
+        assert_eq!(params_count_witx, params_decomposed.len() + results_decomposed.len() + 1);
 
         Ok(())
     }
