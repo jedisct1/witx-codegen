@@ -84,7 +84,11 @@ impl AssemblyScriptGenerator {
         }
         w.write_line("/**")?;
         for docs_line in docs.lines() {
-            w.write_line(format!(" * {}", docs_line))?;
+            if docs_line.is_empty() {
+                w.write_line(" *")?;
+            } else {
+                w.write_line(format!(" * {}", docs_line))?;
+            }
         }
         w.write_line(" */")?;
         Ok(())
@@ -96,7 +100,11 @@ impl AssemblyScriptGenerator {
         }
         w.write_line("/*")?;
         for docs_line in docs.lines() {
-            w.write_line(format!("* {}", docs_line))?;
+            if docs_line.is_empty() {
+                w.write_line(" *")?;
+            } else {
+                w.write_line(format!(" * {}", docs_line))?;
+            }
         }
         w.write_line(" */")?;
         Ok(())

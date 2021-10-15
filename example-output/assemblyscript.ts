@@ -56,7 +56,7 @@ export class WasiMutSlice<T> {
     }
 }
 
-/**
+/*
  * ---------------------- Module: [wasi_ephemeral_crypto_symmetric] ----------------------
  */
 
@@ -466,6 +466,8 @@ export class OptSymmetricKey {
  * This function may return `unsupported_feature` if key generation is not supported by the host for the chosen algorithm, or `unsupported_algorithm` if the algorithm is not supported by the host.
  */
 // @ts-ignore: decorator
+@unsafe
+// @ts-ignore: decorator
 @external("wasi_ephemeral_crypto_symmetric", "symmetric_key_generate")
 export declare function symmetricKeyGenerate(
     algorithm_ptr: WasiPtr<Char8>,
@@ -481,6 +483,8 @@ export declare function symmetricKeyGenerate(
  *
  * The function may also return `unsupported_algorithm` if the algorithm is not supported by the host.
  */
+// @ts-ignore: decorator
+@unsafe
 // @ts-ignore: decorator
 @external("wasi_ephemeral_crypto_symmetric", "symmetric_key_import")
 export declare function symmetricKeyImport(
@@ -499,6 +503,8 @@ export declare function symmetricKeyImport(
  * May return `prohibited_operation` if this operation is denied.
  */
 // @ts-ignore: decorator
+@unsafe
+// @ts-ignore: decorator
 @external("wasi_ephemeral_crypto_symmetric", "symmetric_key_export")
 export declare function symmetricKeyExport(
     symmetric_key: SymmetricKey,
@@ -510,6 +516,8 @@ export declare function symmetricKeyExport(
  *
  * Objects are reference counted. It is safe to close an object immediately after the last function needing it is called.
  */
+// @ts-ignore: decorator
+@unsafe
 // @ts-ignore: decorator
 @external("wasi_ephemeral_crypto_symmetric", "symmetric_key_close")
 export declare function symmetricKeyClose(
@@ -532,6 +540,8 @@ export declare function symmetricKeyClose(
  * This is also an optional import, meaning that the function may not even exist.
  */
 // @ts-ignore: decorator
+@unsafe
+// @ts-ignore: decorator
 @external("wasi_ephemeral_crypto_symmetric", "symmetric_key_generate_managed")
 export declare function symmetricKeyGenerateManaged(
     secrets_manager: SecretsManager,
@@ -550,6 +560,8 @@ export declare function symmetricKeyGenerateManaged(
  *
  * The function returns `overflow` if the supplied buffer is too small.
  */
+// @ts-ignore: decorator
+@unsafe
 // @ts-ignore: decorator
 @external("wasi_ephemeral_crypto_symmetric", "symmetric_key_store_managed")
 export declare function symmetricKeyStoreManaged(
@@ -583,6 +595,8 @@ export declare function symmetricKeyStoreManaged(
  * This is an optional import, meaning that the function may not even exist.
  */
 // @ts-ignore: decorator
+@unsafe
+// @ts-ignore: decorator
 @external("wasi_ephemeral_crypto_symmetric", "symmetric_key_replace_managed")
 export declare function symmetricKeyReplaceManaged(
     secrets_manager: SecretsManager,
@@ -599,6 +613,8 @@ export declare function symmetricKeyReplaceManaged(
  *
  * This is an optional import, meaning that the function may not even exist.
  */
+// @ts-ignore: decorator
+@unsafe
 // @ts-ignore: decorator
 @external("wasi_ephemeral_crypto_symmetric", "symmetric_key_id")
 export declare function symmetricKeyId(
@@ -619,6 +635,8 @@ export declare function symmetricKeyId(
  *
  * This is an optional import, meaning that the function may not even exist.
  */
+// @ts-ignore: decorator
+@unsafe
 // @ts-ignore: decorator
 @external("wasi_ephemeral_crypto_symmetric", "symmetric_key_from_id")
 export declare function symmetricKeyFromId(
@@ -808,6 +826,8 @@ export declare function symmetricKeyFromId(
  * ```
  */
 // @ts-ignore: decorator
+@unsafe
+// @ts-ignore: decorator
 @external("wasi_ephemeral_crypto_symmetric", "symmetric_state_open")
 export declare function symmetricStateOpen(
     algorithm_ptr: WasiPtr<Char8>,
@@ -826,6 +846,8 @@ export declare function symmetricStateOpen(
  *
  * It may also return `unsupported_option` if the option doesn't exist for the chosen algorithm.
  */
+// @ts-ignore: decorator
+@unsafe
 // @ts-ignore: decorator
 @external("wasi_ephemeral_crypto_symmetric", "symmetric_state_options_get")
 export declare function symmetricStateOptionsGet(
@@ -847,6 +869,8 @@ export declare function symmetricStateOptionsGet(
  * It may also return `unsupported_option` if the option doesn't exist for the chosen algorithm.
  */
 // @ts-ignore: decorator
+@unsafe
+// @ts-ignore: decorator
 @external("wasi_ephemeral_crypto_symmetric", "symmetric_state_options_get_u64")
 export declare function symmetricStateOptionsGetU64(
     handle: SymmetricState,
@@ -860,6 +884,8 @@ export declare function symmetricStateOptionsGetU64(
  *
  * Objects are reference counted. It is safe to close an object immediately after the last function needing it is called.
  */
+// @ts-ignore: decorator
+@unsafe
 // @ts-ignore: decorator
 @external("wasi_ephemeral_crypto_symmetric", "symmetric_state_close")
 export declare function symmetricStateClose(
@@ -880,6 +906,8 @@ export declare function symmetricStateClose(
  *
  * If too much data has been fed for the algorithm, `overflow` may be thrown.
  */
+// @ts-ignore: decorator
+@unsafe
 // @ts-ignore: decorator
 @external("wasi_ephemeral_crypto_symmetric", "symmetric_state_absorb")
 export declare function symmetricStateAbsorb(
@@ -902,6 +930,8 @@ export declare function symmetricStateAbsorb(
  * In that case, the guest should retry with the same parameters until the function completes.
  */
 // @ts-ignore: decorator
+@unsafe
+// @ts-ignore: decorator
 @external("wasi_ephemeral_crypto_symmetric", "symmetric_state_squeeze")
 export declare function symmetricStateSqueeze(
     handle: SymmetricState,
@@ -922,6 +952,8 @@ export declare function symmetricStateSqueeze(
  * In that case, the guest should retry with the same parameters until the function completes.
  */
 // @ts-ignore: decorator
+@unsafe
+// @ts-ignore: decorator
 @external("wasi_ephemeral_crypto_symmetric", "symmetric_state_squeeze_tag")
 export declare function symmetricStateSqueezeTag(
     handle: SymmetricState,
@@ -936,6 +968,8 @@ export declare function symmetricStateSqueezeTag(
  *
  * `invalid_operation` is returned for algorithms not supporting this operation.
  */
+// @ts-ignore: decorator
+@unsafe
 // @ts-ignore: decorator
 @external("wasi_ephemeral_crypto_symmetric", "symmetric_state_squeeze_key")
 export declare function symmetricStateSqueezeKey(
@@ -957,6 +991,8 @@ export declare function symmetricStateSqueezeKey(
  * For a decryption operation, the size of the buffer that will store the decrypted data must be `ciphertext_len - symmetric_state_max_tag_len()`.
  */
 // @ts-ignore: decorator
+@unsafe
+// @ts-ignore: decorator
 @external("wasi_ephemeral_crypto_symmetric", "symmetric_state_max_tag_len")
 export declare function symmetricStateMaxTagLen(
     handle: SymmetricState,
@@ -976,6 +1012,8 @@ export declare function symmetricStateMaxTagLen(
  *
  * `invalid_operation` is returned for algorithms not supporting encryption.
  */
+// @ts-ignore: decorator
+@unsafe
 // @ts-ignore: decorator
 @external("wasi_ephemeral_crypto_symmetric", "symmetric_state_encrypt")
 export declare function symmetricStateEncrypt(
@@ -1000,6 +1038,8 @@ export declare function symmetricStateEncrypt(
  *
  * `invalid_operation` is returned for algorithms not supporting encryption.
  */
+// @ts-ignore: decorator
+@unsafe
 // @ts-ignore: decorator
 @external("wasi_ephemeral_crypto_symmetric", "symmetric_state_encrypt_detached")
 export declare function symmetricStateEncryptDetached(
@@ -1026,6 +1066,8 @@ export declare function symmetricStateEncryptDetached(
  *
  * `invalid_operation` is returned for algorithms not supporting encryption.
  */
+// @ts-ignore: decorator
+@unsafe
 // @ts-ignore: decorator
 @external("wasi_ephemeral_crypto_symmetric", "symmetric_state_decrypt")
 export declare function symmetricStateDecrypt(
@@ -1054,6 +1096,8 @@ export declare function symmetricStateDecrypt(
  * `invalid_operation` is returned for algorithms not supporting encryption.
  */
 // @ts-ignore: decorator
+@unsafe
+// @ts-ignore: decorator
 @external("wasi_ephemeral_crypto_symmetric", "symmetric_state_decrypt_detached")
 export declare function symmetricStateDecryptDetached(
     handle: SymmetricState,
@@ -1074,6 +1118,8 @@ export declare function symmetricStateDecryptDetached(
  * `invalid_operation` is returned for algorithms not supporting ratcheting.
  */
 // @ts-ignore: decorator
+@unsafe
+// @ts-ignore: decorator
 @external("wasi_ephemeral_crypto_symmetric", "symmetric_state_ratchet")
 export declare function symmetricStateRatchet(
     handle: SymmetricState
@@ -1084,6 +1130,8 @@ export declare function symmetricStateRatchet(
  *
  * This function can be used by a guest to allocate the correct buffer size to copy a computed authentication tag.
  */
+// @ts-ignore: decorator
+@unsafe
 // @ts-ignore: decorator
 @external("wasi_ephemeral_crypto_symmetric", "symmetric_tag_len")
 export declare function symmetricTagLen(
@@ -1107,6 +1155,8 @@ export declare function symmetricTagLen(
  *
  * Otherwise, it returns the number of bytes that have been copied.
  */
+// @ts-ignore: decorator
+@unsafe
 // @ts-ignore: decorator
 @external("wasi_ephemeral_crypto_symmetric", "symmetric_tag_pull")
 export declare function symmetricTagPull(
@@ -1134,6 +1184,8 @@ export declare function symmetricTagPull(
  * ```
  */
 // @ts-ignore: decorator
+@unsafe
+// @ts-ignore: decorator
 @external("wasi_ephemeral_crypto_symmetric", "symmetric_tag_verify")
 export declare function symmetricTagVerify(
     symmetric_tag: SymmetricTag,
@@ -1148,6 +1200,8 @@ export declare function symmetricTagVerify(
  *
  * Objects are reference counted. It is safe to close an object immediately after the last function needing it is called.
  */
+// @ts-ignore: decorator
+@unsafe
 // @ts-ignore: decorator
 @external("wasi_ephemeral_crypto_symmetric", "symmetric_tag_close")
 export declare function symmetricTagClose(

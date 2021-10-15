@@ -57,6 +57,8 @@ impl AssemblyScriptGenerator {
         }
 
         w.write_line("// @ts-ignore: decorator")?
+            .write_line("@unsafe")?
+            .write_line("// @ts-ignore: decorator")?
             .write_line(format!("@external(\"{}\", \"{}\")", module_name, name))?
             .indent()?
             .write(format!("export declare function {}(", name.as_fn()))?;
