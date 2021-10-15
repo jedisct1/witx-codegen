@@ -10,6 +10,7 @@ export type WasiPtr<T> = usize;
 export type WasiMutPtr<T> = usize;
 export type WasiStringBytesPtr = WasiPtr<Char8>;
 
+// @ts-ignore: decorator
 @unmanaged
 export class WasiString {
     ptr: WasiStringBytesPtr;
@@ -29,6 +30,7 @@ export class WasiString {
     }
 }
 
+// @ts-ignore: decorator
 @unmanaged
 export class WasiSlice<T> {
     ptr: WasiPtr<T>;
@@ -41,6 +43,7 @@ export class WasiSlice<T> {
     }
 }
 
+// @ts-ignore: decorator
 @unmanaged
 export class WasiMutSlice<T> {
     ptr: WasiMutPtr<T>;

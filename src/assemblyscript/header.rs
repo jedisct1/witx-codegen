@@ -21,6 +21,7 @@ export type WasiStringBytesPtr = WasiPtr<Char8>;
         )?;
         w.write_lines(
             "
+// @ts-ignore: decorator
 @unmanaged
 export class WasiString {
     ptr: WasiStringBytesPtr;
@@ -40,6 +41,7 @@ export class WasiString {
     }
 }
 
+// @ts-ignore: decorator
 @unmanaged
 export class WasiSlice<T> {
     ptr: WasiPtr<T>;
@@ -52,6 +54,7 @@ export class WasiSlice<T> {
     }
 }
 
+// @ts-ignore: decorator
 @unmanaged
 export class WasiMutSlice<T> {
     ptr: WasiMutPtr<T>;
