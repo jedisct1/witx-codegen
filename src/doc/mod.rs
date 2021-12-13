@@ -104,7 +104,7 @@ impl DocGenerator {
         }
         w.eob()?;
         for docs_line in docs.lines() {
-            let docs_line = docs_line.trim().replace("<", "\\<").replace(">", "\\>");
+            let docs_line = docs_line.trim().replace('<', "\\<").replace('>', "\\>");
             w.write_line(format!("> {}", docs_line))?;
         }
         w.eob()?;
