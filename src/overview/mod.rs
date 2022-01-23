@@ -120,7 +120,7 @@ impl OverviewGenerator {
         {
             let mut w = w.new_block();
             for choice in &enum_.choices {
-                w.write_line(format!("- {}: {}", choice.name.as_const(), name.as_type(),))?;
+                w.write_line(format!("- {}: {}", choice.name.as_const(), choice.value))?;
             }
         }
         Ok(())

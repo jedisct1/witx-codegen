@@ -16,15 +16,15 @@ pub trait Normalize {
     }
 
     fn as_var(&self) -> String {
-        format!("`{}`", self.as_str())
+        self.as_str().to_string()
     }
 
     fn as_const(&self) -> String {
-        format!("`{}`", self.as_str())
+        self.as_str().to_string()
     }
 
     fn as_namespace(&self) -> String {
-        format!("`{}`", self.as_str())
+        self.as_str().to_string()
     }
 }
 
