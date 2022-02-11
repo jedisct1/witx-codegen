@@ -38,7 +38,7 @@ pub trait Normalize {
     }
 
     fn as_var(&self) -> String {
-        self.as_str().to_case(Case::Snake)
+        escape_reserved_word(&self.as_str().to_case(Case::Snake))
     }
 
     fn as_const(&self) -> String {
@@ -108,3 +108,66 @@ impl ToLanguageRepresentation for ASType {
         self
     }
 }
+
+pub fn escape_reserved_word(word: &str) -> String {
+    if RESERVED.iter().any(|k| *k == word) {
+        // If the camel-cased string matched any strict or reserved keywords, then
+        // append a trailing underscore to the identifier we generate.
+        format!("{}_", word)
+    } else {
+        word.to_string() // Otherwise, use the string as is.
+    }
+}
+
+/// Reserved Keywords.
+/// 
+/// Source: [ECMAScript 2022 Language Specification](https://tc39.es/ecma262/#sec-keywords-and-reserved-words)
+const RESERVED: &[&str] = &[
+    "await",
+    "break",
+    "case",
+    "catch",
+    "class",
+    "const",
+    "continue",
+    "debugger",
+    "default",
+    "delete",
+    "do",
+    "else",
+    "enum",
+    "export",
+    "extends",
+    "false",
+    "finally",
+    "for",
+    "function",
+    "if",
+    "import",
+    "in",
+    "instanceof",
+    "new",
+    "null",
+    "return",
+    "super",
+    "switch",
+    "this",
+    "throw",
+    "true",
+    "try",
+    "typeof",
+    "var",
+    "void",
+    "while",
+    "with",
+    "yield",
+    "let",
+    "static",
+    "implements",
+    "interface",
+    "package",
+    "private",
+    "protected",
+    "and",
+    "public",
+];

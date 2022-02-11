@@ -38,7 +38,7 @@ pub trait Normalize {
     }
 
     fn as_var(&self) -> String {
-        self.as_str().to_case(Case::Snake)
+        escape_reserved_word(&self.as_str().to_case(Case::Snake))
     }
 
     fn as_const(&self) -> String {
@@ -106,3 +106,70 @@ impl ToLanguageRepresentation for ASType {
         self
     }
 }
+
+/// Checks the given word against a list of reserved keywords. 
+/// If the given word conflicts with a keyword, a trailing underscore will be appended.
+pub fn escape_reserved_word(word: &str) -> String {
+    if RESERVED.iter().any(|k| *k == word) {
+        // If the camel-cased string matched any strict or reserved keywords, then
+        // append a trailing underscore to the identifier we generate.
+        format!("{}_", word)
+    } else {
+        word.to_string() // Otherwise, use the string as is.
+    }
+}
+
+/// Reserved Keywords.
+/// 
+/// Source: [Zig Language Reference](https://ziglang.org/documentation/master/#toc-Keyword-Reference)
+const RESERVED: &[&str] = &[
+    "align",
+    "allowzero",
+    "and",
+    "anyframe",
+    "anytype",
+    "asm",
+    "async",
+    "await",
+    "break",
+    "catch",
+    "comptime",
+    "const",
+    "continue",
+    "defer",
+    "else",
+    "enum",
+    "errdefer",
+    "error",
+    "export",
+    "extern",
+    "false",
+    "fn",
+    "for",
+    "if",
+    "inline",
+    "noalias",
+    "nosuspend",
+    "null",
+    "or",
+    "orelse",
+    "packed",
+    "pub",
+    "resume",
+    "return",
+    "linksection",
+    "struct",
+    "suspend",
+    "switch",
+    "test",
+    "threadlocal",
+    "true",
+    "try",
+    "undefined",
+    "union",
+    "unreachable",
+    "usingnamespace",
+    "var",
+    "volatile",
+    "while",
+];

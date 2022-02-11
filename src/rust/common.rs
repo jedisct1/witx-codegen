@@ -30,15 +30,15 @@ pub trait Normalize {
     }
 
     fn as_fn(&self) -> String {
-        self.as_str().to_case(Case::Snake)
+        escape_reserved_word(&self.as_str().to_case(Case::Snake))
     }
 
     fn as_fn_suffix(&self) -> String {
-        self.as_str().to_case(Case::Snake)
+        escape_reserved_word(&self.as_str().to_case(Case::Snake))
     }
 
     fn as_var(&self) -> String {
-        self.as_str().to_case(Case::Snake)
+        escape_reserved_word(&self.as_str().to_case(Case::Snake))
     }
 
     fn as_const(&self) -> String {
@@ -108,3 +108,39 @@ impl ToLanguageRepresentation for ASType {
         self
     }
 }
+
+/// Checks the given word against a list of reserved keywords. 
+/// If the given word conflicts with a keyword, a trailing underscore will be appended.
+/// 
+/// Adapted from [wiggle](https://docs.rs/wiggle/latest/wiggle/index.html)
+pub fn escape_reserved_word(word: &str) -> String {
+    if STRICT.iter().chain(RESERVED).any(|k| *k == word) {
+        // If the camel-cased string matched any strict or reserved keywords, then
+        // append a trailing underscore to the identifier we generate.
+        format!("{}_", word)
+    } else {
+        word.to_string() // Otherwise, use the string as is.
+    }
+}
+
+/// Strict keywords.
+///
+/// Source: [The Rust Reference][https://doc.rust-lang.org/reference/keywords.html#strict-keywords]
+const STRICT: &[&str] = &[
+    "as", "async", "await", "break", "const", "continue", "crate", "dyn", "else", "enum", "extern",
+    "false", "fn", "for", "if", "impl", "in", "let", "loop", "match", "mod", "move", "mut", "pub",
+    "ref", "return", "self", "Self", "static", "struct", "super", "trait", "true", "type",
+    "unsafe", "use", "where", "while",
+];
+
+/// Reserved keywords.
+/// 
+/// These keywords aren't used yet, but they are reserved for future use. They have the same
+/// restrictions as strict keywords. The reasoning behind this is to make current programs
+/// forward compatible with future versions of Rust by forbidding them to use these keywords.
+///
+/// Source: [The Rust Reference](https://doc.rust-lang.org/reference/keywords.html#reserved-keywords)
+const RESERVED: &[&str] = &[
+    "abstract", "become", "box", "do", "final", "macro", "override", "priv", "try", "typeof",
+    "unsized", "virtual", "yield",
+];
