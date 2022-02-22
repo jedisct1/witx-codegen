@@ -15,8 +15,8 @@ readme = "README.md"
 anyhow = "1.0.51"
 convert_case = "0.5.0"
 structopt = "0.3.25"
-strum = "0.23.0"
-strum_macros = "0.23.1"
+strum = "0.24.0"
+strum_macros = "0.24.0"
 witx = { package = "witnext", version = "0.10.0-beta3" }
 
 [package.metadata.deb]
