@@ -107,7 +107,7 @@ impl ToLanguageRepresentation for ASType {
     }
 }
 
-/// Checks the given word against a list of reserved keywords. 
+/// Checks the given word against a list of reserved keywords.
 /// If the given word conflicts with a keyword, a trailing underscore will be appended.
 pub fn escape_reserved_word(word: &str) -> String {
     if RESERVED.iter().any(|k| *k == word) {
@@ -120,7 +120,7 @@ pub fn escape_reserved_word(word: &str) -> String {
 }
 
 /// Reserved Keywords.
-/// 
+///
 /// Source: [Zig Language Reference](https://ziglang.org/documentation/master/#toc-Keyword-Reference)
 const RESERVED: &[&str] = &[
     "align",

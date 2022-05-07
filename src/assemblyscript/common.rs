@@ -120,7 +120,7 @@ pub fn escape_reserved_word(word: &str) -> String {
 }
 
 /// Reserved Keywords.
-/// 
+///
 /// Source: [ECMAScript 2022 Language Specification](https://tc39.es/ecma262/#sec-keywords-and-reserved-words)
 const RESERVED: &[&str] = &[
     "await",
