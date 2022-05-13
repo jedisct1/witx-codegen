@@ -1,6 +1,7 @@
+use convert_case::{Case, Casing};
+
 use super::tuple::Tuple;
 use crate::astype::*;
-use convert_case::{Case, Casing};
 
 pub trait IsNullable {
     fn is_nullable(&self) -> bool;
@@ -110,7 +111,8 @@ impl ToLanguageRepresentation for ASType {
 }
 
 /// Checks the given word against a list of reserved keywords.
-/// If the given word conflicts with a keyword, a trailing underscore will be appended.
+/// If the given word conflicts with a keyword, a trailing underscore will be
+/// appended.
 ///
 /// Adapted from [wiggle](https://docs.rs/wiggle/latest/wiggle/index.html)
 pub fn escape_reserved_word(word: &str) -> String {
@@ -135,9 +137,10 @@ const STRICT: &[&str] = &[
 
 /// Reserved keywords.
 ///
-/// These keywords aren't used yet, but they are reserved for future use. They have the same
-/// restrictions as strict keywords. The reasoning behind this is to make current programs
-/// forward compatible with future versions of Rust by forbidding them to use these keywords.
+/// These keywords aren't used yet, but they are reserved for future use. They
+/// have the same restrictions as strict keywords. The reasoning behind this is
+/// to make current programs forward compatible with future versions of Rust by
+/// forbidding them to use these keywords.
 ///
 /// Source: [The Rust Reference](https://doc.rust-lang.org/reference/keywords.html#reserved-keywords)
 const RESERVED: &[&str] = &[

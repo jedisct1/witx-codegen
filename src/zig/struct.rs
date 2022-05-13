@@ -1,5 +1,6 @@
-use super::*;
 use std::io::Write;
+
+use super::*;
 
 impl ZigGenerator {
     pub fn define_as_struct<T: Write>(

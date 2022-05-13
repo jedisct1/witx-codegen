@@ -4,7 +4,6 @@ use std::fs::File;
 use std::io::Write;
 
 use structopt::StructOpt;
-
 use strum::VariantNames;
 use strum_macros::{Display, EnumString, EnumVariantNames};
 

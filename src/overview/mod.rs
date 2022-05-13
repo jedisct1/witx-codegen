@@ -4,12 +4,14 @@ mod r#struct;
 mod tuple;
 mod union;
 
+use std::io::Write;
+
+use common::*;
+
 use super::*;
 use crate::astype::*;
 use crate::error::*;
 use crate::pretty_writer::PrettyWriter;
-use common::*;
-use std::io::Write;
 
 pub struct OverviewGenerator {
     module_name: Option<String>,

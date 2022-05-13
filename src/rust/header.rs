@@ -1,5 +1,6 @@
-use super::*;
 use std::io::Write;
+
+use super::*;
 
 impl RustGenerator {
     pub fn header<T: Write>(w: &mut PrettyWriter<T>) -> Result<(), Error> {

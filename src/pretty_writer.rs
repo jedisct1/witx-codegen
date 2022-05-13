@@ -1,8 +1,9 @@
-use super::Error;
 use std::cell::RefCell;
 use std::convert::Into;
 use std::io::prelude::*;
 use std::rc::Rc;
+
+use super::Error;
 
 pub struct PrettyWriter<W: Write> {
     writer: Rc<RefCell<W>>,
@@ -132,7 +133,8 @@ impl<W: Write> PrettyWriter<W> {
         Ok(self)
     }
 
-    /// Indent, write raw data after a continuation and terminate with an end of line
+    /// Indent, write raw data after a continuation and terminate with an end of
+    /// line
     pub fn write_line_continued<T: AsRef<[u8]>>(&mut self, buf: T) -> Result<&mut Self, Error> {
         let buf = buf.as_ref();
         self.continuation()?.write(buf)?.eol()

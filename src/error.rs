@@ -1,4 +1,5 @@
 use std::fmt;
+
 use witx::WitxError;
 
 #[derive(Debug)]

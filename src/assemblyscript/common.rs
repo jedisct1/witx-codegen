@@ -1,6 +1,7 @@
+use convert_case::{Case, Casing};
+
 use super::tuple::Tuple;
 use crate::astype::*;
-use convert_case::{Case, Casing};
 
 pub trait IsNullable {
     fn is_nullable(&self) -> bool;

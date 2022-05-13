@@ -1,6 +1,7 @@
+use convert_case::{Case, Casing};
+
 use super::tuple::Tuple;
 use crate::astype::*;
-use convert_case::{Case, Casing};
 
 pub trait IsNullable {
     fn is_nullable(&self) -> bool;
@@ -108,7 +109,8 @@ impl ToLanguageRepresentation for ASType {
 }
 
 /// Checks the given word against a list of reserved keywords.
-/// If the given word conflicts with a keyword, a trailing underscore will be appended.
+/// If the given word conflicts with a keyword, a trailing underscore will be
+/// appended.
 pub fn escape_reserved_word(word: &str) -> String {
     if RESERVED.iter().any(|k| *k == word) {
         // If the camel-cased string matched any strict or reserved keywords, then

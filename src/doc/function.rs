@@ -1,5 +1,6 @@
-use super::*;
 use std::io::Write;
+
+use super::*;
 
 impl DocGenerator {
     pub fn define_func<T: Write>(
@@ -29,7 +30,8 @@ impl DocGenerator {
         let ok_type = result.ok_type.clone();
 
         let mut results = vec![];
-        // A tuple in a result is expanded into additional parameters, transformed to pointers
+        // A tuple in a result is expanded into additional parameters, transformed to
+        // pointers
         if let ASType::Tuple(tuple_members) = ok_type.as_ref().leaf() {
             for (i, tuple_member) in tuple_members.iter().enumerate() {
                 let name = format!("result{}_ptr", i);

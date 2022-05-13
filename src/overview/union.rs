@@ -1,5 +1,6 @@
-use super::*;
 use std::io::Write;
+
+use super::*;
 
 impl OverviewGenerator {
     fn define_union_member<T: Write>(

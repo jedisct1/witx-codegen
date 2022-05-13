@@ -1,5 +1,6 @@
-use super::*;
 use std::io::Write;
+
+use super::*;
 
 impl DocGenerator {
     pub fn define_as_tuple<T: Write>(

@@ -1,5 +1,6 @@
-use super::*;
 use std::io::Write;
+
+use super::*;
 
 impl OverviewGenerator {
     pub fn define_as_tuple<T: Write>(

@@ -1,5 +1,6 @@
-use super::*;
 use std::io::Write;
+
+use super::*;
 
 impl ZigGenerator {
     fn define_union_member_accessors<T: Write>(

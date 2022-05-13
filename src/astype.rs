@@ -1,4 +1,5 @@
 use std::rc::Rc;
+
 use witx::Layout as _;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -361,7 +362,8 @@ impl From<&witx::Type> for ASType {
             witx::Type::List(items_tref) => {
                 let elements_type = ASType::from(items_tref);
                 match elements_type {
-                    // The "string" keyword in WITX returns a Char32, even if the actual encoding is expected to be UTF-8
+                    // The "string" keyword in WITX returns a Char32, even if the actual encoding is
+                    // expected to be UTF-8
                     ASType::Char32 | ASType::Char8 => ASType::String(Rc::new(ASType::Char8)),
                     _ => ASType::Slice(Rc::new(elements_type)),
                 }
