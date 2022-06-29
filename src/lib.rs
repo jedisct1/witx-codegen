@@ -19,7 +19,7 @@ mod zig;
 pub use crate::error::*;
 
 /// Generator output types
-#[derive(Debug, Copy, Clone, PartialEq, Display, EnumString, EnumVariantNames)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Display, EnumString, EnumVariantNames)]
 #[strum(serialize_all = "snake_case")]
 pub enum OutputType {
     #[strum(serialize = "assemblyscript")]
@@ -31,7 +31,7 @@ pub enum OutputType {
     Doc,
 }
 
-#[derive(Debug, Clone, PartialEq, StructOpt)]
+#[derive(Debug, Clone, PartialEq, Eq, StructOpt)]
 pub struct Config {
     /// Set the module name to use instead of reading it from the witx file
     #[structopt(short, long)]
@@ -69,7 +69,7 @@ impl Default for Config {
 }
 
 /// Options for WITX generators
-#[derive(Debug, Clone, PartialEq, StructOpt)]
+#[derive(Debug, Clone, PartialEq, Eq, StructOpt)]
 pub struct Options {
     /// Ignores imported types and functions
     #[structopt(short = "I", long)]
