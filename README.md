@@ -75,7 +75,7 @@ Support for additional languages is more than welcome!
 
 ## Example inputs
 
-See the [`test`](https://github.com/jedisct1/witx-codegen/tree/master/test) folder for examples of WITX input files.
+See the [`tests`](https://github.com/jedisct1/witx-codegen/tree/master/tests) folder for examples of WITX input files.
 
 Other input formats may also be eventually supported, as well as extensions to produce more structured documentation.
 
