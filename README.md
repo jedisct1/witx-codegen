@@ -81,8 +81,6 @@ Other input formats may also be eventually supported, as well as extensions to p
 
 ## WITX format
 
-See the `test` directory for some examples.
-
 ### Basic types
 
 `bool`, `char`, `u8`, `u16`, `u32`, `u64`, `s8`, `s16`, `s32`, `s64`
