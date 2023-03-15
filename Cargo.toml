@@ -1,6 +1,6 @@
 [package]
 name = "witx-codegen"
-version = "0.11.2"
+version = "0.11.3"
 description = "WITX code generator for WebAssembly guest modules."
 authors = ["Frank Denis <github@pureftpd.org>"]
 edition = "2018"
@@ -12,7 +12,7 @@ keywords = ["witx", "webassembly", "wasm", "generator", "bindgen"]
 readme = "README.md"
 
 [dependencies]
-anyhow = "1.0.68"
+anyhow = "1.0.69"
 convert_case = "0.6.0"
 structopt = "0.3.26"
 strum = "0.24.1"
