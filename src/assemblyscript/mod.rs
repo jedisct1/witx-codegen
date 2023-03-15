@@ -56,7 +56,6 @@ impl<T: Write> Generator<T> for AssemblyScriptGenerator {
             }
             let constants_for_type: Vec<_> = module_witx
                 .constants()
-                .into_iter()
                 .filter_map(|x| {
                     if x.ty == type_.name {
                         Some(ASConstant {
