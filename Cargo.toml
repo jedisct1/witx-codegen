@@ -12,11 +12,11 @@ keywords = ["witx", "webassembly", "wasm", "generator", "bindgen"]
 readme = "README.md"
 
 [dependencies]
-anyhow = "1.0.69"
+anyhow = "1.0.71"
 convert_case = "0.6.0"
 structopt = "0.3.26"
-strum = "0.24.1"
-strum_macros = "0.24.3"
+strum = "0.25.0"
+strum_macros = "0.25.0"
 witx = { package = "witnext", version = "0.10.0-beta3" }
 
 [package.metadata.deb]
