@@ -66,8 +66,8 @@ ARGS:
 * [X] AssemblyScript ([example](https://github.com/jedisct1/witx-codegen/blob/master/example-output/assemblyscript.ts))
 * [X] Zig ([example](https://github.com/jedisct1/witx-codegen/blob/master/example-output/zig.zig))
 * [X] Rust ([example](https://github.com/jedisct1/witx-codegen/blob/master/example-output/rust.rs))
+* [X] C++ ([example](https://github.com/jedisct1/witx-codegen/blob/master/example-output/cpp.h)) - Experimental
 * [ ] TinyGo
-* [ ] C/C++
 * [ ] Swift
 * [ ] HTML documentation
 
