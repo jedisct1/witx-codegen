@@ -5,10 +5,11 @@ use std::io::Write;
 
 use structopt::StructOpt;
 use strum::VariantNames;
-use strum_macros::{Display, EnumString, EnumVariantNames};
+use strum_macros::{Display, EnumString, VariantNames};
 
 mod assemblyscript;
 mod astype;
+mod cpp;
 mod doc;
 mod error;
 mod overview;
@@ -19,7 +20,7 @@ mod zig;
 pub use crate::error::*;
 
 /// Generator output types
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Display, EnumString, EnumVariantNames)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Display, EnumString, VariantNames)]
 #[strum(serialize_all = "snake_case")]
 pub enum OutputType {
     #[strum(serialize = "assemblyscript")]
@@ -29,6 +30,7 @@ pub enum OutputType {
     Overview,
     #[strum(serialize = "doc", serialize = "markdown")]
     Doc,
+    Cpp,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, StructOpt)]
@@ -99,6 +101,7 @@ fn get_generator<T: Write>(module: Option<&str>, output: OutputType) -> Box<dyn 
         OutputType::Rust => Box::new(rust::RustGenerator::new(m)),
         OutputType::Overview => Box::new(overview::OverviewGenerator::new(m)),
         OutputType::Doc => Box::new(doc::DocGenerator::new(m)),
+        OutputType::Cpp => Box::new(cpp::CppGenerator::new(m)),
     }
 }
 
