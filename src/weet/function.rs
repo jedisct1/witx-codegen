@@ -1,4 +1,4 @@
-use std::io::Write;
+use std::{io::Write, rc::Rc};
 
 use super::*;
 
@@ -36,9 +36,31 @@ impl WeetGenerator {
 
         let mut params_decomposed = vec![];
 
-        for param in &params {
-            let mut decomposed = param.1.decompose(&param.0, false);
+        let mut i = 0;
+        while i < params.len() {
+            let param = &params[i];
+            let name = &param.0;
+            if (i + 1) < params.len() {
+                let next_param = &params[i + 1];
+                let next_name = &next_param.0;
+                let name_with_len = format!("{}_len", name);
+                if &name_with_len == next_name {
+                    let type_ = Rc::new(ASType::Slice(Rc::new(param.1.clone())));
+                    let mut decomposed = vec![ASTypeDecomposed {
+                        name: name.clone(),
+                        type_,
+                    }];
+                    params_decomposed.append(&mut decomposed);
+                    i += 2;
+                    continue;
+                }
+            }
+            let mut decomposed = vec![ASTypeDecomposed {
+                name: param.0.clone(),
+                type_: Rc::new(param.1.clone()),
+            }];
             params_decomposed.append(&mut decomposed);
+            i += 1;
         }
 
         let mut results = vec![];
@@ -54,8 +76,29 @@ impl WeetGenerator {
             results.push((name.to_string(), ok_type));
         }
         let mut results_decomposed = vec![];
-        for result in &results {
-            let mut decomposed = result.1.decompose(&result.0, true);
+        if results.len() < 2 {
+            for result in &results {
+                let mut decomposed = vec![ASTypeDecomposed {
+                    name: result.0.clone(),
+                    type_: result.1.clone(),
+                }];
+                results_decomposed.append(&mut decomposed);
+            }
+        } else {
+            let mut tuple_content: Vec<ASTupleMember> = vec![];
+            for result in &results {
+                let tuple_member = ASTupleMember {
+                    type_: result.1.clone(),
+                    padding: 0,
+                    offset: 0,
+                };
+                tuple_content.push(tuple_member);
+            }
+            let tuple = ASType::Tuple(tuple_content);
+            let mut decomposed = vec![ASTypeDecomposed {
+                name: "result_tuple".to_string(),
+                type_: Rc::new(tuple),
+            }];
             results_decomposed.append(&mut decomposed);
         }
 
@@ -67,13 +110,6 @@ impl WeetGenerator {
             &results_decomposed,
             &result,
         )?;
-
-        let signature_witx = func_witx.wasm_signature(witx::CallMode::DefinedImport);
-        let params_count_witx = signature_witx.params.len() + signature_witx.results.len();
-        assert_eq!(
-            params_count_witx,
-            params_decomposed.len() + results_decomposed.len() + 1
-        );
 
         Ok(())
     }
@@ -90,14 +126,19 @@ impl WeetGenerator {
         if !params_decomposed.is_empty() || !results_decomposed.is_empty() {
             w.eol()?;
         }
-        for param in params_decomposed.iter().chain(results_decomposed.iter()) {
+        for param in params_decomposed.iter() {
             w.write_line_continued(format!(
                 "{}: {},",
                 param.name.as_var(),
                 param.type_.as_lang(),
             ))?;
         }
-        w.write_line(format!(") -> result<_, {}>;", result.error_type.as_lang()))?;
+        w.indent()?.write(") -> result<")?;
+        for param in results_decomposed.iter() {
+            w.write(format!("{}", param.type_.as_lang(),))?;
+        }
+        w.write(format!(", {}>;", result.error_type.as_lang()))?
+            .eol()?;
         w.eob()?;
         Ok(())
     }
