@@ -90,7 +90,7 @@ pub trait ToLanguageRepresentation {
             ASType::Constants(_) => unimplemented!(),
             ASType::Enum(enum_) => enum_.repr.as_ref().as_lang(),
             ASType::Struct(_) => unimplemented!(),
-            ASType::Tuple(tuple_members) => Tuple::name_for(tuple_members).as_type(),
+            ASType::Tuple(tuple_members) => Tuple::name_for(tuple_members),
             ASType::Union(_) => unimplemented!(),
             ASType::Slice(element_type) => format!("list<{}>", element_type.as_lang()),
             ASType::String(_) => "string".to_string(),

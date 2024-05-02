@@ -10,7 +10,7 @@ impl Tuple {
             "tuple<{}>",
             tuple_members
                 .iter()
-                .map(|member| member.type_.to_string())
+                .map(|member| member.type_.to_string().as_type())
                 .collect::<Vec<_>>()
                 .join(", ")
         )
@@ -23,20 +23,7 @@ impl WeetGenerator {
         name: &str,
         members: &[ASTupleMember],
     ) -> Result<(), Error> {
-        w.indent()?.write(format!("{}: tuple<", name.as_type()))?;
-        {
-            let mut w = w.new_block();
-            let mut first = true;
-            for (member) in members {
-                if !first {
-                    w.write(", ")?;
-                }
-                first = false;
-                let member_type = member.type_.as_ref();
-                w.write(format!("{}", member_type.as_lang()))?;
-            }
-        }
-        w.write(">;")?.eol()?;
+        w.write_line(format!("{}: tuple<{}>;", name.as_type(), Tuple::name_for(members)))?;
         Ok(())
     }
 }
