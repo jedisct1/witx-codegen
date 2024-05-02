@@ -23,7 +23,7 @@ impl WeetGenerator {
         name: &str,
         members: &[ASTupleMember],
     ) -> Result<(), Error> {
-        w.write_line(format!("{}: tuple<{}>;", name.as_type(), Tuple::name_for(members)))?;
+        w.write_line(format!("{}: {};", name.as_type(), Tuple::name_for(members)))?;
         Ok(())
     }
 }
