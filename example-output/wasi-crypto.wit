@@ -689,7 +689,7 @@ interface wasi-ephemeral-crypto-common {
     options-set-guest-buffer: func(
         handle: options,
         name: string,
-        buffer: list<borrow<u8>>,
+        buffer: borrow<list<u8>>,
     ) -> result<_, crypto-errno>;
 
     /// Return the length of an `array_output` object.
@@ -716,7 +716,7 @@ interface wasi-ephemeral-crypto-common {
     /// ```
     array-output-pull: func(
         array-output: array-output,
-        buf: list<borrow<u8>>,
+        buf: borrow<list<u8>>,
     ) -> result<size, crypto-errno>;
 
     /// __(optional)__
@@ -1527,7 +1527,7 @@ interface wasi-ephemeral-crypto-symmetric {
     /// In that case, the guest should retry with the same parameters until the function completes.
     symmetric-state-squeeze: func(
         handle: symmetric-state,
-        out: list<borrow<u8>>,
+        out: borrow<list<u8>>,
     ) -> result<_, crypto-errno>;
 
     /// Compute and return a tag for all the data injected into the state so far.
@@ -1581,7 +1581,7 @@ interface wasi-ephemeral-crypto-symmetric {
     /// `invalid_operation` is returned for algorithms not supporting encryption.
     symmetric-state-encrypt: func(
         handle: symmetric-state,
-        out: list<borrow<u8>>,
+        out: borrow<list<u8>>,
         data: list<u8>,
     ) -> result<size, crypto-errno>;
 
@@ -1598,7 +1598,7 @@ interface wasi-ephemeral-crypto-symmetric {
     /// `invalid_operation` is returned for algorithms not supporting encryption.
     symmetric-state-encrypt-detached: func(
         handle: symmetric-state,
-        out: list<borrow<u8>>,
+        out: borrow<list<u8>>,
         data: list<u8>,
     ) -> result<symmetric-tag, crypto-errno>;
 
@@ -1617,7 +1617,7 @@ interface wasi-ephemeral-crypto-symmetric {
     /// `invalid_operation` is returned for algorithms not supporting encryption.
     symmetric-state-decrypt: func(
         handle: symmetric-state,
-        out: list<borrow<u8>>,
+        out: borrow<list<u8>>,
         data: list<u8>,
     ) -> result<size, crypto-errno>;
 
@@ -1637,7 +1637,7 @@ interface wasi-ephemeral-crypto-symmetric {
     /// `invalid_operation` is returned for algorithms not supporting encryption.
     symmetric-state-decrypt-detached: func(
         handle: symmetric-state,
-        out: list<borrow<u8>>,
+        out: borrow<list<u8>>,
         data: list<u8>,
         raw-tag: list<u8>,
     ) -> result<size, crypto-errno>;
@@ -1674,7 +1674,7 @@ interface wasi-ephemeral-crypto-symmetric {
     /// Otherwise, it returns the number of bytes that have been copied.
     symmetric-tag-pull: func(
         symmetric-tag: symmetric-tag,
-        buf: list<borrow<u8>>,
+        buf: borrow<list<u8>>,
     ) -> result<size, crypto-errno>;
 
     /// Verify that a computed authentication tag matches the expected value, in constant-time.
