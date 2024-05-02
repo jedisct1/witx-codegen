@@ -73,7 +73,7 @@ pub trait ToLanguageRepresentation {
             ASType::F32 => "f32".to_string(),
             ASType::F64 => "f64".to_string(),
             ASType::Handle(_resource_name) => "wasi-handle".to_string(),
-            ASType::ConstPtr(pointee) => format!("{}", pointee.to_string()),
+            ASType::ConstPtr(pointee) => format!("list<{}>", pointee.to_string()),
             ASType::MutPtr(pointee) => format!("borrow<{}>", pointee.to_string()),
             ASType::Option(_) => todo!(),
             ASType::Result(_) => todo!(),
