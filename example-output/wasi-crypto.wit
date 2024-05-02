@@ -308,7 +308,7 @@ interface wasi-ephemeral-crypto-asymmetric-common {
         kp: keypair,
         kp-id: borrow<u8>,
         kp-id-max-len: size,
-    ) -> result<tuple<size,-version>, crypto-errno>;
+    ) -> result<tuple<size, version>, crypto-errno>;
 
     /// __(optional)__
     /// Return a managed key pair from a key identifier.
@@ -885,7 +885,7 @@ interface wasi-ephemeral-crypto-kx {
     /// On success, both the shared secret and its encrypted version are returned.
     kx-encapsulate: func(
         pk: publickey,
-    ) -> result<tuple<array-output,-array-output>, crypto-errno>;
+    ) -> result<tuple<array-output, array-output>, crypto-errno>;
 
     /// Decapsulate an encapsulated secret crated with `kx_encapsulate`
     /// 
@@ -1262,7 +1262,7 @@ interface wasi-ephemeral-crypto-symmetric {
         symmetric-key: symmetric-key,
         symmetric-key-id: borrow<u8>,
         symmetric-key-id-max-len: size,
-    ) -> result<tuple<size,-version>, crypto-errno>;
+    ) -> result<tuple<size, version>, crypto-errno>;
 
     /// __(optional)__
     /// Return a managed symmetric key from a key identifier.
@@ -1771,7 +1771,7 @@ interface wasi-ephemeral-crypto-symmetric-batch {
     /// the same list offset.
     /// 
     batch-symmetric-state-squeeze: func(
-        batch: list<tuple<symmetric-state,-data,-data-len>>,
+        batch: list<tuple<symmetric-state, data, data-len>>,
     ) -> result<batch-squeeze-results, crypto-errno>;
 
     /// Batch of operations to compute and return a tag for all the data
@@ -1844,7 +1844,7 @@ interface wasi-ephemeral-crypto-symmetric-batch {
     /// let results = ctx.batch_symmetric_state_encrypt(batch)?;
     /// ```
     batch-symmetric-state-encrypt: func(
-        batch: list<tuple<symmetric-state,-output,-output-len,-data,-data-len>>,
+        batch: list<tuple<symmetric-state, output, output-len, data, data-len>>,
     ) -> result<batch-crypt-results, crypto-errno>;
 
     /// Perform a batch of symmetric encrypt operations with detached tags.
@@ -1889,7 +1889,7 @@ interface wasi-ephemeral-crypto-symmetric-batch {
     /// let results = ctx.batch_symmetric_state_encrypt_detached(batch)?;
     /// ```
     batch-symmetric-state-encrypt-detached: func(
-        batch: list<tuple<symmetric-state,-output,-output-len,-data,-data-len>>,
+        batch: list<tuple<symmetric-state, output, output-len, data, data-len>>,
     ) -> result<batch-encrypt-detached-results, crypto-errno>;
 
     /// Perform a batch of symmetric decrypt operations.
@@ -1918,7 +1918,7 @@ interface wasi-ephemeral-crypto-symmetric-batch {
     /// value is only valid if the tuple's error code is `success`.
     /// 
     batch-symmetric-state-decrypt: func(
-        batch: list<tuple<symmetric-state,-output,-output-len,-data,-data-len>>,
+        batch: list<tuple<symmetric-state, output, output-len, data, data-len>>,
     ) -> result<batch-crypt-results, crypto-errno>;
 
     /// Perform a batch of symmetric decrypt operations with detached tags.
@@ -1947,7 +1947,7 @@ interface wasi-ephemeral-crypto-symmetric-batch {
     /// value is only valid if the tuple's error code is `success`.
     /// 
     batch-symmetric-state-decrypt-detached: func(
-        batch: list<tuple<symmetric-state,-output,-output-len,-data,-data-len,-raw-tag,-raw-tag-len>>,
+        batch: list<tuple<symmetric-state, output, output-len, data, data-len, raw-tag, raw-tag-len>>,
     ) -> result<batch-crypt-results, crypto-errno>;
 
 
