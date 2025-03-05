@@ -69,7 +69,7 @@ impl DocGenerator {
                         let mut w = w.new_block();
                         for result in &results {
                             let result_as_ptr = ASType::MutPtr(result.1.clone());
-                            w.write_line(&result_as_ptr.as_lang())?;
+                            w.write_line(result_as_ptr.as_lang())?;
                         }
                     }
                 }

@@ -135,7 +135,7 @@ impl WeetGenerator {
         }
         w.indent()?.write(") -> result<")?;
         for param in results_decomposed.iter() {
-            w.write(format!("{}", param.type_.as_lang(),))?;
+            w.write(&param.type_.as_lang())?;
         }
         w.write(format!(", {}>;", result.error_type.as_lang()))?
             .eol()?;
