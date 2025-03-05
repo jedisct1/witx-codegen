@@ -98,7 +98,7 @@ impl ZigGenerator {
                 param.type_.as_lang(),
             ))?;
         }
-        w.write_line(format!(") callconv(.C) {};", result.error_type.as_lang()))?;
+        w.write_line(format!(") callconv(.c) {};", result.error_type.as_lang()))?;
         w.eob()?;
         Ok(())
     }

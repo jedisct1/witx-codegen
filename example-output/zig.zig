@@ -323,7 +323,7 @@ pub const WasiEphemeralCryptoSymmetric = struct {
         algorithm_len: usize,
         options: OptOptions,
         result_ptr: WasiMutPtr(SymmetricKey),
-    ) callconv(.C) CryptoErrno;
+    ) callconv(.c) CryptoErrno;
 
     /// Create a symmetric key from raw material.
     ///
@@ -336,7 +336,7 @@ pub const WasiEphemeralCryptoSymmetric = struct {
         raw: WasiPtr(u8),
         raw_len: Size,
         result_ptr: WasiMutPtr(SymmetricKey),
-    ) callconv(.C) CryptoErrno;
+    ) callconv(.c) CryptoErrno;
 
     /// Export a symmetric key as raw material.
     ///
@@ -346,14 +346,14 @@ pub const WasiEphemeralCryptoSymmetric = struct {
     pub extern "wasi_ephemeral_crypto_symmetric" fn symmetric_key_export(
         symmetric_key: SymmetricKey,
         result_ptr: WasiMutPtr(ArrayOutput),
-    ) callconv(.C) CryptoErrno;
+    ) callconv(.c) CryptoErrno;
 
     /// Destroy a symmetric key.
     ///
     /// Objects are reference counted. It is safe to close an object immediately after the last function needing it is called.
     pub extern "wasi_ephemeral_crypto_symmetric" fn symmetric_key_close(
         symmetric_key: SymmetricKey,
-    ) callconv(.C) CryptoErrno;
+    ) callconv(.c) CryptoErrno;
 
     /// __(optional)__
     /// Generate a new managed symmetric key.
@@ -374,7 +374,7 @@ pub const WasiEphemeralCryptoSymmetric = struct {
         algorithm_len: usize,
         options: OptOptions,
         result_ptr: WasiMutPtr(SymmetricKey),
-    ) callconv(.C) CryptoErrno;
+    ) callconv(.c) CryptoErrno;
 
     /// __(optional)__
     /// Store a symmetric key into the secrets manager.
@@ -388,7 +388,7 @@ pub const WasiEphemeralCryptoSymmetric = struct {
         symmetric_key: SymmetricKey,
         symmetric_key_id: WasiMutPtr(u8),
         symmetric_key_id_max_len: Size,
-    ) callconv(.C) CryptoErrno;
+    ) callconv(.c) CryptoErrno;
 
     /// __(optional)__
     /// Replace a managed symmetric key.
@@ -416,7 +416,7 @@ pub const WasiEphemeralCryptoSymmetric = struct {
         symmetric_key_old: SymmetricKey,
         symmetric_key_new: SymmetricKey,
         result_ptr: WasiMutPtr(Version),
-    ) callconv(.C) CryptoErrno;
+    ) callconv(.c) CryptoErrno;
 
     /// __(optional)__
     /// Return the key identifier and version of a managed symmetric key.
@@ -430,7 +430,7 @@ pub const WasiEphemeralCryptoSymmetric = struct {
         symmetric_key_id_max_len: Size,
         result_0_ptr: WasiMutPtr(Size),
         result_1_ptr: WasiMutPtr(Version),
-    ) callconv(.C) CryptoErrno;
+    ) callconv(.c) CryptoErrno;
 
     /// __(optional)__
     /// Return a managed symmetric key from a key identifier.
@@ -446,7 +446,7 @@ pub const WasiEphemeralCryptoSymmetric = struct {
         symmetric_key_id_len: Size,
         symmetric_key_version: Version,
         result_ptr: WasiMutPtr(SymmetricKey),
-    ) callconv(.C) CryptoErrno;
+    ) callconv(.c) CryptoErrno;
 
     /// Create a new state to aborb and produce data using symmetric operations.
     ///
@@ -630,7 +630,7 @@ pub const WasiEphemeralCryptoSymmetric = struct {
         key: OptSymmetricKey,
         options: OptOptions,
         result_ptr: WasiMutPtr(SymmetricState),
-    ) callconv(.C) CryptoErrno;
+    ) callconv(.c) CryptoErrno;
 
     /// Retrieve a parameter from the current state.
     ///
@@ -646,7 +646,7 @@ pub const WasiEphemeralCryptoSymmetric = struct {
         value: WasiMutPtr(u8),
         value_max_len: Size,
         result_ptr: WasiMutPtr(Size),
-    ) callconv(.C) CryptoErrno;
+    ) callconv(.c) CryptoErrno;
 
     /// Retrieve an integer parameter from the current state.
     ///
@@ -660,14 +660,14 @@ pub const WasiEphemeralCryptoSymmetric = struct {
         name_ptr: WasiPtr(Char8),
         name_len: usize,
         result_ptr: WasiMutPtr(U64),
-    ) callconv(.C) CryptoErrno;
+    ) callconv(.c) CryptoErrno;
 
     /// Destroy a symmetric state.
     ///
     /// Objects are reference counted. It is safe to close an object immediately after the last function needing it is called.
     pub extern "wasi_ephemeral_crypto_symmetric" fn symmetric_state_close(
         handle: SymmetricState,
-    ) callconv(.C) CryptoErrno;
+    ) callconv(.c) CryptoErrno;
 
     /// Absorb data into the state.
     ///
@@ -685,7 +685,7 @@ pub const WasiEphemeralCryptoSymmetric = struct {
         handle: SymmetricState,
         data: WasiPtr(u8),
         data_len: Size,
-    ) callconv(.C) CryptoErrno;
+    ) callconv(.c) CryptoErrno;
 
     /// Squeeze bytes from the state.
     ///
@@ -702,7 +702,7 @@ pub const WasiEphemeralCryptoSymmetric = struct {
         handle: SymmetricState,
         out: WasiMutPtr(u8),
         out_len: Size,
-    ) callconv(.C) CryptoErrno;
+    ) callconv(.c) CryptoErrno;
 
     /// Compute and return a tag for all the data injected into the state so far.
     ///
@@ -717,7 +717,7 @@ pub const WasiEphemeralCryptoSymmetric = struct {
     pub extern "wasi_ephemeral_crypto_symmetric" fn symmetric_state_squeeze_tag(
         handle: SymmetricState,
         result_ptr: WasiMutPtr(SymmetricTag),
-    ) callconv(.C) CryptoErrno;
+    ) callconv(.c) CryptoErrno;
 
     /// Use the current state to produce a key for a target algorithm.
     ///
@@ -730,7 +730,7 @@ pub const WasiEphemeralCryptoSymmetric = struct {
         alg_str_ptr: WasiPtr(Char8),
         alg_str_len: usize,
         result_ptr: WasiMutPtr(SymmetricKey),
-    ) callconv(.C) CryptoErrno;
+    ) callconv(.c) CryptoErrno;
 
     /// Return the maximum length of an authentication tag for the current algorithm.
     ///
@@ -744,7 +744,7 @@ pub const WasiEphemeralCryptoSymmetric = struct {
     pub extern "wasi_ephemeral_crypto_symmetric" fn symmetric_state_max_tag_len(
         handle: SymmetricState,
         result_ptr: WasiMutPtr(Size),
-    ) callconv(.C) CryptoErrno;
+    ) callconv(.c) CryptoErrno;
 
     /// Encrypt data with an attached tag.
     ///
@@ -764,7 +764,7 @@ pub const WasiEphemeralCryptoSymmetric = struct {
         data: WasiPtr(u8),
         data_len: Size,
         result_ptr: WasiMutPtr(Size),
-    ) callconv(.C) CryptoErrno;
+    ) callconv(.c) CryptoErrno;
 
     /// Encrypt data, with a detached tag.
     ///
@@ -784,7 +784,7 @@ pub const WasiEphemeralCryptoSymmetric = struct {
         data: WasiPtr(u8),
         data_len: Size,
         result_ptr: WasiMutPtr(SymmetricTag),
-    ) callconv(.C) CryptoErrno;
+    ) callconv(.c) CryptoErrno;
 
     /// - **Stream cipher:** adds the input to the stream cipher output. `out_len` and `data_len` can be equal, as no authentication tags will be added.
     /// - **AEAD:** decrypts `data` into `out`. Additional data must have been previously absorbed using `symmetric_state_absorb()`.
@@ -806,7 +806,7 @@ pub const WasiEphemeralCryptoSymmetric = struct {
         data: WasiPtr(u8),
         data_len: Size,
         result_ptr: WasiMutPtr(Size),
-    ) callconv(.C) CryptoErrno;
+    ) callconv(.c) CryptoErrno;
 
     /// - **Stream cipher:** returns `invalid_operation` since stream ciphers do not include authentication tags.
     /// - **AEAD:** decrypts `data` into `out`. Additional data must have been previously absorbed using `symmetric_state_absorb()`.
@@ -831,7 +831,7 @@ pub const WasiEphemeralCryptoSymmetric = struct {
         raw_tag: WasiPtr(u8),
         raw_tag_len: Size,
         result_ptr: WasiMutPtr(Size),
-    ) callconv(.C) CryptoErrno;
+    ) callconv(.c) CryptoErrno;
 
     /// Make it impossible to recover the previous state.
     ///
@@ -840,7 +840,7 @@ pub const WasiEphemeralCryptoSymmetric = struct {
     /// `invalid_operation` is returned for algorithms not supporting ratcheting.
     pub extern "wasi_ephemeral_crypto_symmetric" fn symmetric_state_ratchet(
         handle: SymmetricState,
-    ) callconv(.C) CryptoErrno;
+    ) callconv(.c) CryptoErrno;
 
     /// Return the length of an authentication tag.
     ///
@@ -848,7 +848,7 @@ pub const WasiEphemeralCryptoSymmetric = struct {
     pub extern "wasi_ephemeral_crypto_symmetric" fn symmetric_tag_len(
         symmetric_tag: SymmetricTag,
         result_ptr: WasiMutPtr(Size),
-    ) callconv(.C) CryptoErrno;
+    ) callconv(.c) CryptoErrno;
 
     /// Copy an authentication tag into a guest-allocated buffer.
     ///
@@ -869,7 +869,7 @@ pub const WasiEphemeralCryptoSymmetric = struct {
         buf: WasiMutPtr(u8),
         buf_len: Size,
         result_ptr: WasiMutPtr(Size),
-    ) callconv(.C) CryptoErrno;
+    ) callconv(.c) CryptoErrno;
 
     /// Verify that a computed authentication tag matches the expected value, in constant-time.
     ///
@@ -890,7 +890,7 @@ pub const WasiEphemeralCryptoSymmetric = struct {
         symmetric_tag: SymmetricTag,
         expected_raw_tag_ptr: WasiPtr(u8),
         expected_raw_tag_len: Size,
-    ) callconv(.C) CryptoErrno;
+    ) callconv(.c) CryptoErrno;
 
     /// Explicitly destroy an unused authentication tag.
     ///
@@ -899,5 +899,5 @@ pub const WasiEphemeralCryptoSymmetric = struct {
     /// Objects are reference counted. It is safe to close an object immediately after the last function needing it is called.
     pub extern "wasi_ephemeral_crypto_symmetric" fn symmetric_tag_close(
         symmetric_tag: SymmetricTag,
-    ) callconv(.C) CryptoErrno;
+    ) callconv(.c) CryptoErrno;
 };
