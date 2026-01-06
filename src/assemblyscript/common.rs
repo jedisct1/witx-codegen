@@ -111,7 +111,7 @@ impl ToLanguageRepresentation for ASType {
 }
 
 pub fn escape_reserved_word(word: &str) -> String {
-    if RESERVED.iter().any(|k| *k == word) {
+    if RESERVED.contains(&word) {
         // If the camel-cased string matched any strict or reserved keywords, then
         // append a trailing underscore to the identifier we generate.
         format!("{}_", word)

@@ -2,26 +2,6 @@ use super::tuple::Tuple;
 use crate::astype::*;
 use convert_case::{Case, Casing};
 
-pub trait IsNullable {
-    fn is_nullable(&self) -> bool;
-}
-
-impl IsNullable for ASType {
-    fn is_nullable(&self) -> bool {
-        matches!(
-            self,
-            ASType::ConstPtr(_)
-                | ASType::MutPtr(_)
-                | ASType::ReadBuffer(_)
-                | ASType::WriteBuffer(_)
-                | ASType::Enum(_)
-                | ASType::Struct(_)
-                | ASType::Tuple(_)
-                | ASType::Union(_)
-        )
-    }
-}
-
 pub trait Normalize {
     fn as_str(&self) -> &str;
 
@@ -33,20 +13,12 @@ pub trait Normalize {
         self.as_str().to_case(Case::Snake)
     }
 
-    fn as_fn_suffix(&self) -> String {
-        self.as_str().to_case(Case::Snake)
-    }
-
     fn as_var(&self) -> String {
         self.as_str().to_case(Case::Snake)
     }
 
     fn as_const(&self) -> String {
         self.as_str().to_case(Case::UpperSnake)
-    }
-
-    fn as_namespace(&self) -> String {
-        self.as_str().to_case(Case::Pascal)
     }
 }
 

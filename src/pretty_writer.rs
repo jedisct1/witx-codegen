@@ -127,7 +127,7 @@ impl<W: Write> PrettyWriter<W> {
     /// Write multiple indented lines
     pub fn write_lines<T: AsRef<[u8]>>(&mut self, buf: T) -> Result<&mut Self, Error> {
         let buf = buf.as_ref();
-        for line in buf.lines().flatten() {
+        for line in buf.lines().map_while(Result::ok) {
             self.write_line(line)?;
         }
         Ok(self)

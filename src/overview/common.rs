@@ -11,19 +11,11 @@ pub trait Normalize {
         self.as_str().to_string()
     }
 
-    fn as_fn_suffix(&self) -> String {
-        self.as_str().to_string()
-    }
-
     fn as_var(&self) -> String {
         self.as_str().to_string()
     }
 
     fn as_const(&self) -> String {
-        self.as_str().to_string()
-    }
-
-    fn as_namespace(&self) -> String {
         self.as_str().to_string()
     }
 }

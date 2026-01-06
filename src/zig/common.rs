@@ -3,35 +3,11 @@ use convert_case::{Case, Casing};
 use super::tuple::Tuple;
 use crate::astype::*;
 
-pub trait IsNullable {
-    fn is_nullable(&self) -> bool;
-}
-
-impl IsNullable for ASType {
-    fn is_nullable(&self) -> bool {
-        matches!(
-            self,
-            ASType::ConstPtr(_)
-                | ASType::MutPtr(_)
-                | ASType::ReadBuffer(_)
-                | ASType::WriteBuffer(_)
-                | ASType::Enum(_)
-                | ASType::Struct(_)
-                | ASType::Tuple(_)
-                | ASType::Union(_)
-        )
-    }
-}
-
 pub trait Normalize {
     fn as_str(&self) -> &str;
 
     fn as_type(&self) -> String {
         self.as_str().to_case(Case::Pascal)
-    }
-
-    fn as_fn(&self) -> String {
-        self.as_str().to_case(Case::Camel)
     }
 
     fn as_fn_suffix(&self) -> String {
@@ -112,7 +88,7 @@ impl ToLanguageRepresentation for ASType {
 /// If the given word conflicts with a keyword, a trailing underscore will be
 /// appended.
 pub fn escape_reserved_word(word: &str) -> String {
-    if RESERVED.iter().any(|k| *k == word) {
+    if RESERVED.contains(&word) {
         // If the camel-cased string matched any strict or reserved keywords, then
         // append a trailing underscore to the identifier we generate.
         format!("{}_", word)

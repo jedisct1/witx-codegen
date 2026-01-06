@@ -17,20 +17,12 @@ pub trait Normalize {
         format!("[`{}()`]({})", self.as_str(), self.as_link())
     }
 
-    fn as_fn_suffix(&self) -> String {
-        self.as_str().to_string()
-    }
-
     fn as_var(&self) -> String {
         format!("**`{}`**", self.as_str())
     }
 
     fn as_const(&self) -> String {
         format!("**`{}`**", self.as_str())
-    }
-
-    fn as_namespace(&self) -> String {
-        format!("**[`{}`]({})**", self.as_str(), self.as_link())
     }
 }
 

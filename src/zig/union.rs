@@ -135,7 +135,7 @@ impl ZigGenerator {
             w.write_line("member = extern union {")?;
             {
                 let mut w = w.new_block();
-                for (_i, member) in union_.members.iter().enumerate() {
+                for member in &union_.members {
                     let member_is_void = matches!(member.type_.as_ref(), ASType::Void);
                     if !member_is_void {
                         w.write_line(format!(
