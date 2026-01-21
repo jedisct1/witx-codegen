@@ -1,4 +1,8 @@
 #![forbid(unsafe_code)]
+#![allow(dead_code)]
+#![allow(clippy::manual_contains)]
+#![allow(clippy::lines_filter_map_ok)]
+#![allow(clippy::needless_borrows_for_generic_args)]
 
 use std::fs::File;
 use std::io::Write;
