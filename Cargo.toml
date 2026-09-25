@@ -1,14 +1,14 @@
 [package]
 name = "witx-codegen"
 version = "0.11.3"
-description = "WITX code generator for WebAssembly guest modules."
+description = "WITX bindings and documentation generator for WebAssembly and WASI, targeting Rust, Zig, and AssemblyScript"
 authors = ["Frank Denis <github@pureftpd.org>"]
 edition = "2018"
 license = "MIT"
 repository = "https://github.com/jedisct1/witx-codegen"
 homepage = "https://github.com/jedisct1/witx-codegen"
 categories = ["wasm", "api-bindings", "web-programming"]
-keywords = ["witx", "webassembly", "wasm", "generator", "bindgen"]
+keywords = ["witx", "webassembly", "wasi", "codegen", "bindgen"]
 readme = "README.md"
 
 [dependencies]
